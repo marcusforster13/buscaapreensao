@@ -1,0 +1,35 @@
+TEXTURAS CC0 - A CASA EM SILENCIO (versao three.js)
+Sites: https://polyhaven.com/textures  |  https://ambientcg.com
+Baixar em 1K, formato JPG se possivel (o pacote .blend tambem serve).
+Mapas: Color/Diffuse, Roughness, Normal GL (nao DX).
+
+JA TEMOS
+  [x] asfalto          asphalt_01             -> rua
+  [x] reboco_pintado   painted_plaster_wall   -> paredes externas pintadas, fachadas
+  [x] reboco           plastered_wall         -> muros, paredes internas
+  [x] madeira_tabuas   wood_planks            -> forro ripado, deck, portoes de ripa
+  [x] grama            grass_ground           -> chao dos gramados e canteiros
+  [x] madeira_escura   lacquered_cherry_wood  -> moveis de jacaranda, porta pivotante, mesas
+  [x] terra            farm_soil              -> canteiros das arvores na calcada
+  [x] pedra_filete     rock_wall_06           -> painel de pedra das fachadas vizinhas (visual "cacos de pedra")
+  [x] pedras_cinza     gray_rocks             -> brita decorativa nos jardins e ao redor dos arbustos
+
+  [x] concreto         gravel_concrete_03     -> laje, pilares, sarjeta, meio-fio, marquises, postes
+
+FALTA (prioridade alta - aparecem muito na cena)
+  [ ] piso_intertravado buscar: paving stones / pavers      -> garagens dos vizinhos
+
+  [x] metal_pintado    green_metal_rust       -> portoes, gradis, postes (o pipeline tira o verde e tinge de grafite, mantendo arranhoes e ferrugem)
+  [x] HDRI noturno     moonless_golf_4k.exr   -> pasta ..\hdri (ceu e reflexos; o pipeline reduz para 1K/2K na web)
+
+FALTA (prioridade media)
+  [ ] granito          buscar: granite / black marble       -> bancada da cozinha
+  [ ] tecido           buscar: fabric / linen               -> sofas, almofadas, cortinas
+  [ ] couro            buscar: leather                      -> poltrona
+  [ ] casca_arvore     buscar: bark                         -> troncos das arvores e palmeiras
+
+GERADAS POR CODIGO (nao precisa baixar)
+  calcada portuguesa (ondas de Copacabana), azulejos (estilo Athos Bulcao),
+  ladrilho hidraulico, granilite, palhinha, rede, tapete, zebrado da lombada.
+
+Onde colocar: uma subpasta por textura aqui dentro, ex.: texturas_cc0\concreto\

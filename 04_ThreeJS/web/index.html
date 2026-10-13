@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Busca e Apreensão · treinamento VR</title>
+<style>
+  :root{--ink:#efe9df;--mute:#a7a194;--amber:#f0a340;--panel:rgba(12,15,24,.86);--line:rgba(239,233,223,.14);
+        --sans:"Segoe UI",system-ui,sans-serif;--mono:Consolas,"DM Mono",ui-monospace,monospace}
+  html,body{margin:0;height:100%;background:#10151c;color:var(--ink);font-family:var(--sans);overflow:hidden}
+  canvas{display:block;touch-action:none;cursor:grab}
+  #loading{position:fixed;inset:0;display:grid;place-items:center;background:#05070d;z-index:10;font:500 14px/1.5 var(--mono);color:var(--mute);text-align:center}
+  #loading b{color:var(--amber);font-weight:500}
+  #hud{position:fixed;left:16px;top:16px;width:min(340px,calc(100% - 32px));background:var(--panel);backdrop-filter:blur(8px);
+       border:1px solid var(--line);border-radius:4px;padding:14px 16px;display:grid;gap:10px;font-size:13px;z-index:5}
+  .eyebrow{margin:0;font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
+  h1{margin:0;font-size:22px;line-height:1.1}
+  dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 10px}
+  dt{font:500 12px/1.5 var(--mono)} dd{margin:0;color:var(--mute)}
+  label{display:grid;grid-template-columns:120px 1fr;align-items:center;gap:8px;color:var(--mute)}
+  input[type=range]{width:100%;accent-color:var(--amber)}
+  .row{display:flex;flex-wrap:wrap;gap:6px}
+  button{font:600 12px/1 var(--sans);color:var(--ink);background:transparent;border:1px solid var(--line);border-radius:3px;padding:8px 10px;cursor:pointer}
+  button:hover,button.on{border-color:var(--amber)} button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+  .count{margin:0;font:500 12px/1 var(--mono)} .help{margin:0;padding-top:8px;border-top:1px solid var(--line);color:var(--mute)}
+  .help b{color:var(--ink);font-family:var(--mono);font-weight:500}
+  #hud.min > :not(.eyebrow):not(#acoes){display:none} #hud.min #acoes button:not(#bMin):not(#bTrein){display:none}
+  #statusTrein{position:fixed;right:16px;top:16px;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:10px 14px;font:500 12px/1.6 var(--mono);z-index:5;max-width:calc(100% - 32px)}
+  #statusTrein b{color:var(--amber)}
+  #legendaHTML{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);width:min(900px,calc(100% - 32px));background:rgba(5,7,12,.88);border:1px solid var(--line);border-radius:6px;padding:12px 18px;font-size:17px;line-height:1.45;z-index:6}
+  #legendaHTML b{color:var(--amber)}
+  #relatorioHTML{position:fixed;inset:4% max(16px,8%);overflow:auto;background:rgba(11,14,22,.97);border:1px solid var(--line);border-radius:6px;padding:20px 26px;z-index:20;font-size:14px;line-height:1.5}
+  #relatorioHTML h2{margin:0 0 6px;color:var(--amber)} #relatorioHTML h3{margin:16px 0 4px;font-size:15px}
+  #relatorioHTML h3 small{color:var(--mute);font:500 12px var(--mono)} #relatorioHTML ul{margin:0;padding-left:18px}
+  #relatorioHTML li.ok{color:#9fd49a} #relatorioHTML li.nao{color:var(--mute)} #relatorioHTML em{color:var(--mute)}
+</style>
+</head>
+<body>
+<div id="loading"><div>Busca e Apreensão<br>Carregando cena… <b id="pct">0%</b></div></div>
+
+<aside id="hud">
+  <p class="eyebrow">Treinamento VR · mandado de busca domiciliar · <span id="versao"></span></p>
+  <h1>Busca e Apreensão</h1>
+  <dl>
+    <dt>Arrastar</dt><dd>olhar ao redor</dd>
+    <dt>W A S D</dt><dd>andar · Shift corre · setas giram</dd>
+    <dt>Clique</dt><dd>ler um marcador · abrir ou fechar gaveta, armário e porta · chamar o elevador</dd>
+    <dt>F · H · L</dt><dd>lanterna · marcadores · luz pré-calculada</dd>
+    <dt>I · C · N · M</dt><dd>inverter o olhar · alternar céu · colisão · som liga/desliga</dd>
+    <dt>VR</dt><dd>aponte para a gaveta ou a porta e segure o gatilho: ela acompanha a sua mão (um toque rápido abre ou fecha de uma vez) · gatilho direito no chão teleporta · grip liga a lanterna · analógicos andam e giram</dd>
+  </dl>
+  <label>Exposição <input id="exp" type="range" min="0.2" max="3" step="0.05" value="1"></label>
+  <label>Luz pré-calculada <input id="lmg" type="range" min="0" max="3" step="0.05" value="1"></label>
+  <div class="row" id="vistas"></div>
+  <div class="row" id="acoes">
+    <button id="bLant" type="button">Lanterna</button>
+    <button id="bMarc" type="button" class="on">Marcadores</button>
+    <button id="bMin" type="button">Recolher</button>
+  </div>
+  <p class="count"><span id="count">0</span> marcadores lidos</p>
+  <p class="help"><b>Etapa 1:</b> cenário e peças que abrem (sem personagens ainda). Base: CF art. 5º, XI · CPP arts. 240 a 250 · Lei 13.869/2019, art. 22 · CPP arts. 158-A a 158-F · Súmula Vinculante 11<br>Texturas, modelos e céu: Poly Haven (CC0)</p>
+</aside>
+<div id="statusTrein" hidden></div>
+<div id="legendaHTML" hidden></div>
+<div id="relatorioHTML" hidden></div>
+
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+  "three-mesh-bvh":"https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.7.3/build/index.module.js"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { VRButton } from 'three/addons/webxr/VRButton.js';
+import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
+import { computeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
+THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
+THREE.Mesh.prototype.raycast = acceleratedRaycast;
+
+const $ = id => document.getElementById(id);
+const VERSAO = '1013-1533';      // carimbada por carimbar_versao.py a cada envio; entra no endereco dos arquivos para o navegador nao usar copia antiga
+window.__versao = VERSAO; window.__arq = {};
+// endereco de um arquivo com a marca do conteudo dele: muda so quando o arquivo muda (o resto fica guardado no navegador)
+const H = window.__h = p => p + '?h=' + (window.__arq[p] || VERSAO);
+$('versao').textContent = 'versão ' + VERSAO;
+// Ao abrir, confere no servidor (sem usar copia guardada) se ha versao mais nova que esta pagina; se houver, recarrega
+// sozinha com o numero novo no endereco. Assim o navegador do Quest nunca fica preso numa pagina antiga.
+try {
+  const info = await fetch('versao.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json());
+  window.__arq = info.arquivos || {}; const nova = info.versao;
+  const u = new URL(location.href);
+  if (nova && nova !== VERSAO && u.searchParams.get('_') !== nova) { u.searchParams.set('_', nova); location.replace(u); await new Promise(() => { }); }
+} catch (e) { }
+const CFG = await fetch(H('cena.json')).then(r => r.json());
+
+/* ---------- renderer e cena ---------- */
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = CFG.exposicao ?? 1;
+renderer.xr.enabled = true;
+document.body.appendChild(renderer.domElement);
+document.body.appendChild(VRButton.createButton(renderer));
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xb9d2ea);
+const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.05, 300);
+camera.position.set(0, 1.6, 0);
+const rig = new THREE.Group(); rig.add(camera); scene.add(rig);
+scene.add(new THREE.HemisphereLight(0xdfe9f5, 0x8a8275, 0.25));   // preenchimento para o que nao tem lightmap
+
+/* ceu de dia procedural: nitido em qualquer resolucao.
+   O HDRI fica so para os reflexos (vidros, lataria, asfalto). Tecla C alterna para o HDRI. */
+const ceu = new THREE.Mesh(new THREE.SphereGeometry(250, 64, 32), new THREE.ShaderMaterial({
+  side: THREE.BackSide, depthWrite: false, fog: false,
+  uniforms: { uTempo: { value: 0 } },
+  vertexShader: `varying vec3 vDir;
+    void main(){ vDir = position; vec4 p = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position = p.xyww; }`,
+  fragmentShader: `varying vec3 vDir; uniform float uTempo;
+    float hash(vec3 p){ p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+    void main(){
+      vec3 d = normalize(vDir); float h = d.y;
+      vec3 zen = vec3(0.16, 0.36, 0.78), meio = vec3(0.38, 0.6, 0.92), hor = vec3(0.78, 0.86, 0.95);
+      vec3 col = mix(hor, meio, smoothstep(0.0, 0.25, h));
+      col = mix(col, zen, smoothstep(0.25, 0.95, h));
+      if (h < 0.0) col = mix(hor, vec3(0.55, 0.58, 0.6), smoothstep(0.0, -0.15, h));
+      gl_FragColor = vec4(col, 1.0);
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
+    }`
+}));
+ceu.renderOrder = -1; ceu.frustumCulled = false; scene.add(ceu);
+let hdriFundo = null;
+if (CFG.env) {
+  new RGBELoader().load(H(CFG.env), tex => {
+    tex.mapping = THREE.EquirectangularReflectionMapping;
+    const pm = new THREE.PMREMGenerator(renderer);
+    scene.environment = pm.fromEquirectangular(tex).texture;
+    hdriFundo = tex;
+  });
+}
+function alternarCeu() {
+  const usarHdri = ceu.visible && hdriFundo;
+  ceu.visible = !usarHdri; scene.background = usarHdri ? hdriFundo : new THREE.Color(0xb9d2ea);
+}
+
+/* ---------- carregar cena e lightmaps ---------- */
+const draco = new DRACOLoader().setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/gltf/');
+const gltf = await new GLTFLoader().setDRACOLoader(draco).loadAsync(H('cena.glb'), e => {
+  if (e.total) $('pct').textContent = Math.round(e.loaded / e.total * 100) + '%';
+});
+const tl = new THREE.TextureLoader(), lmTex = {};
+await Promise.all([...new Set(Object.values(CFG.lightmaps).map(v => v.lm))].map(f =>
+  tl.loadAsync(H(f)).then(t => { t.flipY = false; t.channel = 1; t.colorSpace = THREE.SRGBColorSpace; lmTex[f] = t; })));
+
+const lmMats = [], lentes = [], colisores = [];
+// objetos que se movem (carro abordado, equipamentos, personagens) nao tem lightmap: recebem uma luz ambiente
+// uniforme, na intensidade da area iluminada pelas torres (um "lightmap" branco de 1 pixel)
+const lmBranco = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1); lmBranco.needsUpdate = true; lmBranco.channel = 0;
+const iluminar = m => { if (m.metalness > .45) m.metalness = .45;      // metal puro so espelha o ceu
+  if (!m.lightMap) { m.lightMap = lmBranco; m.lightMapIntensity = CFG.luz_dinamica ?? 1.1; } return m; };
+gltf.scene.traverse(o => {
+  if (!o.isMesh) return;
+  let p = o, lm = null, estatico = false;
+  while (p) { lm = lm || CFG.lightmaps[p.name]; estatico = estatico || /_Estatico/.test(p.name); p = p.parent; }
+  const conv = m0 => {
+    const m = m0.clone();
+    if (/Vidro_Janela/.test(m.name)) { m.transparent = true; m.opacity = .12; m.depthWrite = false; m.roughness = .05; }      // vidros das janelas, do box e da portaria
+    if (/Espelho/.test(m.name)) { m.metalness = .95; m.roughness = .04; m.color.setScalar(.9); }      // espelheira do banheiro: reflete o ambiente
+    if (/Modelo_Notebook_Tela|Modelo_Celular|Modelo_Monitor/.test(m.name)) { m.color.setScalar(.12); m.emissiveIntensity = .8; }      // telas: so o brilho proprio, sem estourar
+    if (m.emissive) m.userData.emi0 = m.emissiveIntensity;
+    if (m.transmission > 0) { m.transmission = 0; m.transparent = true; m.opacity = 0.45; m.roughness = 0.05; }
+    m.envMapIntensity = CFG.env_intensidade ?? 0.35;
+    if (lm && o.geometry.attributes.uv1) {
+      m.lightMap = lmTex[lm.lm]; m.userData.lmBase = lm.max * CFG.lightmap_ganho;
+      m.lightMapIntensity = m.userData.lmBase; lmMats.push(m);
+    } else if (!lm) { iluminar(m); if (/Espelho/.test(m0.name)) m.metalness = .95; }      // pecas sem lightmap: luz uniforme (as que abrem recebem depois a luz do comodo, em abrir.js)
+    return m;
+  };
+  o.material = Array.isArray(o.material) ? o.material.map(conv) : conv(o.material);
+  if (estatico) { o.geometry.computeBoundsTree(); colisores.push(o); }
+});
+scene.add(gltf.scene); scene.updateMatrixWorld(true);
+
+/* ---------- colisao: malha simplificada (uma caixa por parede/movel/carro), invisivel ---------- */
+let alvosCol = colisores, colisaoAtiva = true;
+try {
+  const col = await new GLTFLoader().loadAsync(H('colisao.glb'));
+  col.scene.updateMatrixWorld(true);
+  const ms = []; col.scene.traverse(o => { if (o.isMesh) { o.geometry.computeBoundsTree(); ms.push(o); } });
+  if (ms.length) alvosCol = ms;
+} catch (e) { console.warn('colisao.glb nao encontrado; usando a geometria da cena para colisao'); }
+const rayC = new THREE.Raycaster(); rayC.firstHitOnly = true;
+const BAIXO = new THREE.Vector3(0, -1, 0), RAIO = 0.3, ALTURAS = [0.45, 1.2];
+const _o = new THREE.Vector3(), _d = new THREE.Vector3(), _n = new THREE.Vector3(), _m = new THREE.Vector3();
+function mover(dx, dz) {
+  if (!colisaoAtiva) { rig.position.x += dx; rig.position.z += dz; return; }
+  camera.getWorldPosition(V1);
+  _m.set(dx, 0, dz);
+  for (let it = 0; it < 2 && _m.lengthSq() > 1e-10; it++) {
+    _d.copy(_m).normalize(); let hit = null;
+    for (const h of ALTURAS) {
+      _o.set(V1.x, rig.position.y + h, V1.z); rayC.set(_o, _d); rayC.far = _m.length() + RAIO;
+      const r = rayC.intersectObjects(alvosCol, false)[0];
+      if (r && r.face && (!hit || r.distance < hit.distance)) hit = r;
+    }
+    if (!hit) break;
+    const livre = Math.max(0, hit.distance - RAIO);
+    rig.position.addScaledVector(_d, livre); V1.addScaledVector(_d, livre);
+    _m.addScaledVector(_d, -livre);
+    _n.copy(hit.face.normal).transformDirection(hit.object.matrixWorld); _n.y = 0;
+    if (_n.lengthSq() < 1e-6) { _m.set(0, 0, 0); break; }
+    _n.normalize(); _m.addScaledVector(_n, -_m.dot(_n));          // desliza ao longo da parede
+  }
+  rig.position.x += _m.x; rig.position.z += _m.z;
+  seguirChao();
+}
+function seguirChao() {
+  camera.getWorldPosition(V1);
+  _o.set(V1.x, rig.position.y + 1.0, V1.z); rayC.set(_o, BAIXO); rayC.far = 4;
+  const r = rayC.intersectObjects(alvosCol, false)[0];
+  if (r && r.point.y - rig.position.y < 0.45) rig.position.y += (r.point.y - rig.position.y) * 0.35;   // degraus ate 45 cm
+}
+window.__casa = { rig, camera, mover, ver(x, z, y, p = 0) { rig.position.set(x, 0, z); yaw = y; pitch = p; }, get colisao() { return colisaoAtiva; }, get alvos() { return alvosCol.length; } };   // diagnostico
+$('loading').remove();
+
+/* ---------- luz dinamica: lanterna ---------- */
+const lanterna = new THREE.SpotLight(0xfff2dd, 0, 28, 0.32, 0.5, 2);
+const alvoLant = new THREE.Object3D(); alvoLant.position.set(0, 0, -1);
+lanterna.target = alvoLant; camera.add(lanterna, alvoLant);
+let lantOn = false;
+function setLanterna(on, pai) {
+  lantOn = on; lanterna.intensity = on ? 40 : 0; $('bLant').classList.toggle('on', on);
+  if (pai && lanterna.parent !== pai) { pai.add(lanterna, alvoLant); }
+}
+
+/* ---------- vestigios (mesmas posicoes do prototipo; eixo Y para cima) ---------- */
+const INFO = [
+  { tag: 'Antes de subir', title: 'Conferir o mandado', pos: [-2.7, 1.9, 3.2],
+    body: 'Leia o mandado antes de qualquer coisa: endereço, bloco, número do apartamento, nome do morador, o que se procura e a validade. O mandado deve indicar a casa com a maior precisão possível (Código de Processo Penal, art. 243). Se o papel não confere com o local, a equipe não entra: comunica quem expediu.' },
+  { tag: 'Horário', title: 'Só durante o dia', pos: [-5.6, 1.9, -0.6],
+    body: 'A casa é asilo inviolável: com ordem judicial, só se entra durante o dia (Constituição, art. 5º, XI; CPP, art. 245). Cumprir mandado de busca domiciliar depois das 21h ou antes das 5h é crime de abuso de autoridade (Lei 13.869/2019, art. 22, § 1º, III).' },
+  { tag: 'Segurança', title: 'Corredor e escada', pos: [-5.0, 8.3, -0.8],
+    body: 'Antes de bater, a equipe de apoio cobre o corredor e a escada. Vizinhos que saírem para ver são orientados a voltar para casa; um deles pode ser chamado como testemunha.' },
+  { tag: 'Entrada', title: 'Bater, anunciar e ler', pos: [3.95, 8.4, -1.0],
+    body: 'Os executores mostram e leem o mandado ao morador e o intimam a abrir a porta (CPP, art. 245). Só diante da recusa a porta pode ser forçada (§ 2º). Sem ninguém em casa, um vizinho é chamado a acompanhar (§ 4º).' },
+  { tag: 'Busca', title: 'Só onde o objeto caberia', pos: [6.1, 8.2, -6.6],
+    body: 'A busca se limita ao que o mandado autoriza e aos lugares onde o objeto procurado poderia estar. O morador não deve ser incomodado além do indispensável (CPP, art. 248). Abra gavetas e armários com cuidado e deixe como encontrou.' },
+  { tag: 'Terceiros', title: 'Quarto do inquilino', pos: [2.45, 8.4, -5.2],
+    body: 'O cômodo ocupado por outra pessoa, que não é alvo do mandado, tem proteção própria (CPP, art. 246). Ponto a validar com os instrutores: como proceder quando o mandado não menciona o inquilino.' },
+  { tag: 'Dados', title: 'Celular e computador', pos: [3.0, 8.3, -8.3],
+    body: 'Apreender o aparelho não autoriza ler o conteúdo. O acesso aos dados depende de autorização judicial específica ou do consentimento do dono (Constituição, art. 5º, X e XII; Marco Civil da Internet, art. 7º).' },
+  { tag: 'Cadeia de custódia', title: 'Lacrar e relacionar', pos: [4.9, 8.2, -3.2],
+    body: 'Cada item apreendido é fotografado onde estava, descrito, embalado e lacrado com numeração (CPP, arts. 158-A a 158-F). Ao final lavra-se o auto circunstanciado, assinado por duas testemunhas (CPP, art. 245, § 7º).' },
+];
+const hotspots = new THREE.Group(); scene.add(hotspots);
+const hitMeshes = [];
+INFO.forEach((info, i) => {
+  const g = new THREE.Group(); g.position.fromArray(info.pos);
+  const mat = new THREE.MeshBasicMaterial({ color: 0xf0a340, transparent: true, depthWrite: false, toneMapped: false, fog: false });
+  const ring = new THREE.Mesh(new THREE.RingGeometry(.07, .088, 40), mat);
+  const dot = new THREE.Mesh(new THREE.CircleGeometry(.028, 20), mat);
+  const hit = new THREE.Mesh(new THREE.SphereGeometry(.3, 12, 8), new THREE.MeshBasicMaterial({ visible: false }));
+  hit.userData.index = i; g.add(ring, dot, hit); g.userData = { ring, mat }; hotspots.add(g); hitMeshes.push(hit);
+});
+const pc = document.createElement('canvas'); pc.width = 1200; pc.height = 760;
+const pTex = new THREE.CanvasTexture(pc); pTex.colorSpace = THREE.SRGBColorSpace;
+const panel = new THREE.Mesh(new THREE.PlaneGeometry(1.2, .76), new THREE.MeshBasicMaterial({ map: pTex, transparent: true, depthTest: false, toneMapped: false, fog: false }));
+panel.renderOrder = 999; panel.visible = false; scene.add(panel);
+function wrap(g, t, x, y, w, lh) { let line = ''; for (const wd of t.split(' ')) { const s = line ? line + ' ' + wd : wd; if (g.measureText(s).width > w && line) { g.fillText(line, x, y); y += lh; line = wd; } else line = s; } if (line) g.fillText(line, x, y); }
+function drawPanel(i) {
+  const g = pc.getContext('2d'), f = INFO[i];
+  g.clearRect(0, 0, 1200, 760); g.fillStyle = 'rgba(11,14,22,.94)'; g.beginPath(); g.roundRect(0, 0, 1200, 760, 18); g.fill();
+  g.fillStyle = '#f0a340'; g.fillRect(64, 64, 8, 64); g.font = '500 26px Consolas, monospace'; g.fillText(f.tag.toUpperCase(), 96, 92);
+  g.fillStyle = '#efe9df'; g.font = '700 56px "Segoe UI", sans-serif'; g.fillText(f.title, 96, 150);
+  g.fillStyle = 'rgba(239,233,223,.86)'; g.font = '400 32px "Segoe UI", sans-serif'; wrap(g, f.body, 96, 230, 1008, 46);
+  g.fillStyle = 'rgba(239,233,223,.5)'; g.font = '500 22px Consolas, monospace'; g.fillText('gatilho ou clique para fechar', 96, 704);
+  g.textAlign = 'right'; g.fillText('Treinamento · rascunho para validação', 1136, 704); g.textAlign = 'left'; pTex.needsUpdate = true;
+}
+const lidos = new Set(), V1 = new THREE.Vector3(), V2 = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0);
+// a 'camera' do usuario recebe a pose do headset a cada quadro (ja com a rotacao do rig);
+// a camera interna do XR (renderer.xr.getCamera) nao conhece o rig e invertia a direcao no Quest
+const viewer = () => camera;
+function showPanel(i) {
+  drawPanel(i); const c = viewer(); c.getWorldPosition(V1); c.getWorldDirection(V2); V2.y = 0; V2.normalize();
+  panel.position.copy(V1).addScaledVector(V2, 1.3); panel.position.y = V1.y - .05; panel.lookAt(V1.x, panel.position.y, V1.z); panel.visible = true;
+  lidos.add(i); hotspots.children[i].userData.mat.color.set(0x8f8a80); $('count').textContent = `${lidos.size} / ${INFO.length}`;
+}
+$('count').textContent = `0 / ${INFO.length}`;
+
+/* ---------- pontos de vista ---------- */
+let yaw = 0, pitch = 0;
+function irPara(nome) {
+  const c = CFG.cameras[nome]; if (!c) return;
+  const [x, y, z] = c.pos, [ax, ay, az] = c.alvo;
+  rig.position.set(x, Math.max(0, y - 1.6), z);
+  yaw = Math.atan2(-(ax - x), -(az - z)); pitch = Math.atan2(ay - y, Math.hypot(ax - x, az - z));
+}
+const NOMES = { Camera_Portaria: "Portaria", Camera_Rua: "Rua", Camera_Corredor: "Corredor", Camera_Sala: "Sala", Camera_Cozinha: "Cozinha", Camera_Quarto_1: "Quarto do casal", Camera_Quarto_2: "Quarto do inquilino", Camera_Banheiro: "Banheiro", Camera_Vizinho: "Vizinho 301" };
+Object.keys(CFG.cameras).forEach((k, i) => {
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = `${i + 1} · ${NOMES[k] || k}`;
+  b.onclick = () => irPara(k); $('vistas').appendChild(b);
+});
+irPara(new URLSearchParams(location.search).get("vista") || (CFG.cameras.Camera_Portaria ? "Camera_Portaria" : Object.keys(CFG.cameras)[0]));
+
+/* ---------- controles desktop ---------- */
+const keys = new Set(), ray = new THREE.Raycaster(); ray.firstHitOnly = true;
+let drag = null, inverterOlhar = 1;     // tecla I inverte a direcao de arrastar
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return; keys.add(e.code);
+  if (e.code === 'KeyF') setLanterna(!lantOn);
+  if (e.code === 'KeyH') toggleMarc();
+  if (e.code === 'KeyL') lmMats.forEach(m => m.lightMapIntensity = m.lightMapIntensity ? 0 : m.userData.lmBase * +$('lmg').value);
+  if (e.code === 'KeyI') inverterOlhar = -inverterOlhar;
+  if (e.code === 'KeyC') alternarCeu();
+  if (e.code === 'KeyN') colisaoAtiva = !colisaoAtiva;
+  if (e.code === 'Escape') panel.visible = false;
+  const n = +e.key; if (n >= 1 && n <= 9) irPara(Object.keys(CFG.cameras)[n - 1]);
+});
+addEventListener('keyup', e => keys.delete(e.code));
+const el = renderer.domElement;
+el.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, m: 0 }; el.setPointerCapture(e.pointerId); });
+el.addEventListener('pointermove', e => { if (!drag) { if (window.__abrir && !renderer.xr.isPresenting) { ray.setFromCamera(new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera); window.__abrir.apontarMouse(ray); } return; } const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY; drag.m += Math.abs(dx) + Math.abs(dy); yaw += dx * .004 * inverterOlhar; pitch = Math.max(-1.4, Math.min(1.4, pitch + dy * .004 * inverterOlhar)); });
+el.addEventListener('pointerup', e => {
+  if (drag && drag.m < 6) {
+    ray.setFromCamera(new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera);
+    if (window.__trein?.clique(ray)) { drag = null; return; }
+    if (window.__abrir?.clique(ray)) { drag = null; return; }
+    const h = hotspots.visible ? ray.intersectObjects(hitMeshes, false) : [];
+    if (h.length) showPanel(h[0].object.userData.index); else panel.visible = false;
+  }
+  drag = null;
+});
+function desktopMove(dt) {
+  let f = 0, s = 0;
+  if (keys.has('KeyW') || keys.has('ArrowUp')) f++; if (keys.has('KeyS') || keys.has('ArrowDown')) f--;
+  if (keys.has('KeyD')) s++; if (keys.has('KeyA')) s--;
+  if (keys.has('ArrowLeft')) yaw += 1.6 * dt; if (keys.has('ArrowRight')) yaw -= 1.6 * dt;
+  const v = (keys.has('ShiftLeft') || keys.has('ShiftRight') ? 8 : 4) * dt;   // anda 4 m/s, corre 8 m/s
+  if (f || s) mover((-Math.sin(yaw) * f + Math.cos(yaw) * s) * v, (-Math.cos(yaw) * f - Math.sin(yaw) * s) * v);
+}
+
+/* ---------- controles VR: teleporte, vestigios, lanterna ---------- */
+const reticulo = new THREE.Mesh(new THREE.RingGeometry(.18, .24, 32).rotateX(-Math.PI / 2),
+  new THREE.MeshBasicMaterial({ color: 0xf0a340, transparent: true, opacity: .8, depthWrite: false, fog: false }));
+reticulo.visible = false; scene.add(reticulo);
+const cmf = new XRControllerModelFactory(), tmpM = new THREE.Matrix4(), controles = [], grips = [];
+for (const i of [0, 1]) {
+  const c = renderer.xr.getController(i);
+  const linha = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, 0, -1)]), new THREE.LineBasicMaterial({ color: 0xf0a340 }));
+  linha.scale.z = 6; c.add(linha); c.userData.linha = linha;
+  c.addEventListener('selectstart', () => {
+    mirar(c);
+    window.__som?.desbloquear();                     // gatilho do Quest tambem libera o audio
+    if (window.__trein?.gatilho(ray, c)) return;
+    if (window.__trein?.painelAberto()) return;      // menu aberto: gatilho fora dos botoes nao teleporta
+    if (window.__abrir?.pegar(ray, c)) return;       // gaveta, porta de armario, porta de comodo, elevador
+    const h = hotspots.visible ? ray.intersectObjects(hitMeshes, false) : [];
+    if (h.length) return showPanel(h[0].object.userData.index);
+    if (panel.visible) { panel.visible = false; return; }
+    if (c.userData.mao === 'left') return;          // mao esquerda: so interage (o teleporte fica no gatilho direito)
+    const p = alvoTeleporte(c);
+    if (p) { camera.getWorldPosition(V1); rig.position.x += p.x - V1.x; rig.position.z += p.z - V1.z; rig.position.y = p.y; }
+  });
+  c.addEventListener('connected', e => { c.userData.mao = e.data.handedness; });
+  c.addEventListener('selectend', () => { if (!window.__abrir?.soltar(c)) window.__trein?.soltar?.(c); });
+  // grip (qualquer mao) = lanterna, sempre. O menu do treinamento fica nos botoes Y/B (ver vrMove).
+  c.addEventListener('squeezestart', () => { window.__som?.desbloquear(); setLanterna(!lantOn, c); });
+  rig.add(c); controles.push(c);
+  const grip = renderer.xr.getControllerGrip(i); grip.add(cmf.createControllerModel(grip)); rig.add(grip); grips.push(grip);
+  grip.addEventListener('connected', e => { grip.userData.mao = e.data.handedness; });
+}
+function mirar(c) { mirarEm(ray, c); }
+function mirarEm(r, c) { tmpM.identity().extractRotation(c.matrixWorld); r.ray.origin.setFromMatrixPosition(c.matrixWorld); r.ray.direction.set(0, 0, -1).applyMatrix4(tmpM); return r; }
+const raiosVR = [new THREE.Raycaster(), new THREE.Raycaster()];
+function alvoTeleporte(c) {
+  mirar(c); const h = ray.intersectObjects(alvosCol, false)[0];
+  if (!h || !h.face) return null;
+  const n = h.face.normal.clone().transformDirection(h.object.matrixWorld);
+  return n.y > 0.7 && h.distance < 20 ? h.point : null;
+}
+let snapOk = true; const botoesAntes = {};
+function vrMove(dt) {
+  const s = renderer.xr.getSession(); if (!s) return;
+  for (const src of s.inputSources) {
+    const gp = src.gamepad; if (!gp) continue;
+    // botao Y (esquerdo) ou B (direito) = menu do treinamento
+    const yb = !!gp.buttons[5]?.pressed, k = 'yb_' + src.handedness;
+    if (yb && !botoesAntes[k]) window.__trein?.menu();
+    botoesAntes[k] = yb;
+    // botao A (direito) = saca ou guarda a arma; botao X (esquerdo) = lanca granada de efeito moral
+    const ax = !!gp.buttons[4]?.pressed, k2 = 'ax_' + src.handedness;
+    if (ax && !botoesAntes[k2]) window.__trein?.botao?.(src.handedness);
+    botoesAntes[k2] = ax;
+    // apertar o analogico direito = recarregar a arma
+    const an = src.handedness === 'right' && !!gp.buttons[3]?.pressed;
+    if (an && !botoesAntes.analogico) window.__trein?.recarregar?.();
+    if (src.handedness === 'right') botoesAntes.analogico = an;
+    const x = gp.axes[2] ?? gp.axes[0] ?? 0, y = gp.axes[3] ?? gp.axes[1] ?? 0;
+    if (src.handedness === 'left' && Math.hypot(x, y) > .15) {
+      viewer().getWorldDirection(V2); V2.y = 0; V2.normalize();
+      mover((V2.x * -y - V2.z * x) * 2.5 * dt, (V2.z * -y + V2.x * x) * 2.5 * dt);
+    } else if (src.handedness === 'right') {
+      if (Math.abs(x) > .6 && snapOk) { snapOk = false; const a = x > 0 ? -Math.PI / 6 : Math.PI / 6; viewer().getWorldPosition(V1);
+        rig.position.sub(V1).applyAxisAngle(UP, a).add(V1); rig.rotation.y += a; yaw += a; }
+      if (Math.abs(x) < .3) snapOk = true;
+    }
+  }
+  // raio de cada controle nos menus 3D: realca o botao, mostra o ponto e encurta a linha ate o painel
+  const hs = window.__trein?.apontar ? window.__trein.apontar(controles.map((c, i) => mirarEm(raiosVR[i], c))) : [];
+  controles.forEach((c, i) => { if (c.userData.linha) c.userData.linha.scale.z = hs[i] ? hs[i].distance : 6; });
+  const menuAberto = window.__trein?.painelAberto?.();
+  const p = !menuAberto && controles[1] && !window.__abrir?.segurando(controles[1]) && alvoTeleporte(controles[1]);
+  reticulo.visible = !!p; if (p) reticulo.position.copy(p).y += .02;
+}
+renderer.xr.addEventListener('sessionend', () => { camera.position.set(0, 1.6, 0); reticulo.visible = false; });
+
+/* ---------- interface ---------- */
+function toggleMarc() { hotspots.visible = !hotspots.visible; $('bMarc').classList.toggle('on', hotspots.visible); }
+$('bLant').onclick = () => setLanterna(!lantOn, camera);
+$('bMarc').onclick = toggleMarc;
+$('bMin').onclick = () => { const m = $('hud').classList.toggle('min'); $('bMin').textContent = m ? 'Painel' : 'Recolher'; };
+$('exp').value = renderer.toneMappingExposure;
+$('exp').oninput = e => renderer.toneMappingExposure = +e.target.value;
+$('lmg').oninput = e => lmMats.forEach(m => m.lightMapIntensity = m.userData.lmBase * +e.target.value);
+addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+
+/* ---------- loop ---------- */
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
+  if (renderer.xr.isPresenting) vrMove(dt);
+  else { desktopMove(dt); rig.rotation.y = yaw; camera.rotation.set(pitch, 0, 0); }
+  viewer().getWorldPosition(V1);
+  ceu.position.copy(V1); ceu.material.uniforms.uTempo.value = t;
+  hotspots.children.forEach((g, i) => { g.lookAt(V1); g.userData.ring.scale.setScalar(1 + .18 * Math.sin(t * 3 + i)); });
+  window.__trein?.quadro();
+  window.__abrir?.quadro(renderer.xr.isPresenting ? controles.map((c, i) => ({ controle: c, ray: mirarEm(raiosVR[i], c) })) : null);
+  window.__som?.quadro(dt);
+  renderer.render(scene, camera);
+});
+
+/* ---------- sons (ambiente, posicionais, eventos) ---------- */
+import('./' + H('audio.js')).then(m => m.iniciarAudio({ scene, camera, renderer })).catch(e => console.warn('Áudio não carregou:', e));
+let somMudo = false;
+addEventListener('keydown', e => { if (e.code === 'KeyM' && window.__som) { somMudo = !somMudo; window.__som.mudo(somMudo); } });
+
+/* ---------- pecas que abrem: gavetas, armarios, portas, elevador ---------- */
+import('./' + H('abrir.js')).then(m => m.iniciarAbrir({
+  scene, camera, rig, renderer, cena: gltf.scene, CFG, estaticos: colisores, lmTex, colisao: () => alvosCol
+})).catch(e => console.error('Peças que abrem não carregaram:', e));
+window.__cena = { scene, camera, renderer, rig };
+
+/* ---------- motor do treinamento: entra na proxima etapa (mandado, personagens, variacoes, relatorio) ---------- */
+</script>
+</body>
+</html>

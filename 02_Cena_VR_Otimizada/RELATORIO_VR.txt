@@ -1,0 +1,48 @@
+BUSCA E APREENSAO - VERSAO VR OTIMIZADA
+
+DEPOIS: 48137 tris | 68 malhas | 284 slots de material (~draw calls) | 15 luzes
+
+Triangulos por colecao:
+  06_Sala                               12513
+  03_Portaria                           10129
+  08_Interativos                         6363
+  12_Vizinho_301                         5297
+  10_Quartos                             3120
+  01_Rua_Patio                           2443
+  14_Miudos                              2205
+  07_Cozinha_Servico                     1992
+  05_Apto_Estrutura                      1602
+  04_Corredor_Escada                      900
+  02_Predio                               789
+  11_Banheiro                             676
+  13_Vidros                               108
+
+Etapas:
+  - Grama instanciada removida de 0 gramados; subdivisao=1, remesh 0.16 m, decimate 35% na folhagem.
+  - Modificadores aplicados em 1191 objetos; textos e fios convertidos em malha.
+  - Bake de 0 materiais procedurais em texturas de imagem.
+  - 27 materiais com texturas CC0 convertidos para UV + PNG (cor, rugosidade, normal).
+  - UVs em caixa (escala real em metros) aplicadas em todas as malhas.
+  - Colisao: 218 caixas orientadas preparadas.
+  - 56 conjuntos interativos unidos (1 malha por conjunto).
+  - 835 objetos estaticos unidos em 1 malha por colecao (menos draw calls).
+  - Exportado: busca_VR.glb
+  - Exportado: busca_VR.fbx
+  - Colisao: 218 caixas, 2616 tris -> colisao.glb / colisao.fbx
+
+Proximos passos no motor (Unity/Unreal):
+  - Iluminacao: marcar a geometria estatica como Static e fazer bake de lightmaps
+    (Unity: ativar "Generate Lightmap UVs" no import do FBX). Manter dinamicas so:
+    giroflex (vermelho/azul), farois da viatura, TV e a lanterna do policial.
+  - O giroflex esta animado apenas no Blender (Cycles); recriar o pisca no motor
+    com um script alternando as luzes e a emissao das lentes.
+  - Colisao: use colisao.fbx (uma caixa por parede/piso/movel/carro).
+      Unity: arraste colisao.fbx para a cena, adicione Mesh Collider e desligue o Mesh Renderer.
+      Unreal: importe colisao.fbx e em Collision Complexity escolha "Use Complex Collision As Simple",
+              deixe o ator invisivel (Hidden in Game).
+  - Objetos interativos ja estao separados: colecao 08_Interativos (portas com a origem na
+    dobradica e material a apreender), cada conjunto com 1 malha presa a uma raiz. Os vazios P_* marcam pontos do treinamento.
+  - Neblina: usar a fog do motor no lugar do volume do Blender.
+  - Quest 3 standalone: alvo de ~750 mil tris e < 200 draw calls; se precisar,
+    desligar as casas vizinhas laterais ou gerar LODs (Unity LOD Group / Unreal Nanite
+    nao se aplica ao Quest).

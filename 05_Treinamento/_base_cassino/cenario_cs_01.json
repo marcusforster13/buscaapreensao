@@ -1,0 +1,1028 @@
+{
+  "id": "cs_01",
+  "titulo": "Cassino clandestino — denúncia de jogo de azar nos fundos de um bar",
+  "versao": "0.1",
+  "status": "rascunho para validação (itens com validar=true dependem do procedimento da instituição)",
+  "aprovacao": {
+    "pontos_minimos": 70,
+    "sem_falha_grave": true,
+    "validar": true
+  },
+  "base_legal": {
+    "_nota": "Resumo usado nos textos do treinamento. Conferir sempre com o texto oficial e com as normas internas.",
+    "LCP art. 50": "Decreto-Lei 3.688/1941: estabelecer ou explorar jogo de azar em lugar público ou acessível ao público. Prisão simples de 3 meses a 1 ano e multa; perda dos móveis e objetos de decoração do local.",
+    "LCP art. 50, § 2º": "Quem é encontrado participando do jogo, como ponteiro ou apostador: multa de R$ 2.000 a R$ 200.000 (redação da Lei 13.155/2015).",
+    "STF RE 966.177 (Tema 924)": "O STF discute se o art. 50 foi recepcionado pela Constituição. O julgamento começou em agosto de 2026 e foi suspenso por pedido de vista. Até decisão final, a norma segue em vigor. validar",
+    "CF art. 5º, XI": "A casa é asilo inviolável: ninguém entra sem consentimento do morador, salvo flagrante delito, desastre, socorro ou, de dia, ordem judicial.",
+    "CP art. 150, § 4º, III": "Também é 'casa' o compartimento não aberto ao público onde alguém exerce profissão ou atividade.",
+    "STF Tema 280 (RE 603.616)": "Entrada forçada sem mandado só é lícita com fundadas razões, justificadas depois, de que há flagrante no interior; senão, nulidade e responsabilidade do agente.",
+    "STJ HC 754.789 (Inf. 760)": "A parte de estabelecimento comercial aberta ao público não tem a proteção do domicílio.",
+    "STJ HC 598.051": "O consentimento para entrar deve ser livre e documentado; o ônus de provar é do Estado. A obrigação de gravar foi afastada em parte pelo STF. validar",
+    "Lei 9.099/1995, art. 69": "Infração de menor potencial ofensivo: termo circunstanciado e encaminhamento ao juizado; não se impõe prisão em flagrante a quem assume o compromisso de comparecer.",
+    "CPP arts. 158-A a 158-F": "Cadeia de custódia: reconhecimento, isolamento, fixação, coleta, acondicionamento com lacre numerado, transporte e recebimento.",
+    "CPP art. 244": "Busca pessoal sem mandado exige fundada suspeita de arma ou de objetos que constituam corpo de delito.",
+    "CF art. 5º, X e XII; STF Tema 977": "O acesso ao conteúdo de celular ou computador apreendido depende de ordem judicial ou consentimento. validar",
+    "Súmula Vinculante 11": "Algemas só em caso de resistência, fundado receio de fuga ou perigo à integridade, com justificativa por escrito.",
+    "Lei 13.060/2014": "Uso de instrumentos de menor potencial ofensivo; não é legítimo usar arma de fogo contra pessoa em fuga desarmada ou que não represente risco imediato de morte ou lesão grave.",
+    "Portaria Interministerial 4.226/2010": "Diretrizes de uso da força: legalidade, necessidade, proporcionalidade, moderação e conveniência; disparo de advertência não é prática aceitável; socorro imediato ao ferido. validar",
+    "CP art. 25": "Legítima defesa: repelir, com os meios necessários e moderadamente, injusta agressão atual ou iminente.",
+    "CP art. 333": "Corrupção ativa: oferecer ou prometer vantagem indevida a funcionário público. Reclusão de 2 a 12 anos.",
+    "CP art. 317": "Corrupção passiva: aceitar vantagem indevida em razão da função.",
+    "Lei 10.826/2003, art. 14": "Porte ilegal de arma de fogo de uso permitido. Reclusão de 2 a 4 anos.",
+    "Lei 13.869/2019, art. 22": "Abuso de autoridade: invadir ou entrar em imóvel alheio sem determinação judicial ou fora das condições da lei.",
+    "Leis 13.756/2018 e 14.790/2023": "Apostas de quota fixa autorizadas pelo Ministério da Fazenda são legais. Cassino físico, bingo e caça-níqueis continuam proibidos."
+  },
+  "fases": [
+    {
+      "id": "F1",
+      "nome": "Chegada e planejamento",
+      "acoes": [
+        {
+          "id": "comunicar_chegada",
+          "texto": "Informar a chegada ao local pelo rádio",
+          "pontos": 2
+        },
+        {
+          "id": "pedir_apoio",
+          "texto": "Pedir apoio para cobrir a saída dos fundos antes de entrar",
+          "pontos": 4,
+          "validar": true
+        },
+        {
+          "id": "planejar_parceiro",
+          "texto": "Combinar a entrada com o parceiro (não entrar sozinho)",
+          "pontos": 3,
+          "validar": true
+        }
+      ],
+      "erros": [
+        {
+          "id": "entrar_sozinho",
+          "texto": "Deixar o parceiro na viatura e entrar sozinho",
+          "pontos": -4,
+          "validar": true
+        }
+      ]
+    },
+    {
+      "id": "F2",
+      "nome": "Bar aberto ao público e decisão de entrada",
+      "acoes": [
+        {
+          "id": "identificar_se",
+          "texto": "Identificar-se e explicar o motivo à funcionária do bar",
+          "pontos": 3
+        },
+        {
+          "id": "observar_indicios",
+          "texto": "Observar a porta dos fundos: o que se vê e o que se ouve",
+          "pontos": 4,
+          "base": "STF Tema 280"
+        },
+        {
+          "id": "pedir_consentimento",
+          "texto": "Pedir autorização para entrar e registrar a resposta",
+          "pontos": 3,
+          "condicao": "variacao.indicios == 'nenhum'",
+          "base": "STJ HC 598.051",
+          "validar": true
+        },
+        {
+          "id": "decisao_entrada",
+          "texto": "Decidir corretamente se pode entrar no compartimento fechado",
+          "pontos": 10,
+          "base": "CF art. 5º, XI; CP art. 150, § 4º, III; STF Tema 280"
+        },
+        {
+          "id": "encaminhar_denuncia",
+          "texto": "Sem base para entrar: registrar e encaminhar a denúncia à Polícia Civil",
+          "pontos": 5,
+          "condicao": "variacao.entra == 'nao'"
+        }
+      ],
+      "erros": [
+        {
+          "id": "abordagem_hostil",
+          "texto": "Abordagem hostil ou ofensiva",
+          "pontos": -4
+        },
+        {
+          "id": "deixou_de_agir",
+          "texto": "Deixar de entrar havendo flagrante visível ou consentimento",
+          "pontos": -6
+        }
+      ],
+      "falhas_graves": [
+        {
+          "id": "entrada_ilegal",
+          "texto": "Entrar em compartimento fechado sem consentimento, mandado ou fundadas razões",
+          "pontos": -25,
+          "base": "CF art. 5º, XI; STF Tema 280; Lei 13.869/2019, art. 22"
+        }
+      ]
+    },
+    {
+      "id": "F3",
+      "nome": "Contenção e uso da força",
+      "acoes": [
+        {
+          "id": "anunciar",
+          "texto": "Anunciar a presença policial com comando claro e sem ameaças",
+          "pontos": 4,
+          "condicao": "variacao.entra == 'sim'"
+        },
+        {
+          "id": "comando_verbal",
+          "texto": "Dar comando verbal ao homem armado antes de qualquer outro meio",
+          "pontos": 5,
+          "condicao": "variacao.seguranca == 'armado_rende'",
+          "base": "Portaria 4.226/2010"
+        },
+        {
+          "id": "resposta_proporcional",
+          "texto": "Responder à agressão armada de forma necessária e proporcional",
+          "pontos": 6,
+          "condicao": "variacao.seguranca == 'armado_reage' || variacao.seguranca == 'confronto'",
+          "base": "CP art. 25; Lei 13.060/2014",
+          "validar": true
+        },
+        {
+          "id": "socorro",
+          "texto": "Pedir socorro médico para o ferido e comunicar o disparo",
+          "pontos": 5,
+          "condicao": "variacao.ferido == 'sim'",
+          "base": "Portaria 4.226/2010",
+          "validar": true
+        },
+        {
+          "id": "desarmar_algemar",
+          "texto": "Recolher a arma com segurança e algemar quem estava armado, justificando",
+          "pontos": 4,
+          "condicao": "variacao.arma == 'sim'",
+          "base": "Súmula Vinculante 11"
+        },
+        {
+          "id": "ordem_verbal_saida",
+          "texto": "Conter com ordem verbal quem tentava sair do salão, sem apontar a arma",
+          "pontos": 3,
+          "condicao": "variacao.entra == 'sim'",
+          "base": "Lei 13.060/2014, art. 2º; Portaria 4.226/2010",
+          "validar": true
+        },
+        {
+          "id": "reunir_pessoas",
+          "texto": "Reunir as pessoas em um ponto, com as mãos visíveis",
+          "pontos": 4,
+          "condicao": "variacao.entra == 'sim'"
+        },
+        {
+          "id": "fuga_contida",
+          "texto": "Apostadores que tentaram sair foram contidos pela equipe de apoio",
+          "pontos": 3,
+          "condicao": "variacao.fuga == 'tentam_sair'"
+        },
+        {
+          "id": "resposta_sala",
+          "texto": "Reagir à emboscada na sala reservada de forma necessária e proporcional, usando a parede como proteção",
+          "pontos": 6,
+          "condicao": "variacao.sala == 'aberta'",
+          "base": "CP art. 25; Lei 13.060/2014",
+          "validar": true
+        }
+      ],
+      "erros": [
+        {
+          "id": "apostadores_fugiram",
+          "texto": "Apostadores fugiram pela saída dos fundos, que não estava coberta",
+          "pontos": -5
+        },
+        {
+          "id": "disparo_sem_alvo",
+          "texto": "Disparo de advertência ou sem alvo legítimo",
+          "pontos": -8,
+          "base": "Portaria 4.226/2010"
+        },
+        {
+          "id": "atingido",
+          "texto": "O policial foi atingido (ficou exposto ou não reagiu à agressão armada)",
+          "pontos": -6
+        },
+        {
+          "id": "algemas_indevidas",
+          "texto": "Algemar pessoa colaborativa, sem resistência, risco de fuga ou perigo",
+          "pontos": -5,
+          "base": "Súmula Vinculante 11"
+        },
+        {
+          "id": "revista_sem_suspeita",
+          "texto": "Revista pessoal generalizada, sem fundada suspeita",
+          "pontos": -3,
+          "base": "CPP art. 244",
+          "validar": true
+        },
+        {
+          "id": "arma_sem_ameaca",
+          "texto": "Arma apontada para pessoa desarmada que só tentava sair (força acima do necessário)",
+          "pontos": -2,
+          "base": "Lei 13.060/2014, art. 2º",
+          "validar": true
+        }
+      ],
+      "falhas_graves": [
+        {
+          "id": "disparo_injustificado",
+          "texto": "Disparo contra pessoa que não representava risco imediato",
+          "pontos": -40,
+          "base": "Lei 13.060/2014, art. 2º, parágrafo único; CP art. 25"
+        },
+        {
+          "id": "granada_desproporcional",
+          "texto": "Granada de efeito moral em local fechado contra pessoas que não resistiam",
+          "pontos": -20,
+          "base": "Lei 13.060/2014; Portaria 4.226/2010",
+          "validar": true
+        },
+        {
+          "id": "omissao_socorro",
+          "texto": "Não providenciar socorro ao ferido",
+          "pontos": -20,
+          "base": "Portaria 4.226/2010; CP art. 135"
+        }
+      ]
+    },
+    {
+      "id": "F4",
+      "nome": "Identificação das pessoas",
+      "acoes": [
+        {
+          "id": "identificar_responsavel",
+          "texto": "Identificar quem explora o local",
+          "pontos": 5,
+          "condicao": "variacao.entra == 'sim'",
+          "base": "LCP art. 50"
+        },
+        {
+          "id": "informar_direitos",
+          "texto": "Informar o motivo da condução e os direitos (silêncio, advogado, avisar a família)",
+          "pontos": 3,
+          "condicao": "variacao.entra == 'sim' && variacao.responsavel == 'presente'",
+          "base": "CF art. 5º, LXIII"
+        },
+        {
+          "id": "qualificar_funcionaria",
+          "texto": "Qualificar a funcionária e registrar o que ela informou, sem tratá-la como dona",
+          "pontos": 3,
+          "condicao": "variacao.entra == 'sim' && variacao.responsavel == 'ausente'",
+          "validar": true
+        },
+        {
+          "id": "qualificar_apostadores",
+          "texto": "Qualificar os apostadores encontrados no jogo",
+          "pontos": 4,
+          "condicao": "variacao.entra == 'sim'",
+          "base": "LCP art. 50, § 2º"
+        },
+        {
+          "id": "prisao_corrupcao",
+          "texto": "Dar voz de prisão em flagrante pela oferta de dinheiro",
+          "pontos": 6,
+          "condicao": "variacao.suborno == 'sim'",
+          "base": "CP art. 333"
+        }
+      ],
+      "erros": [
+        {
+          "id": "ignorar_suborno",
+          "texto": "Ignorar a oferta de dinheiro, sem dar voz de prisão",
+          "pontos": -6,
+          "base": "CP art. 333"
+        },
+        {
+          "id": "funcionaria_como_dona",
+          "texto": "Tratar a funcionária como exploradora do jogo sem elementos",
+          "pontos": -3,
+          "validar": true
+        }
+      ],
+      "falhas_graves": [
+        {
+          "id": "aceitar_suborno",
+          "texto": "Aceitar a vantagem oferecida",
+          "pontos": -100,
+          "base": "CP art. 317"
+        }
+      ]
+    },
+    {
+      "id": "F5",
+      "nome": "Preservação e apreensão",
+      "acoes": [
+        {
+          "id": "relacionar_maquinas",
+          "texto": "Fotografar, contar, relacionar e lacrar as máquinas sem abri-las",
+          "pontos": 5,
+          "condicao": "variacao.entra == 'sim'",
+          "base": "CPP arts. 158-A a 158-F",
+          "validar": true
+        },
+        {
+          "id": "apreender_dinheiro",
+          "texto": "Contar o dinheiro na presença do responsável ou de testemunha e lacrar",
+          "pontos": 5,
+          "condicao": "variacao.entra == 'sim'",
+          "base": "CPP art. 158-B"
+        },
+        {
+          "id": "fichas_recuperadas",
+          "texto": "Perceber que as fichas foram escondidas e mandar devolver, sem revista indevida",
+          "pontos": 2,
+          "condicao": "variacao.entra == 'sim'",
+          "validar": true
+        },
+        {
+          "id": "apreender_anotacoes",
+          "texto": "Arrecadar fichas e cadernos de anotações",
+          "pontos": 3,
+          "condicao": "variacao.entra == 'sim'"
+        },
+        {
+          "id": "apreender_eletronicos",
+          "texto": "Apreender celular, computador e gravador das câmeras sem acessar o conteúdo",
+          "pontos": 4,
+          "condicao": "variacao.entra == 'sim' && variacao.responsavel == 'presente'",
+          "base": "CF art. 5º, XII; STF Tema 977"
+        },
+        {
+          "id": "escritorio_correto",
+          "texto": "Escritório trancado: abrir com quem tem a chave ou preservar e informar à autoridade",
+          "pontos": 4,
+          "condicao": "variacao.entra == 'sim'",
+          "validar": true
+        },
+        {
+          "id": "cofre_correto",
+          "texto": "Cofre trancado: pedir a quem sabe o segredo que abra ou lacrar fechado e informar à autoridade",
+          "pontos": 4,
+          "condicao": "variacao.entra == 'sim'",
+          "base": "CPP arts. 6º, 158-A a 158-F e 240 a 245",
+          "validar": true
+        },
+        {
+          "id": "apreender_dinheiro_cofre",
+          "texto": "Contar e lacrar o dinheiro do cofre, na frente do responsável",
+          "pontos": 3,
+          "condicao": "variacao.entra == 'sim' && variacao.responsavel == 'presente'",
+          "base": "CPP art. 158-B"
+        },
+        {
+          "id": "localizar_sala_secreta",
+          "texto": "Vistoriar todos os cômodos e localizar a sala escondida atrás da estante",
+          "pontos": 4,
+          "condicao": "variacao.entra == 'sim'",
+          "validar": true
+        },
+        {
+          "id": "apreender_dinheiro_secreto",
+          "texto": "Apreender, contar e lacrar o dinheiro escondido na sala reservada",
+          "pontos": 3,
+          "condicao": "variacao.entra == 'sim'",
+          "base": "CPP art. 158-B"
+        }
+      ],
+      "erros": [
+        {
+          "id": "violar_maquinas",
+          "texto": "Abrir as máquinas e mexer no interior antes da perícia",
+          "pontos": -5,
+          "base": "CPP art. 158-A",
+          "validar": true
+        },
+        {
+          "id": "dinheiro_sem_contagem",
+          "texto": "Recolher dinheiro sem contar na frente de alguém e sem lacrar",
+          "pontos": -8,
+          "base": "CPP art. 158-B"
+        },
+        {
+          "id": "arrombar_escritorio",
+          "texto": "Arrombar o escritório sem necessidade",
+          "pontos": -4,
+          "validar": true
+        },
+        {
+          "id": "forcar_cofre",
+          "texto": "Forçar a abertura do cofre por conta própria",
+          "pontos": -4,
+          "validar": true
+        }
+      ],
+      "falhas_graves": [
+        {
+          "id": "acesso_sem_ordem",
+          "texto": "Vasculhar o conteúdo do celular ou do computador sem ordem judicial",
+          "pontos": -20,
+          "base": "CF art. 5º, X e XII; STF Tema 977"
+        }
+      ]
+    },
+    {
+      "id": "F6",
+      "nome": "Enquadramento e condução",
+      "acoes": [
+        {
+          "id": "enquadramento_correto",
+          "texto": "Enquadramento correto da ocorrência",
+          "pontos": 10,
+          "condicao": "variacao.entra == 'sim'",
+          "base": "LCP art. 50; Lei 9.099/1995, art. 69; CP art. 333; Lei 10.826/2003"
+        },
+        {
+          "id": "algemas_criterio",
+          "texto": "Conduzir sem algemas quem colabora",
+          "pontos": 3,
+          "condicao": "variacao.entra == 'sim' && variacao.responsavel == 'presente'",
+          "base": "Súmula Vinculante 11"
+        },
+        {
+          "id": "registro_bo",
+          "texto": "Registrar a ocorrência e entregar a relação do material apreendido",
+          "pontos": 3,
+          "condicao": "variacao.entra == 'sim'"
+        }
+      ],
+      "erros": [
+        {
+          "id": "enquadramento_errado",
+          "texto": "Enquadramento incorreto",
+          "pontos": -6
+        }
+      ],
+      "falhas_graves": [
+        {
+          "id": "prisao_indevida",
+          "texto": "Prender e algemar todos, inclusive apostadores, por contravenção",
+          "pontos": -20,
+          "base": "Lei 9.099/1995, art. 69, parágrafo único; Súmula Vinculante 11"
+        },
+        {
+          "id": "liberar_sem_registro",
+          "texto": "Liberar todos sem registrar a ocorrência",
+          "pontos": -20,
+          "base": "CP art. 319"
+        }
+      ]
+    }
+  ],
+  "variacoes": {
+    "indicios": [
+      "visiveis",
+      "visiveis",
+      "nenhum"
+    ],
+    "consentimento": [
+      "franqueia",
+      "nega"
+    ],
+    "seguranca": [
+      "desarmado",
+      "armado_rende",
+      "armado_reage",
+      "confronto"
+    ],
+    "fuga": [
+      "colaboram",
+      "tentam_sair"
+    ],
+    "responsavel": [
+      "presente",
+      "presente",
+      "ausente"
+    ],
+    "suborno": [
+      "nao",
+      "sim"
+    ]
+  },
+  "historia": [
+    {
+      "titulo": "Ocorrência 1 de 4 · Flagrante visível",
+      "texto": "Denúncia de jogo de azar nos fundos de um bar. O bar é aberto ao público; a porta dos fundos, não. Observe antes de decidir.",
+      "variacao": {
+        "indicios": "visiveis",
+        "consentimento": "franqueia",
+        "seguranca": "desarmado",
+        "fuga": "colaboram",
+        "responsavel": "presente",
+        "suborno": "nao"
+      }
+    },
+    {
+      "titulo": "Ocorrência 2 de 4 · Só a denúncia",
+      "texto": "Mesma denúncia, outro dia. Desta vez a porta está fechada e não se ouve nada. Denúncia anônima sozinha não autoriza a entrada.",
+      "variacao": {
+        "indicios": "nenhum",
+        "consentimento": "nega",
+        "seguranca": "desarmado",
+        "fuga": "colaboram",
+        "responsavel": "ausente",
+        "suborno": "nao"
+      }
+    },
+    {
+      "titulo": "Ocorrência 3 de 4 · Resistência",
+      "texto": "Há flagrante visível, gente tentando sair pelos fundos, um homem armado e uma oferta de dinheiro. Use só a força necessária.",
+      "variacao": {
+        "indicios": "visiveis",
+        "consentimento": "nega",
+        "seguranca": "armado_reage",
+        "fuga": "tentam_sair",
+        "responsavel": "presente",
+        "suborno": "sim"
+      }
+    },
+    {
+      "titulo": "Ocorrência 4 de 4 · Confronto armado",
+      "texto": "Ao anúncio, um homem saca e atira; outro vem do depósito. Proteja-se atrás das paredes, atire só em quem ameaça e cuide de quem está em volta. Depois, socorro e comunicação.",
+      "variacao": {
+        "indicios": "visiveis",
+        "consentimento": "nega",
+        "seguranca": "confronto",
+        "fuga": "colaboram",
+        "responsavel": "presente",
+        "suborno": "nao"
+      }
+    }
+  ],
+  "observacao_porta": {
+    "visiveis": "A porta está entreaberta. Ouve-se o som eletrônico das máquinas e, pela fresta, veem-se pessoas sentadas diante de telas acesas e dinheiro sobre uma mesa.",
+    "nenhum": "A porta está fechada. Não se ouve nada e não há como ver o interior. Tudo o que existe é a denúncia anônima."
+  },
+  "dialogos": {
+    "parceiro": [
+      {
+        "fala": "Vamos entrar juntos pela frente. Antes, peço apoio para cobrir os fundos.",
+        "acao": "planejar_parceiro"
+      },
+      {
+        "fala": "Fica na viatura. Eu entro sozinho e te chamo.",
+        "erro": "entrar_sozinho",
+        "feedback": "Não entre sozinho em local com várias pessoas e possível segurança armado. Peça apoio para os fundos e entre com o parceiro."
+      }
+    ],
+    "resposta_parceiro": "Positivo. Vou junto com você.",
+    "abertura": [
+      {
+        "fala": "Boa noite. Polícia Militar. Recebemos uma denúncia e viemos verificar.",
+        "acao": "identificar_se"
+      },
+      {
+        "fala": "Cadê o cassino? Abre logo essa porta!",
+        "erro": "abordagem_hostil",
+        "feedback": "Identifique-se e explique o motivo. O bar é aberto ao público: não há por que começar com hostilidade."
+      }
+    ],
+    "resposta_abertura": "Boa noite… pois não?",
+    "pergunta_fundos": "O que funciona atrás daquela porta?",
+    "resposta_fundos": {
+      "franqueia": "Tem umas maquininhas lá atrás… Eu só trabalho aqui no balcão.",
+      "nega": "Lá é depósito. Não tem nada, não."
+    },
+    "pedido_consentimento": "A senhora autoriza a nossa entrada nos fundos? Vou registrar a sua resposta.",
+    "resposta_consentimento": {
+      "franqueia": "Pode entrar. Eu não quero problema pra mim.",
+      "nega": "Não posso. O dono não deixa ninguém entrar lá."
+    },
+    "decisao_entrada": [
+      {
+        "id": "flagrante",
+        "fala": "Entrar: vi e ouvi o jogo acontecendo (fundadas razões de flagrante)"
+      },
+      {
+        "id": "consentimento",
+        "fala": "Entrar: a funcionária autorizou e a autorização foi registrada"
+      },
+      {
+        "id": "forcar",
+        "fala": "Entrar de qualquer jeito: a denúncia basta"
+      },
+      {
+        "id": "nao_entrar",
+        "fala": "Não entrar: registrar, comunicar e encaminhar a denúncia à Polícia Civil"
+      }
+    ],
+    "decisao_entrada_explicacao": {
+      "flagrante": "Com o jogo visível e audível há fundadas razões de flagrante: a entrada é lícita e deve ser justificada no registro (STF Tema 280).",
+      "consentimento": "Sem sinais externos, a entrada depende de consentimento livre e documentado de quem responde pelo local naquele momento.",
+      "nao_entrar": "Denúncia anônima, sozinha, não autoriza entrar em compartimento fechado. Registre e encaminhe para investigação e eventual mandado."
+    },
+    "anuncio": [
+      {
+        "fala": "Polícia Militar! Todos parados, mãos onde eu possa ver. Ninguém vai se machucar.",
+        "acao": "anunciar"
+      },
+      {
+        "fala": "Todo mundo no chão, bando de vagabundo!",
+        "erro": "abordagem_hostil",
+        "feedback": "Comando firme e claro, sem ofensa: a maioria ali é apostador, sujeito apenas a multa."
+      },
+      {
+        "fala": "(Entrar sem dizer nada)"
+      }
+    ],
+    "armado": [
+      {
+        "fala": "Polícia! Mãos na cabeça, devagar. Não toque na arma.",
+        "acao": "comando_verbal"
+      },
+      {
+        "fala": "(Sacar a arma e atirar)"
+      }
+    ],
+    "resposta_armado": "Calma, calma! Eu não vou fazer nada.",
+    "pos_arma": [
+      {
+        "fala": "Recolher a arma com segurança, algemar pelo risco concreto e dar voz de prisão por porte ilegal",
+        "acao": "desarmar_algemar"
+      },
+      {
+        "fala": "Só tomar a arma e mandar ele ficar com os outros"
+      }
+    ],
+    "socorro": [
+      {
+        "fala": "Rádio: pedir socorro médico, comunicar o disparo e preservar o local",
+        "acao": "socorro"
+      },
+      {
+        "fala": "Deixar para depois e seguir com a apreensão",
+        "falha": "omissao_socorro"
+      }
+    ],
+    "apostador": [
+      {
+        "id": "reunir",
+        "fala": "Peço que fique junto à parede, com as mãos visíveis. É rápido."
+      },
+      {
+        "id": "qualificar",
+        "fala": "Seu documento, por favor. Vou anotar seus dados."
+      },
+      {
+        "id": "algemar",
+        "fala": "Algemar"
+      },
+      {
+        "id": "revistar",
+        "fala": "Revistar bolsos e carteira"
+      }
+    ],
+    "resposta_apostador": {
+      "reunir": "Tá bom, seu policial.",
+      "qualificar": "Tá aqui. Eu só vim jogar um pouquinho…",
+      "devolver": "Tá… tá aqui. Desculpa."
+    },
+    "responsavel": {
+      "quem": "Quem é o responsável por este lugar?",
+      "resposta_quem": "Sou eu que tomo conta. O que é que tá acontecendo?",
+      "direitos": "O senhor será conduzido à delegacia por exploração de jogo de azar. Pode ficar em silêncio, chamar um advogado e avisar a família.",
+      "resposta_direitos": "Eu quero ligar pro meu advogado."
+    },
+    "funcionaria": [
+      {
+        "fala": "Quem é o dono e como falar com ele? Vou anotar seus dados e o que a senhora informar.",
+        "acao": "qualificar_funcionaria",
+        "tambem": "identificar_responsavel"
+      },
+      {
+        "fala": "A senhora é a responsável. Está presa.",
+        "erro": "funcionaria_como_dona",
+        "feedback": "Ela diz ser apenas empregada. Qualifique, registre o que informar e deixe a definição para a autoridade policial."
+      }
+    ],
+    "resposta_funcionaria": "O dono só vem de manhã buscar o dinheiro. Eu tenho o telefone dele.",
+    "suborno_oferta": "Chefe, vamos resolver isso aqui mesmo. Tem cinco mil na gaveta. Ninguém precisa ficar sabendo.",
+    "suborno": [
+      {
+        "fala": "Isso é corrupção ativa. O senhor está preso em flagrante.",
+        "acao": "prisao_corrupcao"
+      },
+      {
+        "fala": "Guarda isso. Não quero saber.",
+        "erro": "ignorar_suborno",
+        "feedback": "A oferta já consuma o crime do art. 333. Cabe voz de prisão em flagrante, com o parceiro como testemunha."
+      },
+      {
+        "fala": "(Aceitar o dinheiro)",
+        "falha": "aceitar_suborno"
+      }
+    ],
+    "maquinas": [
+      {
+        "fala": "Fotografar, contar e relacionar as máquinas, e lacrar sem abrir",
+        "acao": "relacionar_maquinas"
+      },
+      {
+        "fala": "Abrir as máquinas agora e tirar o dinheiro e as placas",
+        "erro": "violar_maquinas",
+        "feedback": "Preserve o vestígio como foi encontrado: quem abre e examina é a perícia."
+      },
+      {
+        "fala": "Deixar as máquinas e levar só o dinheiro"
+      }
+    ],
+    "dinheiro": [
+      {
+        "fala": "Fotografar onde está, contar na frente do responsável ou de testemunha e lacrar em envelope numerado",
+        "acao": "apreender_dinheiro"
+      },
+      {
+        "fala": "Guardar no bolso do colete e contar na delegacia",
+        "erro": "dinheiro_sem_contagem",
+        "feedback": "Dinheiro se conta no local, na frente de alguém, e segue lacrado: protege a prova e protege você."
+      }
+    ],
+    "eletronico": [
+      {
+        "fala": "Apreender sem acessar o conteúdo e lacrar",
+        "ok": true
+      },
+      {
+        "fala": "Abrir conversas e arquivos para procurar provas",
+        "falha": "acesso_sem_ordem"
+      }
+    ],
+    "escritorio": [
+      {
+        "id": "pedir",
+        "fala": "Pedir a quem tem a chave que abra, registrando"
+      },
+      {
+        "id": "preservar",
+        "fala": "Manter fechado, preservar e informar à autoridade policial"
+      },
+      {
+        "id": "arrombar",
+        "fala": "Arrombar a porta"
+      }
+    ],
+    "resposta_chave": "Tá bom… eu abro.",
+    "decisao": [
+      {
+        "id": "tco",
+        "fala": "Jogo de azar (LCP art. 50): conduzir o responsável e o material à delegacia para o termo circunstanciado; apostadores qualificados"
+      },
+      {
+        "id": "tco_corrupcao",
+        "fala": "O mesmo, mais prisão em flagrante por corrupção ativa (CP art. 333)"
+      },
+      {
+        "id": "tco_porte",
+        "fala": "O mesmo, mais prisão em flagrante por porte ilegal de arma (Lei 10.826/2003)"
+      },
+      {
+        "id": "tco_corrupcao_porte",
+        "fala": "O mesmo, mais prisões em flagrante por corrupção ativa e por porte ilegal de arma"
+      },
+      {
+        "id": "prender_todos",
+        "fala": "Prender e algemar todos em flagrante, inclusive os apostadores"
+      },
+      {
+        "id": "liberar",
+        "fala": "Orientar e liberar todos, sem registro"
+      }
+    ],
+    "decisao_explicacao": {
+      "tco": "Jogo de azar é contravenção: termo circunstanciado, sem prisão em flagrante para quem se compromete a comparecer. O apostador responde só por multa.",
+      "tco_corrupcao": "Além da contravenção, a oferta de dinheiro é crime de corrupção ativa: prisão em flagrante.",
+      "tco_porte": "Além da contravenção, o porte ilegal de arma é crime: prisão em flagrante de quem portava.",
+      "tco_corrupcao_porte": "Além da contravenção, houve dois crimes: corrupção ativa e porte ilegal de arma, cada um com seu preso em flagrante."
+    },
+    "algemas": [
+      {
+        "fala": "Conduzir sem algemas: ele colabora e não há risco de fuga nem perigo",
+        "acao": "algemas_criterio"
+      },
+      {
+        "fala": "Algemar por padrão",
+        "erro": "algemas_indevidas",
+        "feedback": "Algemas só com resistência, risco de fuga ou perigo, e com justificativa escrita (Súmula Vinculante 11)."
+      }
+    ],
+    "registro": [
+      {
+        "fala": "Registrar a ocorrência e entregar a relação do material apreendido",
+        "acao": "registro_bo"
+      },
+      {
+        "fala": "Encerrar sem entregar relação"
+      }
+    ],
+    "cofre": [
+      {
+        "id": "pedir",
+        "fala": "Pedir ao responsável que abra o cofre, registrando"
+      },
+      {
+        "id": "lacrar",
+        "fala": "Lacrar o cofre fechado, relacionar para apreensão e informar à autoridade policial"
+      },
+      {
+        "id": "forcar",
+        "fala": "Forçar a abertura do cofre"
+      }
+    ],
+    "resposta_cofre": "Tá… eu abro. O que tem aí é do movimento da semana.",
+    "devolver_fichas": {
+      "id": "devolver",
+      "fala": "Eu vi a senhora guardar as fichas. Coloque de volta na mesa, por favor."
+    },
+    "reclamacao_responsavel": "Que é isso? Isso aqui é um bar, vocês não podem ir entrando assim!"
+  },
+  "radio": {
+    "inicio": "Viatura, denúncia anônima de jogo de azar nos fundos do bar da esquina. Verifique.",
+    "chegada": "Copiado. Viatura no local.",
+    "apoio": "Copiado. Outra guarnição vai cobrir os fundos pelo beco lateral.",
+    "sem_entrada": "Copiado. Registre a ocorrência; a denúncia será encaminhada à Polícia Civil.",
+    "socorro": "Copiado. Ambulância a caminho. Preserve o local e aguarde o oficial de serviço.",
+    "final": "Copiado. Delegacia avisada da condução."
+  },
+  "equipe": {
+    "pm_parceiro": "Estou com você. É só dizer como vamos entrar.",
+    "pm_apoio": "Fundos cobertos. Daqui ninguém sai sem ser visto."
+  },
+  "exploracao": {
+    "atendente": "Boa noite. Vai querer alguma coisa?",
+    "responsavel": "Isso aqui é só um joguinho entre amigos.",
+    "seguranca": "Aqui é área reservada.",
+    "apostador": "Hoje a máquina tá pagando…",
+    "atirador": "Aqui é reservado. Dá o fora."
+  },
+  "vozes": {
+    "_nota": "Falas com voz gravada: salve 06_Audio/brutos/<arquivo>.wav ou .mp3. Sem arquivo, o site usa a voz sintética. O texto precisa ser igual ao que o site fala.",
+    "falas": [
+      {
+        "arquivo": "fala_radio_01",
+        "personagem": "Sala de operações (rádio)",
+        "quando": "Início de cada ocorrência",
+        "texto": "Viatura, denúncia anônima de jogo de azar nos fundos do bar da esquina. Verifique."
+      },
+      {
+        "arquivo": "fala_radio_02",
+        "personagem": "Sala de operações (rádio)",
+        "quando": "O policial informa a chegada",
+        "texto": "Copiado. Viatura no local."
+      },
+      {
+        "arquivo": "fala_radio_03",
+        "personagem": "Sala de operações (rádio)",
+        "quando": "O policial pede apoio",
+        "texto": "Copiado. Outra guarnição vai cobrir os fundos pelo beco lateral."
+      },
+      {
+        "arquivo": "fala_radio_04",
+        "personagem": "Sala de operações (rádio)",
+        "quando": "O policial decide não entrar",
+        "texto": "Copiado. Registre a ocorrência; a denúncia será encaminhada à Polícia Civil."
+      },
+      {
+        "arquivo": "fala_radio_05",
+        "personagem": "Sala de operações (rádio)",
+        "quando": "O policial pede socorro médico",
+        "texto": "Copiado. Ambulância a caminho. Preserve o local e aguarde o oficial de serviço."
+      },
+      {
+        "arquivo": "fala_radio_06",
+        "personagem": "Sala de operações (rádio)",
+        "quando": "Fim da ocorrência",
+        "texto": "Copiado. Delegacia avisada da condução."
+      },
+      {
+        "arquivo": "fala_parceiro_01",
+        "personagem": "Policial parceiro",
+        "quando": "Modo exploração e antes do planejamento",
+        "texto": "Estou com você. É só dizer como vamos entrar."
+      },
+      {
+        "arquivo": "fala_parceiro_02",
+        "personagem": "Policial parceiro",
+        "quando": "Depois de combinar a entrada",
+        "texto": "Positivo. Vou junto com você."
+      },
+      {
+        "arquivo": "fala_apoio_01",
+        "personagem": "Policial de apoio",
+        "quando": "No beco, cobrindo os fundos",
+        "texto": "Fundos cobertos. Daqui ninguém sai sem ser visto."
+      },
+      {
+        "arquivo": "fala_atendente_01",
+        "personagem": "Funcionária do bar",
+        "quando": "Modo exploração · simpática",
+        "texto": "Boa noite. Vai querer alguma coisa?"
+      },
+      {
+        "arquivo": "fala_atendente_02",
+        "personagem": "Funcionária do bar",
+        "quando": "O policial se identifica · apreensiva",
+        "texto": "Boa noite… pois não?"
+      },
+      {
+        "arquivo": "fala_atendente_03",
+        "personagem": "Funcionária do bar",
+        "quando": "Pergunta sobre os fundos · admite, com medo",
+        "texto": "Tem umas maquininhas lá atrás… Eu só trabalho aqui no balcão."
+      },
+      {
+        "arquivo": "fala_atendente_04",
+        "personagem": "Funcionária do bar",
+        "quando": "Pergunta sobre os fundos · nega, desviando o olhar",
+        "texto": "Lá é depósito. Não tem nada, não."
+      },
+      {
+        "arquivo": "fala_atendente_05",
+        "personagem": "Funcionária do bar",
+        "quando": "Autoriza a entrada",
+        "texto": "Pode entrar. Eu não quero problema pra mim."
+      },
+      {
+        "arquivo": "fala_atendente_06",
+        "personagem": "Funcionária do bar",
+        "quando": "Não autoriza a entrada",
+        "texto": "Não posso. O dono não deixa ninguém entrar lá."
+      },
+      {
+        "arquivo": "fala_atendente_07",
+        "personagem": "Funcionária do bar",
+        "quando": "Dono ausente · explica",
+        "texto": "O dono só vem de manhã buscar o dinheiro. Eu tenho o telefone dele."
+      },
+      {
+        "arquivo": "fala_responsavel_01",
+        "personagem": "Responsável pelo local",
+        "quando": "Modo exploração · debochado",
+        "texto": "Isso aqui é só um joguinho entre amigos."
+      },
+      {
+        "arquivo": "fala_responsavel_02",
+        "personagem": "Responsável pelo local",
+        "quando": "Perguntam quem é o responsável · contrariado",
+        "texto": "Sou eu que tomo conta. O que é que tá acontecendo?"
+      },
+      {
+        "arquivo": "fala_responsavel_03",
+        "personagem": "Responsável pelo local",
+        "quando": "Depois de ouvir os direitos",
+        "texto": "Eu quero ligar pro meu advogado."
+      },
+      {
+        "arquivo": "fala_responsavel_04",
+        "personagem": "Responsável pelo local",
+        "quando": "Oferta de dinheiro · em voz baixa",
+        "texto": "Chefe, vamos resolver isso aqui mesmo. Tem cinco mil na gaveta. Ninguém precisa ficar sabendo."
+      },
+      {
+        "arquivo": "fala_responsavel_05",
+        "personagem": "Responsável pelo local",
+        "quando": "Pedem para abrir o escritório · resignado",
+        "texto": "Tá bom… eu abro."
+      },
+      {
+        "arquivo": "fala_seguranca_01",
+        "personagem": "Segurança",
+        "quando": "Modo exploração · seco",
+        "texto": "Aqui é área reservada."
+      },
+      {
+        "arquivo": "fala_seguranca_02",
+        "personagem": "Segurança",
+        "quando": "Rende-se ao comando · assustado",
+        "texto": "Calma, calma! Eu não vou fazer nada."
+      },
+      {
+        "arquivo": "fala_apostador_01",
+        "personagem": "Apostador (voz masculina)",
+        "quando": "Modo exploração",
+        "texto": "Hoje a máquina tá pagando…"
+      },
+      {
+        "arquivo": "fala_apostador_02",
+        "personagem": "Apostador (voz masculina)",
+        "quando": "Mandam ficar junto à parede",
+        "texto": "Tá bom, seu policial."
+      },
+      {
+        "arquivo": "fala_apostador_03",
+        "personagem": "Apostador (voz masculina)",
+        "quando": "Entrega o documento · sem graça",
+        "texto": "Tá aqui. Eu só vim jogar um pouquinho…"
+      },
+      {
+        "arquivo": "fala_atirador_01",
+        "personagem": "Homem do sofá (sala reservada)",
+        "quando": "Modo exploração · ameaçador, sem se levantar",
+        "texto": "Aqui é reservado. Dá o fora."
+      }
+    ]
+  }
+}

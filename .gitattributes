@@ -1,0 +1,5 @@
+# arquivos grandes via Git LFS (a pasta 04_ThreeJS/web fica fora do LFS para o Vercel publicar direto)
+*.blend filter=lfs diff=lfs merge=lfs -text
+*.fbx filter=lfs diff=lfs merge=lfs -text
+*.exr filter=lfs diff=lfs merge=lfs -text
+02_Cena_VR_Otimizada/*.glb filter=lfs diff=lfs merge=lfs -text
