@@ -98,8 +98,8 @@ M = {
     "fach": mat("Fachada_Areia", "#d6c8a6", .92), "fach2": mat("Fachada_Branca", "#e2ded2", .92),
     "fach3": mat("Fachada_Terracota", "#b0745a", .92), "fach4": mat("Fachada_Cinza", "#9a9ca0", .92),
     "janela_ext": mat("Janela_Fachada", "#1a2530", .15),
-    "parede": mat("Parede_Apto", "#f2f1ec", .9), "parede_cor": mat("Parede_Corredor", "#d8d2c0", .92),
-    "parede_port": mat("Parede_Portaria", "#dcd6c6", .92), "teto": mat("Teto_Laje", "#efede6", .95),
+    "parede": mat("Parede_Apto", "#f3f1ea", .92), "parede_cor": mat("Parede_Corredor", "#ebe6d8", .92),
+    "parede_port": mat("Parede_Portaria", "#eee9dc", .92), "teto": mat("Teto_Laje", "#f8f7f3", .95),
     "piso_lam": mat("Piso_Laminado", "#a57c52", .5),
     "piso_cer": img_mat("Piso_Ceramica", np_image("piso_ceramica", tex_ceramica(hx("#d3cdbf"))), 1.8, .35),
     "piso_cor": img_mat("Piso_Porcelanato", np_image("piso_porcelanato", tex_ceramica(hx("#b9b3a6"), "#77736b", n=2)), 1.2, .3),
@@ -137,6 +137,13 @@ M = {
     "terra": mat("Terra_Canteiro", "#4a3a2c", 1), "mata": mat("Mata_Morro", "#2f4a26", 1), "pedra": mat("Pedra_Morro", "#6f6a62", .9), "grama_longe": mat("Grama_Longe", "#557238", 1), "faixa": mat("Pintura_Viaria_Branca", "#d8d6cc", .7),
     "faixa_am": mat("Pintura_Viaria_Amarela", "#d9a514", .7), "poste": mat("Poste_Concreto", "#8f8b84", .9), "caixa_dagua": mat("Caixa_Dagua", "#3f6fa8", .5),
     "tv": mat("TV_Tela", "#07080a", .08), "micro": mat("Microondas_Preto", "#1b1c1e", .25), "cartaz": mat("Cartaz_Quarto", "#2a3f6a", .7),
+    "toldo_v": mat("Toldo_Verde", "#2f6b46", .8), "toldo_r": mat("Toldo_Vinho", "#7a2630", .8), "toldo_a": mat("Toldo_Azul", "#2c4f86", .8),
+    "sapato": mat("Sapato_Preto", "#1c1a19", .5), "sapato_m": mat("Sapato_Marrom", "#5a3a26", .5), "lata_a": mat("Embalagem_Vermelha", "#b8322a", .5),
+    "lata_b": mat("Embalagem_Amarela", "#d9b02a", .5), "lata_c": mat("Embalagem_Azul", "#2f5a9a", .5), "panela": mat("Panela_Aluminio", "#9c9ea0", .35, .4),
+    "interior": mat("Interior_Carro", "#2a2b2e", .8), "faixa_pm": mat("Viatura_Faixa_Azul", "#1e4fb8", .3), "texto_az": mat("Texto_Azul", "#16307f", .6),
+    "giro_verm": mat("Giroflex_Vermelho", "#8a1010", .2, emit="#ff1010", forca=.3), "giro_azul": mat("Giroflex_Azul", "#10308a", .2, emit="#1040ff", forca=.3),
+    "brasao": mat("Brasao_(inserir_imagem_oficial)", "#c8cbd0", .5), "faixa_pc": mat("Viatura_Faixa_Preta", "#111214", .3),
+    "bebedouro": mat("Bebedouro_Azul", "#8fb6d9", .2, alpha=.5), "placa_verde": mat("Placa_Saida", "#1f7a3c", .5, emit="#35d06a", forca=.6),
     "frasco_a": mat("Frasco_Verde", "#3f8a5a", .3), "frasco_b": mat("Frasco_Laranja", "#d9772a", .3), "frasco_c": mat("Frasco_Branco", "#f0eee8", .3),
 }
 
@@ -235,6 +242,7 @@ C_MIU = collection("14_Miudos")          # pecas pequenas ou finas, sem lightmap
 C_VEG = collection("15_Vegetacao")       # arvores, arbustos e tufos de grama: sem lightmap (folhas finas)
 C_LON = collection("17_Entorno_Longe")   # terreno, morros e predios ao fundo: lightmap proprio (areas enormes)
 C_FMI = collection("18_Fachada_Miudos")  # esquadrias e corrimaos das fachadas: pecas finas, sem lightmap
+C_VEIC = collection("19_Veiculos")       # viaturas e carros estacionados
 C_GRA = collection("16_Grama")           # tufos de grama (laminas finas): sem lightmap
 C_COL = collection("98_Colisao_Extra")   # caixas invisiveis: uma por movel que abre (o jogador nao entra no armario)
 
@@ -324,7 +332,7 @@ def ph(nome, asset, x, y, z=None, rz=0.0, col=None, alt=None, tris=2000, escala=
 
 box("Terreno", (900, 900, .1), (0, 20, -.06), M["grama_longe"], C_LON)
 # gramados perto do predio (textura de grama em escala real; os tufos de laminas ficam por cima)
-for nome, x0, x1, y0, y1 in (("Gramado_Leste", 8.1, 10.9, -6.1, 38), ("Gramado_Fundo", -9, 8.1, 36, 38), ("Gramado_Oeste", -12, -9, 24, 38), ("Gramado_Vizinho_L", 11.1, 26, 16, 40), ("Gramado_Vizinho_O", -27, -12.2, 12, 40)):
+for nome, x0, x1, y0, y1 in (("Gramado_Leste", 8.1, 10.9, -6.1, 38), ("Gramado_Fundo", -9, 8.1, 36, 38), ("Gramado_Oeste", -12, -9, 24, 38)):
     box(nome, (x1 - x0, y1 - y0, .06), ((x0 + x1) / 2, (y0 + y1) / 2, 0), M["grama"], C_RUA)
 
 # ---- vegetacao trazida de "A Casa em Silencio": arvores de galhos ramificados com folhas individuais, arbustos com miolo
@@ -460,7 +468,7 @@ def arvore(nome, x, y, z, alt, flor=False, larga=False):
         m = Matrix.Translation((p + end) / 2) @ d.to_track_quat("Z", "Y").to_matrix().to_4x4()
         bmesh.ops.create_cone(wood, cap_ends=False, segments=10 if depth > 2 else 6, radius1=r, radius2=r * .7, depth=L, matrix=m)
         if depth == 0:
-            for k in range(44 if flor else 40):
+            for k in range(62 if flor else 58):
                 c = end + Vector((rr.gauss(0, .42), rr.gauss(0, .42), rr.gauss(.1, .28))) * k_
                 sz = (rr.uniform(.07, .11) if flor else rr.uniform(.09, .15)) * k_
                 q = Euler((rr.random() * PI, rr.random() * PI, rr.random() * PI)).to_matrix()
@@ -480,13 +488,13 @@ def arvore(nome, x, y, z, alt, flor=False, larga=False):
     finish(nome + "_Galhos", wood, (x, y, z), M["tronco"], C_VEG, smooth=True, rot=(0, 0, rz))
     finish(nome + "_Folhas", leaf, (x, y, z), M["ipe"] if flor else M["folhagem"], C_VEG, rot=(0, 0, rz))
 
-def arbusto(nome, x, y, z, alt):
+def arbusto(nome, x, y, z, alt, col_miolo=None, col_folhas=None):
     """Arbusto: miolo escuro (da volume) e dezenas de cartoes com raminhos de folhas."""
     rr = random.Random(zlib.crc32(("%s%.2f%.2f" % (nome, x, y)).encode())); r = Vector((alt * rr.uniform(.5, .65), alt * rr.uniform(.5, .65), alt * .5)); c = Vector((x, y, z + alt * .5))
     bm = bmesh.new(); bmesh.ops.create_icosphere(bm, subdivisions=2, radius=1); sem = Vector((rr.uniform(0, 50), rr.uniform(0, 50), rr.uniform(0, 50)))
     for v in bm.verts:
         n = v.co.normalized(); k = .82 * (1 + .18 * noise.noise(n * 2.2 + sem)); v.co = Vector((n.x * r.x * k, n.y * r.y * k, n.z * r.z * k)) + c
-    finish(nome + "_Miolo", bm, (0, 0, 0), M["miolo"], C_VEG, smooth=True)
+    finish(nome + "_Miolo", bm, (0, 0, 0), M["miolo"], col_miolo or C_VEG, smooth=True)
     bm = bmesh.new(); uvl = bm.loops.layers.uv.new("UVMap")
     area = 4 * math.pi * ((r.x * r.y) ** 1.6 + (r.x * r.z) ** 1.6 + (r.y * r.z) ** 1.6) ** (1 / 1.6) / 3 ** (1 / 1.6)
     n_cart = int(min(140, max(30, area * 45))); esc = max(.6, min(1.15, (r.x + r.y) / 2 / .55)); feitos = tent = 0
@@ -505,7 +513,12 @@ def arbusto(nome, x, y, z, alt):
         f = bm.faces.new(vs)
         for lp, (uu, vv) in zip(f.loops, ((0, 0), (1, 0), (1, 1), (0, 1))): lp[uvl].uv = (u0 + .005 + uu * .49, v0 + .005 + vv * .49)
         feitos += 1
-    finish(nome + "_Folhas", bm, (0, 0, 0), M["folha_arb"], C_GRA)
+    finish(nome + "_Folhas", bm, (0, 0, 0), M["folha_arb"], col_folhas or C_GRA)
+def vaso_planta(nome, x, y, z, alt, col, m_vaso=None):
+    """Planta de vaso para dentro de casa: vaso de ceramica, terra e folhagem de raminhos (como os arbustos)."""
+    hv = min(.34, alt * .35)
+    cyl(nome + "_Vaso", .13, .17, hv, (x, y, z + hv / 2), m_vaso or M["telha"], col, seg=14); cyl(nome + "_Terra", .155, .155, .02, (x, y, z + hv - .005), M["terra"], col, seg=14)
+    arbusto(nome, x, y, z + hv - .08, alt - hv + .08, col, C_MIU)
 
 def copa_palmeira(nome, topo, raio_tronco, rnd, m_folha, colecao, pai=None):
     bm = bmesh.new(); uvl = bm.loops.layers.uv.new("UVMap")
@@ -583,8 +596,10 @@ for nome, y, larg in (("Calcada", -7.55, 2.9), ("Calcada_Frente", -17.45, 2.9)):
 for y in (-9.05, -15.95): box("Meio_Fio", (130, .18, .2), (0, y, .1), M["meiofio"], C_RUA)
 x = -62
 while x < 62:
-    box("Faixa_Tracejada", (2.2, .12, .004), (x + 1.1, -12.5, .123), M["faixa_am"], C_RUA); x += 6.0
-for k in range(7): box("Faixa_Pedestre", (.45, 4.2, .004), (4.2 + k * .9, -12.5, .123), M["faixa"], C_RUA)       # travessia perto da entrada
+    if not (1.5 < x + 1.1 < 12.5): box("Faixa_Tracejada", (2.2, .12, .004), (x + 1.1, -12.5, .123), M["faixa_am"], C_RUA)
+    x += 6.0
+for k in range(7): box("Faixa_Pedestre", (.45, 6.5, .004), (4.2 + k * .9, -12.5, .123), M["faixa"], C_RUA)       # travessia perto da entrada
+for x_ in (3.2, 10.6): box("Faixa_Retencao", (.3, 3.2, .004), (x_, -10.85 if x_ > 5 else -14.15, .123), M["faixa"], C_RUA)      # linha de retencao antes da faixa, em cada sentido
 box("Patio_Piso", (17.1, 14.9, FZ), (-.45, 16.55, FZ / 2), M["pavers"], C_RUA)          # patio e estacionamento entre os blocos
 box("Passagem_Oeste", (3.0, 30.2, FZ), (-10.5, 9.0, FZ / 2), M["pavers"], C_RUA)        # entrada de carros, ao lado do predio
 for k in range(5): box("Vaga_Faixa", (.1, 4.6, .004), (-6.5 + k * 2.6, 20.8, FZ + .003), M["faixa"], C_RUA)
@@ -603,6 +618,44 @@ for i, x in enumerate((-5.05, -.35)):
     tufos("Canteiro_Grama", x - .75, x + .75, -6.72, -6.28, 60, FZ + .45, (.06, .14))
 
 FACES = {"-y": ((1, 0), (0, -1)), "+y": ((-1, 0), (0, 1)), "-x": ((0, -1), (-1, 0)), "+x": ((0, 1), (1, 0))}      # face -> (ao longo, para fora)
+def tex_porta_enrolar(S=128):
+    yy = np.mgrid[0:S, 0:S][0]; a = np.ones((S, S, 3)) * np.array(hx("#8f9296")); a *= (.78 + .22 * np.abs(np.sin(yy / S * PI * 16)))[..., None]
+    return np.clip(a, 0, 1)
+def tex_predio(cor, S=128):
+    """Um andar por um vao de fachada: parede na cor dada e uma janela de vidro escuro com esquadria clara."""
+    a = np.ones((S, S, 3)) * np.array(hx(cor)); a *= 1 + .03 * np.random.default_rng(3).standard_normal((S, S, 1))
+    a[int(S * .2):int(S * .62), int(S * .2):int(S * .8)] = hx("#d9d6cc"); a[int(S * .23):int(S * .59), int(S * .23):int(S * .78)] = hx("#1d2a36")
+    a[int(S * .23):int(S * .59), int(S * .495):int(S * .51)] = hx("#d9d6cc"); a[int(S * .93):, :] = np.array(hx(cor)) * .8          # montante e friso da laje
+    return np.clip(a, 0, 1)
+def tex_tapete(S=256):
+    yy, xx = np.mgrid[0:S, 0:S]; a = np.ones((S, S, 3)) * np.array(hx("#8a3b32"))
+    los = (np.abs((xx % 64) - 32) + np.abs((yy % 64) - 32)) < 20; a[los] = hx("#d9c7a0"); a[(np.abs((xx % 64) - 32) + np.abs((yy % 64) - 32)) < 9] = hx("#2c3f5a")
+    a[(yy % 64 < 3) | (xx % 64 < 3)] = hx("#3a2018"); a *= 1 + .05 * np.random.default_rng(8).standard_normal((S, S, 1))
+    return np.clip(a, 0, 1)
+M["porta_enrolar"] = img_mat("Porta_Enrolar", np_image("porta_enrolar", tex_porta_enrolar()), 1.6, .5)
+M["tapete_est"] = img_mat("Tapete_Estampado", np_image("tapete_estampado", tex_tapete()), .9, .95)
+M_LONGE = [img_mat("Predio_Longe_%d" % i, np_image("predio_longe_%d" % i, tex_predio(c)), 3.2, .7) for i, c in enumerate(("#c9c4b8", "#d8cdb0", "#b7b9bc", "#d2a890", "#e2ded2", "#b9c4b4"))]
+def terreo_rua(nome, fcx, fcy, face, comp, r, col, h=3.0):
+    """Terreo de rua: em cada vao, loja fechada com porta de enrolar, vitrine com toldo, portaria de vidro ou garagem com grade."""
+    t, n = FACES[face]; ao_x = t[0] != 0
+    def cx_(suf, a, e, hh, d, fora, z, m, c=None, rot=(0, 0, 0)):
+        return box(nome + suf, (a, e, hh) if ao_x else (e, a, hh), (fcx + t[0] * d + n[0] * fora, fcy + t[1] * d + n[1] * fora, z), m, c or col, rot=rot)
+    nb = max(2, int(comp / 3.7)); passo = comp / nb; inc = .42 * (1 if face in ("-y", "+x") else -1)
+    for k in range(nb):
+        d = -comp / 2 + (k + .5) * passo; L = passo - .8; tipo = r.choice(("loja", "loja", "vitrine", "vitrine", "portaria", "garagem"))
+        if tipo == "loja":
+            cx_("_T_Porta", L, .06, 2.5, d, .05, FZ + 1.25, M["porta_enrolar"]); cx_("_T_Caixa", L + .1, .22, .26, d, .12, FZ + 2.63, M["persiana"])
+        elif tipo == "vitrine":
+            cx_("_T_Vidro", L, .04, 1.9, d, .05, FZ + 1.4, M["vidro_f3"]); cx_("_T_Mureta", L + .06, .1, .45, d, .06, FZ + .225, M["concreto"])
+            cx_("_T_Quadro", L + .06, .08, .06, d, .06, FZ + 2.38, M["aluminio"], C_FMI); cx_("_T_Montante", .05, .08, 1.9, d, .06, FZ + 1.4, M["aluminio"], C_FMI)
+            cx_("_T_Toldo", L + .3, 1.15, .04, d, .6, FZ + 2.52, M[r.choice(("toldo_v", "toldo_r", "toldo_a"))], rot=(inc, 0, 0) if ao_x else (0, inc, 0))
+        elif tipo == "portaria":
+            cx_("_T_Porta_Vidro", 1.7, .04, 2.3, d, .05, FZ + 1.15, M["vidro_f3"]); cx_("_T_Marquise", 2.4, 1.0, .1, d, .5, FZ + 2.5, M["concreto"])
+            for sd in (-1, 0, 1): cx_("_T_Batente", .05, .08, 2.3, d + sd * .85, .06, FZ + 1.15, M["aluminio"], C_FMI)
+            cx_("_T_Interfone", .16, .05, .24, d + 1.15, .04, FZ + 1.35, M["inox"])
+        else:
+            cx_("_T_Garagem", L, .05, 2.3, d, .05, FZ + 1.15, M["grade"]); cx_("_T_Garagem_Fundo", L, .03, 2.3, d, -.02, FZ + 1.15, M["preto"])
+
 def fachada(nome, cx, cy, face, comp, zs, col, r, varandas=(), ar=.3, larg_j=1.5, pe=3.15, frisa=True):
     """Detalhes de uma face de predio: por andar, friso da laje e uma fileira de janelas de aluminio com peitoril; algumas
     colunas viram varanda com guarda-corpo; algumas janelas tem persiana meio fechada e ar-condicionado embaixo."""
@@ -611,12 +664,12 @@ def fachada(nome, cx, cy, face, comp, zs, col, r, varandas=(), ar=.3, larg_j=1.5
     def cx_(suf, a, e, h, d, fora, z, m, c=None): return box(nome + suf, (a, e, h) if ao_x else (e, a, h), P(d, fora, z), m, c or (C_FMI if m in (M["aluminio"], M["grade"], M["persiana"]) else col))
     nj = max(2, int(comp / 2.9)); passo = comp / nj; rz_fora = math.atan2(n[0], -n[1])
     for zb in zs:
-        if frisa: cx_("_Friso", comp + .08, .1, .16, 0, .03, zb - .08, M["concreto"])
+        if frisa: cx_("_Friso", comp + .08, .1, .16, 0, .03, zb - .08, M["concreto"], C_FMI)
         for k in range(nj):
             d = -comp / 2 + (k + .5) * passo; vid = M[r.choice(("vidro_f", "vidro_f", "vidro_f3", "vidro_f2"))]
             if k in varandas:
                 lv = min(passo * .86, 2.6)
-                cx_("_Var_Laje", lv, 1.0, .12, d, .5, zb + .02, M["concreto"]); cx_("_Var_Porta", 1.7, .04, 2.1, d, .0, zb + 1.13, vid)
+                cx_("_Var_Laje", lv, 1.0, .12, d, .5, zb + .02, M["concreto"], C_FMI); cx_("_Var_Porta", 1.7, .04, 2.1, d, .0, zb + 1.13, vid)
                 cx_("_Var_Quadro", 1.8, .06, .06, d, .02, zb + 2.2, M["aluminio"]); cx_("_Var_Montante", .05, .06, 2.1, d, .02, zb + 1.13, M["aluminio"])
                 cx_("_Var_Guarda", lv, .02, .95, d, .98, zb + .56, M["guarda"], C_VID); cx_("_Var_Corrimao", lv, .05, .05, d, .98, zb + 1.06, M["aluminio"])
                 for sd in (-1, 1):
@@ -626,7 +679,7 @@ def fachada(nome, cx, cy, face, comp, zs, col, r, varandas=(), ar=.3, larg_j=1.5
             cx_("_Jan_Vidro", lj - .06, .03, aj - .06, d, -.005, zc, vid)
             cx_("_Jan_Cima", lj, .07, .05, d, .02, zc + aj / 2 - .025, M["aluminio"]); cx_("_Jan_Baixo", lj, .07, .05, d, .02, zc - aj / 2 + .025, M["aluminio"])
             for sd in (-1, 0, 1): cx_("_Jan_Lado", .05, .07, aj, d + sd * (lj / 2 - .025), .02, zc, M["aluminio"])
-            cx_("_Jan_Peitoril", lj + .16, .14, .04, d, .05, zc - aj / 2 - .02, M["concreto"])
+            cx_("_Jan_Peitoril", lj + .16, .14, .04, d, .05, zc - aj / 2 - .02, M["concreto"], C_FMI)
             if r.random() < .28: cx_("_Jan_Persiana", lj - .08, .035, r.uniform(.3, .8), d, .012, zc + aj / 2 - .05 - .25, M["persiana"])
             if r.random() < ar:
                 da = d + r.choice((-1, 1)) * (lj / 2 - .45); pa = P(da, .2, zb + .45)
@@ -637,7 +690,7 @@ def predio_real(nome, x0, x1, y0, y1, andares, m, faces, col=C_RUA, seed=0, vara
     """Predio vizinho com embasamento, frisos, janelas, varandas, ar-condicionado, platibanda, casa de maquinas e caixa d'agua."""
     r = random.Random(seed); pe = 3.15; h = terreo + andares * pe; cx, cy = (x0 + x1) / 2, (y0 + y1) / 2; w, d = x1 - x0, y1 - y0
     box(nome + "_Corpo", (w, d, h), (cx, cy, FZ + h / 2), m, col)
-    box(nome + "_Embasamento", (w + .06, d + .06, terreo - .3), (cx, cy, FZ + (terreo - .3) / 2), M["embasamento"], col)
+    box(nome + "_Embasamento", (w + .06, d + .06, terreo - .3), (cx, cy, FZ + (terreo - .3) / 2), M[r.choice(("embasamento", "f_placas", "f_cinza", "embasamento"))], col)
     box(nome + "_Marquise", (w + .5, d + .5, .14), (cx, cy, FZ + terreo - .2), M["concreto"], col)
     if telhado:
         zt = FZ + h; a = min(w, d) * .22
@@ -654,26 +707,21 @@ def predio_real(nome, x0, x1, y0, y1, andares, m, faces, col=C_RUA, seed=0, vara
         t, n = FACES[face]; comp = w if t[0] else d
         fcx, fcy = cx + n[0] * w / 2, cy + n[1] * d / 2
         fachada(nome, fcx, fcy, face, comp, zs, col, r, varandas, ar=ar)
-        if garagem == face:                                # portao de garagem e porta de entrada no terreo
-            ao_x = t[0] != 0
-            box(nome + "_Garagem", (3.0, .06, 2.3) if ao_x else (.06, 3.0, 2.3), (fcx + t[0] * (comp / 2 - 2.3) + n[0] * .04, fcy + t[1] * (comp / 2 - 2.3) + n[1] * .04, FZ + 1.15), M["persiana"], col)
-            box(nome + "_Entrada", (1.6, .05, 2.3) if ao_x else (.05, 1.6, 2.3), (fcx - t[0] * (comp / 2 - 2.5) + n[0] * .04, fcy - t[1] * (comp / 2 - 2.5) + n[1] * .04, FZ + 1.15), M["vidro_f3"], col)
+        if garagem is not None: terreo_rua(nome, fcx, fcy, face, comp, r, col)
     if rotulo:
         face = faces[0]; t, n = FACES[face]
         texto(nome + "_Texto", rotulo, .55, (cx + n[0] * (w / 2 + .3), cy + n[1] * (d / 2 + .3), FZ + terreo - .75), face, M["texto_pr"], col)
 
 predio_real("Bloco_A", -9, 8.1, 24, 36, 4, M["f_pastilha_az"], ("-y",), seed=3, varandas=(1, 4), rotulo="BLOCO A", garagem="-y")
 predio_real("Vizinho_Leste", 13, 25, -6, 16, 2, M["f_creme"], ("-x", "-y"), seed=5, telhado=True, terreo=3.0, garagem="-y", ar=.2)      # sobrado baixo: deixa o ceu a vista da janela da sala
-predio_real("Vizinho_Leste_2", 27, 41, -6, 12, 6, M["f_placas"], ("-x", "-y"), seed=6, varandas=(2,))
+predio_real("Vizinho_Leste_2", 27, 41, -6, 12, 6, M["f_placas"], ("-x", "-y"), seed=6, varandas=(2,), garagem="-y")
 predio_real("Vizinho_Oeste", -27, -14, -6, 12, 3, M["f_salmao"], ("+x", "-y"), seed=7, garagem="-y")
-predio_real("Vizinho_Oeste_2", -44, -29, -6, 14, 7, M["f_branca"], ("+x", "-y"), seed=8, varandas=(1, 3))
+predio_real("Vizinho_Oeste_2", -44, -29, -6, 14, 7, M["f_branca"], ("+x", "-y"), seed=8, varandas=(1, 3), garagem="-y")
 for i, (x0, x1, an, m, var) in enumerate(((-62, -47, 5, "f_verde", (1,)), (-46, -33, 3, "f_amarela", ()), (-32, -19, 8, "f_placas", (0, 3)), (-18, -6, 4, "f_creme", (2,)),
                                           (-5, 9, 6, "f_pastilha", (1, 3)), (10, 22, 3, "f_salmao", ()), (23, 37, 9, "f_branca", (0, 2, 4)), (38, 52, 4, "f_cinza", (1,)), (53, 64, 6, "f_verde", ()))):
     predio_real("Predio_Frente_%d" % i, x0, x1, -31, -19, an, M[m], ("+y",), seed=20 + i, varandas=var, garagem="+y")
 for i, (x, y, w, d, h) in enumerate(((-50, -48, 18, 14, 34), (-20, -50, 16, 14, 46), (8, -47, 20, 14, 28), (40, -50, 18, 14, 40), (-34, 62, 18, 14, 30), (22, 66, 22, 14, 38), (62, 30, 16, 20, 26), (-66, 28, 16, 22, 24))):
-    box("Predio_Longe_%d" % i, (w, d, h), (x, y, h / 2), M[("f_cinza", "f_branca", "f_placas", "f_creme")[i % 4]], C_LON)     # silhuetas ao fundo
-    for a in range(int(h / 3.2) - 1):
-        box("Predio_Longe_Faixa", (w + .05, d + .05, 1.1), (x, y, 2.6 + a * 3.2), M["vidro_f"], C_LON)
+    box("Predio_Longe_%d" % i, (w, d, h), (x, y, h / 2), M_LONGE[i % 6], C_LON); box("Predio_Longe_Laje", (w + .3, d + .3, .5), (x, y, h + .25), M["concreto"], C_LON)     # predios ao fundo
 def tex_copas(S=512, n=300, seed=4):
     """Mata vista de longe: copas de arvores lado a lado (cada uma mais clara no alto e escura na borda), em verdes variados."""
     r = np.random.default_rng(seed); px = r.random((n, 2)) * S; cor = np.array([hx(c) for c in ("#1f3d18", "#2b4d1f", "#35592a", "#27461c", "#3f6630", "#1a3314")])
@@ -712,14 +760,14 @@ def morro(nome, cx, cy, rx, ry, alt, seed, pico=1.6, n=58, paredao=.0, domo=Fals
         if paredao: h += paredao * _degrau(-.15, .25, _nz.noise(q * .7 + Vector((3, 3, 0)))) * _degrau(.3, .36, h)      # degrau ingreme em parte do contorno
         return alt * h
     # ---- pintura: grade de alturas -> inclinacao -> mascara de pedra -> imagem
-    G = 150; S = 1024; rg = np.random.default_rng(seed)
+    G = 150; S = 512; rg = np.random.default_rng(seed)      # 512 px: os morros so se veem de longe
     Hg = np.array([[altura(i / (G - 1) * 2 - 1, j / (G - 1) * 2 - 1) for i in range(G)] for j in range(G)], np.float32)
     gy, gx = np.gradient(Hg, 2 * ry / (G - 1), 2 * rx / (G - 1)); incl = np.degrees(np.arctan(np.hypot(gx, gy)))
     hn = Hg / alt; rui = _ampliar(rg.random((24, 24)).astype(np.float32), G) - .5
     if domo: pedra = np.clip((hn - .16 + rui * .1) / .1, 0, 1)
     else: pedra = np.clip((incl - 43 + rui * 14) / 12, 0, 1) * np.clip((hn - .14) / .12, 0, 1)
     pedra = _ampliar(pedra.astype(np.float32), S) ** 1.3; sombra = _ampliar(np.clip(.82 + hn * .3 - incl / 300, .6, 1.15), S)
-    rep = S // 128 + 1; mata = np.tile(_COPAS, (rep, rep, 1))[:S, :S] * (.85 + .3 * _ampliar(rg.random((14, 14)).astype(np.float32), S))[..., None]
+    rep = S // 64 + 1; mata = np.tile(_COPAS[::2, ::2], (rep, rep, 1))[:S, :S] * (.85 + .3 * _ampliar(rg.random((14, 14)).astype(np.float32), S))[..., None]
     listras = _ampliar(rg.random((6, 180)).astype(np.float32), S) if seed % 2 else _ampliar(rg.random((180, 6)).astype(np.float32), S)      # escorridos escuros no granito
     gran = (np.array(hx("#8b867d")) * (.72 + .4 * listras)[..., None]) * (1 + .05 * rg.standard_normal((S, S, 1))); gran[_ampliar(rg.random((60, 60)).astype(np.float32), S) > .8] *= .8
     img = (mata * (1 - pedra[..., None]) + gran * pedra[..., None]) * sombra[..., None]
@@ -755,10 +803,200 @@ for i in range(70):
     a_ = _rc.uniform(0, 2 * PI); d_ = _rc.uniform(75, 230); x, y = math.cos(a_) * d_, 10 + math.sin(a_) * d_
     if abs(x) < 70 and -60 < y < 75: continue
     casa = _rc.random() < .45; w, d = (_rc.uniform(8, 14), _rc.uniform(8, 12)) if casa else (_rc.uniform(14, 24), _rc.uniform(12, 18)); h = _rc.uniform(4, 7) if casa else _rc.uniform(14, 44)
-    box("Predio_Longe_C%d" % i, (w, d, h), (x, y, h / 2), M[_rc.choice(("f_cinza", "f_branca", "f_placas", "f_creme", "f_salmao", "f_amarela"))], C_LON, rot=(0, 0, _rc.choice((0, .3, -.2, .1))))
-    if casa: box("Predio_Longe_Telhado", (w + .6, d + .6, .5), (x, y, h + .25), M["telha"], C_LON)
-    else:
-        for k in range(int(h / 3.2) - 1): box("Predio_Longe_Faixa", (w + .05, d + .05, 1.1), (x, y, 2.6 + k * 3.2), M["vidro_f"], C_LON)
+    rz_ = _rc.choice((0, .3, -.2, .1))
+    box("Predio_Longe_C%d" % i, (w, d, h), (x, y, h / 2), _rc.choice(M_LONGE), C_LON, rot=(0, 0, rz_))
+    box("Predio_Longe_Telhado", (w + .6, d + .6, .5), (x, y, h + .25), M["telha" if casa else "concreto"], C_LON, rot=(0, 0, rz_))
+# ---- carros prontos (codigo trazido do cassino / Lei Seca): frente para +X
+def malha(name, verts, faces, m, col, parent=None, pos=(0, 0, 0), smooth=False, idx=None):
+    me = bpy.data.meshes.new(name); me.from_pydata(verts, [], faces)
+    bm = bmesh.new(); bm.from_mesh(me); bpy.data.meshes.remove(me)
+    if idx:
+        bm.faces.ensure_lookup_table()
+        for f, i in zip(bm.faces, idx): f.material_index = i
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return finish(name, bm, pos, m, col, parent, smooth=smooth)
+
+def giroflex(R, col, x, z, larg=1.1):
+    box("Giroflex_Base", (.32, larg, .05), (x, 0, z), M["preto"], col, R, bevel=.015)
+    n = 6; w = larg / n
+    for k in range(n):
+        y = -larg / 2 + w * (k + .5)
+        box("Giroflex_Lente_%d" % (k + 1), (.28, w * .92, .09), (x, y, z + .07), M["giro_verm"] if k < 3 else M["giro_azul"], col, R, bevel=.022)
+    luz("Giroflex_Luz_Vermelha", "POINT", 0, "#ff1a10", (x, -.35, z + .2), col, R)
+    luz("Giroflex_Luz_Azul", "POINT", 0, "#2050ff", (x, .35, z + .2), col, R)
+
+CARROS = os.path.join(AQUI, "modelos", "carros")
+
+def repintar(img, cor, nome):
+    """Troca a cor da pintura (pixels saturados da textura) mantendo sombras, frisos e detalhes."""
+    w, h = img.size; px = np.empty(w * h * 4, np.float32); img.pixels.foreach_get(px); px = px.reshape(-1, 4)
+    rgb = px[:, :3]; mx = rgb.max(1); mn = rgb.min(1); sat = (mx - mn) / np.maximum(mx, 1e-4)
+    m = (sat > .3) & (mx > .12)
+    if m.sum() < 100: return img
+    ref = np.median(mx[m]); k = np.clip(mx[m] / ref, 0, 1.6)[:, None]
+    rgb[m] = np.clip(np.array(lin(hx(cor)) if False else hx(cor), np.float32)[None, :] * k, 0, 1)
+    novo = bpy.data.images.new(nome, w, h, alpha=True); novo.pixels.foreach_set(px.ravel()); novo.pack()
+    return novo
+
+M["int_forro"] = mat("Interior_Forro", "#1d1f22", .9)      # forro interno do carro abordado
+
+def carro_modelo(nome, col, arquivo, pos, rz, cor=None, tirar=(), janela_aberta=False, interior=False, porta=None, escala=1.0):
+    """Importa modelos/carros/<arquivo>.glb com a frente para +X. Devolve (raiz, sup_y, sup_x, info) ou None se faltar."""
+    caminho = os.path.join(CARROS, arquivo + ".glb")
+    if not os.path.exists(caminho): return None
+    antes = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=caminho)
+    novos = [o for o in bpy.data.objects if o not in antes]
+    R = next(o for o in novos if o.parent is None); R.name = nome
+    for o in novos:
+        for c in list(o.users_collection): c.objects.unlink(o)
+        col.objects.link(o)
+        if o is not R: o.name = nome + "_" + o.name.split(".")[0].replace("Roda_", "Roda_")
+    if escala != 1.0:
+        for o in novos:
+            if o.type == "MESH":
+                o.data.transform(Matrix.Scale(escala, 4)); o.location = o.location * escala
+    corpo = next(o for o in novos if o.type == "MESH" and "Carroceria" in o.name)
+    feitos = {}
+    for i, s in enumerate(corpo.material_slots):          # materiais proprios deste carro (UV do modelo e preservada no pipeline)
+        m = s.material.copy(); m.name = "Modelo_%s_%s" % (nome, s.material.name.split(".")[0]); s.material = m
+        b = next((n for n in m.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+        tex = next((n for n in m.node_tree.nodes if n.type == "TEX_IMAGE" and n.outputs["Color"].is_linked and any(l.to_socket.name == "Base Color" for l in n.outputs["Color"].links)), None)
+        nm = m.name.lower()
+        if cor and tex and tex.image and not any(k in nm for k in ("glass", "optic", "decal")):
+            tex.image = feitos.setdefault(tex.image.name, repintar(tex.image, cor, "pintura_%s_%s" % (nome, tex.image.name)))
+        if "glass" in nm and b:
+            for l in list(b.inputs["Alpha"].links): m.node_tree.links.remove(l)
+            for l in list(b.inputs["Base Color"].links): m.node_tree.links.remove(l)
+            b.inputs["Base Color"].default_value = (.03, .045, .055, 1); b.inputs["Alpha"].default_value = .38 if interior else .8
+            b.inputs["Roughness"].default_value = .06; b.inputs["Metallic"].default_value = 0
+            for attr, val in (("surface_render_method", "BLENDED"), ("blend_method", "BLEND")):
+                try: setattr(m, attr, val)
+                except Exception: pass
+        if interior: m.use_backface_culling = "glass" not in nm      # lataria so por fora: por dentro entra o forro (abaixo)
+    for o in novos:                                       # rodas: mesmo prefixo "Modelo_", senao o pipeline refaz a UV e embaralha a textura
+        if o.type == "MESH" and o is not corpo:
+            for s in o.material_slots:
+                if s.material and not s.material.name.startswith("Modelo_"):
+                    m = s.material.copy(); m.name = "Modelo_%s_%s" % (nome, s.material.name.split(".")[0]); s.material = m
+    me = corpo.data
+    bm = bmesh.new(); bm.from_mesh(me)
+    nomes = [s.material.name.lower() for s in corpo.material_slots]
+    apagar = [f for f in bm.faces if any(k in nomes[f.material_index] for k in tirar)]
+    vidro = [f for f in bm.faces if "glass" in nomes[f.material_index]]
+    esq = [f for f in vidro if f.normal.y > .55 and abs(f.normal.z) < .6]          # vidros laterais do lado do motorista (+Y)
+    info = {}
+    if esq:
+        xs = [f.calc_center_median().x for f in esq]; meio = (min(xs) + max(xs)) / 2
+        frente = [f for f in esq if f.calc_center_median().x > meio]
+        c = sum((f.calc_center_median() for f in frente), Vector()) / len(frente)
+        info["janela"] = c.copy()
+        info["jx"] = (min(v.co.x for f in frente for v in f.verts), max(v.co.x for f in frente for v in f.verts))
+        if interior:
+            # o modelo traz uma "tampa" preta horizontal dentro da cabine, na altura da base das janelas, para esconder o
+            # interior vazio. Com condutor e bancos la dentro ela corta o personagem no peito: sai.
+            hw_c = max(v.co.y for v in bm.verts)
+            for f in bm.faces:
+                cf = f.calc_center_median()
+                if "glass" not in nomes[f.material_index] and f.normal.z > .7 and min(xs) - .3 < cf.x < max(xs) + .12 and abs(cf.y) < hw_c * .8 and c.z - .38 < cf.z < c.z - .05:
+                    apagar.append(f)
+        if janela_aberta: apagar += frente
+    if apagar: bmesh.ops.delete(bm, geom=list(set(apagar)), context="FACES")
+    if interior:
+        # forro interno: uma copia da lataria, 2 cm para dentro e virada para o interior, em material escuro.
+        # Sem isso via-se a pintura do carro pelo lado de dentro (portas, colunas e teto). Como acompanha a lataria
+        # por dentro, nunca aparece do lado de fora.
+        mi = len(me.materials); me.materials.append(M["int_forro"]); nomes.append("int_forro")
+        dup = bmesh.ops.duplicate(bm, geom=[f for f in bm.faces if "glass" not in nomes[f.material_index]])
+        nf = [g for g in dup["geom"] if isinstance(g, bmesh.types.BMFace)]
+        bm.normal_update()
+        for v in {v for f in nf for v in f.verts}: v.co -= v.normal * .02
+        bmesh.ops.reverse_faces(bm, faces=nf)
+        for f in nf: f.material_index = mi
+    tem_porta = False
+    if porta and "jx" in info:
+        # porta do motorista: recorta a lateral esquerda entre a coluna da frente e a do meio, da soleira ao teto,
+        # e separa numa peca propria com a origem na dobradica (o site gira a peca para abrir)
+        hw_ = max(v.co.y for v in bm.verts)
+        xd1, zb_ = info["jx"][1] + porta[1], porta[2]; xd0 = xd1 - porta[0]       # porta = (comprimento, folga a frente da janela, altura da soleira)
+        for co, no in (((xd0, 0, 0), (1, 0, 0)), ((xd1, 0, 0), (1, 0, 0)), ((0, 0, zb_), (0, 0, 1))):
+            fs = [f for f in bm.faces if f.calc_center_median().y > 0]
+            geom = list({v for f in fs for v in f.verts}) + list({e for f in fs for e in f.edges}) + fs
+            bmesh.ops.bisect_plane(bm, geom=geom, plane_co=co, plane_no=no, dist=1e-4)
+        for f in bm.faces:
+            c = f.calc_center_median()
+            f.select = bool(c.y > hw_ * .45 and xd0 < c.x < xd1 and c.z > zb_ and abs(f.normal.z) < .8)      # lataria e forro da porta
+        tem_porta = any(f.select for f in bm.faces)
+        info["dobradica"] = Vector((xd1, hw_ - .04, zb_ + .35))
+    bm.to_mesh(me); bm.free()
+    if tem_porta:
+        mp = me.copy(); mp.name = nome + "_Porta"
+        for malha_, manter_sel in ((me, False), (mp, True)):
+            b2 = bmesh.new(); b2.from_mesh(malha_)
+            bmesh.ops.delete(b2, geom=[f for f in b2.faces if f.select != manter_sel], context="FACES")
+            if manter_sel: bmesh.ops.translate(b2, verts=b2.verts, vec=-info["dobradica"])
+            b2.to_mesh(malha_); b2.free()
+        P = bpy.data.objects.new(nome + "_Porta", mp); col.objects.link(P); P.parent = R; P.location = info["dobradica"]
+        for p_ in mp.polygons: p_.use_smooth = True
+    R.location = pos; R.rotation_euler = (0, 0, rz)
+    bpy.context.view_layer.update()
+    pts = [Vector(c) for c in corpo.bound_box]
+    hw = max(abs(p.y) for p in pts); comp = max(p.x for p in pts) - min(p.x for p in pts); alt = max(p.z for p in pts)
+    info.update(hw=hw, comp=comp, alt=alt)
+    if interior and "janela" in info:                     # o modelo e oco: bancos, painel e assoalho simples
+        j = info["janela"]; xb = j.x - .18; zb = j.z - .62; yb = hw * .45
+        for sy in (-1, 1):
+            box(nome + "_Banco", (.5, .48, .1), (xb, sy * yb, zb), M["interior"], col, R, bevel=.04)
+            box(nome + "_Encosto", (.12, .46, .6), (xb - .3, sy * yb, zb + .34), M["interior"], col, R, rot=(0, .2, 0), bevel=.04)
+        box(nome + "_Banco_Tras", (.5, hw * 1.5, .1), (xb - .95, 0, zb + .02), M["interior"], col, R, bevel=.04)
+        box(nome + "_Encosto_Tras", (.12, hw * 1.5, .5), (xb - 1.22, 0, zb + .32), M["interior"], col, R, rot=(0, .2, 0), bevel=.04)
+        box(nome + "_Painel", (.3, hw * 1.55, .22), (xb + .8, 0, zb + .21), M["interior"], col, R, bevel=.05)      # topo abaixo do peitoril: nao tapa o condutor
+        # volante: aro (anel), cubo e tres raios. Um disco cheio tapava o peito e os bracos do condutor
+        _vp, _vr = (xb + .52, yb, zb + .39), (0, -1.15, 0)
+        torno(nome + "_Volante", [(.17 + .013 * math.cos(2 * PI * k / 8), .013 * math.sin(2 * PI * k / 8)) for k in range(9)], M["preto"], col, R, pos=_vp, rot=_vr, seg=24)
+        cyl(nome + "_Volante_Cubo", .045, .045, .03, _vp, M["preto"], col, R, rot=_vr, seg=12)
+        for _a in (PI / 2, PI * 7 / 6, PI * 11 / 6):
+            _b = box(nome + "_Volante_Raio", (.15, .028, .012), _vp, M["preto"], col, R, rot=_vr)
+            _b.rotation_euler = (Matrix.Rotation(-1.15, 4, "Y") @ Matrix.Rotation(_a, 4, "Z")).to_euler()
+            _b.location = Vector(_vp) + (Matrix.Rotation(-1.15, 4, "Y") @ Matrix.Rotation(_a, 4, "Z")) @ Vector((.095, 0, 0))
+        box(nome + "_Assoalho", (comp * .62, hw * 1.5, .03), (xb - .2, 0, zb - .28), M["preto"], col, R)
+        info["banco"] = [xb, yb, zb + .05]
+    ev = corpo.evaluated_get(bpy.context.evaluated_depsgraph_get())
+    def sup_y(x, z, lado):
+        ok, lc, _, _ = ev.ray_cast(Vector((x, lado * 3.0, z)), Vector((0, -lado, 0)))
+        return lc.y if ok else lado * hw
+    def sup_x(y, z, ponta):
+        ok, lc, _, _ = ev.ray_cast(Vector((ponta * 6.0, y, z)), Vector((-ponta, 0, 0)))
+        return lc.x if ok else ponta * comp / 2
+    return R, sup_y, sup_x, info
+
+def faixa_lateral(nome, R, col, sup_y, x0, x1, z0, z1, m, n=24):
+    """Faixa pintada que acompanha a lateral do carro (dos dois lados)."""
+    for lado in (1, -1):
+        vs, fs = [], []
+        for i in range(n + 1):
+            x = x0 + (x1 - x0) * i / n
+            for z in (z0, z1): vs.append((x, sup_y(x, z, lado) + lado * .006, z))
+        for i in range(n): fs.append((2 * i, 2 * i + 2, 2 * i + 3, 2 * i + 1))
+        malha(nome, vs, fs, m, col, R)
+
+
+def viatura(nome, x, y, rz, texto_lado, m_faixa, arquivo="perua", cor="#eceded"):
+    r = carro_modelo(nome, C_VEIC, arquivo, (x, y, .12), rz, cor=cor, escala=1.08)
+    if not r: return
+    V_, sy_, sx_, inf = r
+    giroflex(V_, C_VEIC, -.25, inf["alt"] + .03, larg=1.05)
+    faixa_lateral(nome + "_Listra", V_, C_VEIC, sy_, -2.0, 1.68, .54, .71, m_faixa)
+    for lado in (1, -1):
+        v = "+y" if lado > 0 else "-y"
+        texto(nome + "_Adesivo", texto_lado, .085, (-.15, sy_(-.15, .89, lado) + lado * .008, .89), v, M["texto_az"] if m_faixa is M["faixa_pm"] else M["texto_pr"], C_VEIC, V_)
+        cyl(nome + "_Brasao_Imagem", .09, .09, .004, (1.03, sy_(1.03, .89, lado) + lado * .006, .89), M["brasao"], C_VEIC, V_, rot=(PI / 2, 0, 0), seg=28)
+viatura("Viatura_PM", -7.0, -10.15, 0, "POLÍCIA MILITAR", M["faixa_pm"])
+viatura("Viatura_PC", -12.6, -10.15, 0, "POLÍCIA CIVIL", M["faixa_pc"], "seda", "#e6e6e4")
+for nome, arq, x, y, rz, cor in (("Carro_A", "hatch", 17.0, -10.2, 0, "#8d9096"), ("Carro_B", "suv", 24.0, -10.2, 0, "#2c2f36"), ("Carro_C", "compacto", -20.5, -10.2, 0, "#a3231c"),
+                                 ("Carro_D", "taxi", -5.0, -14.85, PI, None), ("Carro_E", "seda", 11.5, -14.85, PI, "#d9d9d6"), ("Carro_F", "minivan", 33.0, -14.85, PI, "#3a5a7a")):
+    carro_modelo(nome, C_VEIC, arq, (x, y, .12), rz, cor=cor)
+
 # arvores, postes, carros e mobiliario urbano
 for i, (x, y, alt) in enumerate(((-7.5, -8.3, 6.5), (6.5, -8.3, 7.5), (20, -8.3, 6.8), (-22, -8.3, 7.2), (-14, -16.7, 7), (2, -16.7, 6.4), (30, -16.7, 7.4), (-5.5, 17.5, 6.2), (4.0, 15.5, 7.0), (9.6, 4.0, 5.5), (9.6, 20, 6.5))):
     if i in (9, 10): palmeira("Palmeira_%d" % i, x, y, 0, alt)
@@ -771,13 +1009,13 @@ for i, x in enumerate((-30, 0, 30)):                         # postes de concret
     cyl("Poste_Fio_%d" % i, .14, .1, 8.5, (x, -16.2, FZ + 4.25), M["poste"], C_RUA, seg=10); box("Poste_Fio_Cruzeta", (.1, 1.6, .1), (x, -16.2, FZ + 7.9), M["poste"], C_RUA)
     if i:
         for dy in (-.7, 0, .7): barra("Fio", (x - 30, -16.2 + dy, FZ + 7.95), (x, -16.2 + dy, FZ + 7.95), .012, M["preto"], C_MIU, seg=4)
-for i, (x, y, rz) in enumerate(((-2.2, 20.8, 0), (5.6, 20.8, PI), (16.5, -10.3, PI / 2), (-19, -10.3, PI / 2))):
+for i, (x, y, rz) in enumerate(((-2.2, 20.8, 0), (5.6, 20.8, PI))):
     ph("Carro_Coberto_%d" % i, "covered_car", x, y, FZ if y > 0 else .12, rz, C_RUA, alt=1.45, tris=2500)
-ph("Hidrante", "fire_hydrant", 2.6, -8.6, FZ, 0, C_RUA, alt=.75, tris=800)
+cyl("Hidrante", .09, .09, .6, (2.6, -8.6, FZ + .3), M["extintor"], C_RUA, seg=12); cyl("Hidrante_Tampa", .11, .05, .1, (2.6, -8.6, FZ + .65), M["extintor"], C_RUA, seg=12); cyl("Hidrante_Boca", .05, .05, .26, (2.6, -8.6, FZ + .42), M["extintor"], C_RUA, rot=(PI / 2, 0, 0), seg=10)
 palmeira("Palmeira_Patio", -7.6, 22.0, FZ, 6.8); palmeira("Palmeira_Calcada", 23.5, -8.2, FZ, 7.4)
 ph("Banco_Patio", "painted_wooden_bench", -7.9, 14.5, FZ, PI / 2, C_RUA, alt=.85, tris=1200)
-ph("Lixeira_Rua", "metal_trash_can", 1.4, -6.5, FZ, 0, C_RUA, alt=.8, tris=800)
-for i, (x, y) in enumerate(((-7, -12), (18, -13.5))): ph("Bueiro_%d" % i, "water_manhole_cover", x, y, .12, 0, C_RUA, alt=.03, tris=300)
+cyl("Lixeira_Rua", .2, .17, .7, (1.4, -6.5, FZ + .45), M["f_verde"], C_RUA, seg=14); cyl("Lixeira_Rua_Pe", .03, .03, .2, (1.4, -6.5, FZ + .1), M["grade"], C_RUA, seg=8)
+for i, (x, y) in enumerate(((-7, -12), (18, -13.5))): cyl("Bueiro_%d" % i, .32, .32, .012, (x, y, .124), M["grade"], C_RUA, seg=20)
 for i in range(46):                                           # arbustos e tufos ao longo dos muros e do jardim leste
     lado = i % 3; t_ = rnd.random()
     x, y = ((10.6 - rnd.uniform(0, 1.6), -5 + t_ * 40) if lado == 0 else (-8.3 + rnd.uniform(-.4, .4), 10 + t_ * 13) if lado == 1 else (-8 + t_ * 15.5, 23.4 + rnd.uniform(-.3, .3)))
@@ -788,13 +1026,17 @@ HT = FZ + 4 * 3.15                                      # topo do 4o andar
 MF = M["f_pastilha"]
 box("Predio_Terreo_Leste", (7.0, 15.2, PDT), (4.6, 1.5, FZ + PDT / 2), M["embasamento"], C_PRED)
 box("Predio_Terreo_Norte", (7.4, 7.4, PDT), (-2.7, 5.4, FZ + PDT / 2), M["embasamento"], C_PRED)
-box("Predio_Terreo_Oeste", (2.5, 15.2, PDT), (-7.75, 1.5, FZ + PDT / 2), M["embasamento"], C_PRED)
+for k, (x0, x1, y0, y1) in enumerate(((-9, -6.5, -6.1, -.14), (-9, -6.5, 1.34, 9.1), (-9, -8.06, -.14, 1.34))):      # em volta da cabine do elevador
+    box("Predio_Terreo_Oeste_%d" % k, (x1 - x0, y1 - y0, PDT), ((x0 + x1) / 2, (y0 + y1) / 2, FZ + PDT / 2), M["embasamento"], C_PRED)
+box("Predio_Terreo_Oeste_Verga", (1.56, 1.48, PDT - 2.34), (-7.28, .6, FZ + 2.34 + (PDT - 2.34) / 2), M["embasamento"], C_PRED)
 for k, (x0, x1, y0, y1) in enumerate(((-3.8, 8.1, -6.1, 9.1), (-9, -3.8, -6.1, -3.3), (-9, -6.5, -3.3, 9.1), (-6.5, -3.8, .1, 9.1))):      # 2o andar, com o vazio da escada
     box("Predio_Andar_2_%d" % k, (x1 - x0, y1 - y0, Z3 - .15 - FZ - PDT), ((x0 + x1) / 2, (y0 + y1) / 2, (FZ + PDT + Z3 - .15) / 2), MF, C_PRED)
 box("Escada_Fundo", (2.7, 3.3, .1), (-5.15, -1.65, Z3 - 1.35), M["concreto"], C_COR)
 box("Predio_3_Sul", (11.9, 6.0, PD + .15), (2.15, -3.1, Z3 - .15 + (PD + .15) / 2), MF, C_PRED)          # aptos 303 e 304 (fechados)
 box("Predio_3_Sudoeste", (5.2, 2.8, PD + .15), (-6.4, -4.7, Z3 - .15 + (PD + .15) / 2), MF, C_PRED)
-box("Predio_3_Oeste", (2.5, 12.4, PD + .15), (-7.75, 2.9, Z3 - .15 + (PD + .15) / 2), MF, C_PRED)         # caixa do elevador
+for k, (x0, x1, y0, y1) in enumerate(((-9, -6.5, -3.3, -.14), (-9, -6.5, 1.34, 9.1), (-9, -8.06, -.14, 1.34))):      # em volta da cabine do elevador
+    box("Predio_3_Oeste_%d" % k, (x1 - x0, y1 - y0, PD + .15), ((x0 + x1) / 2, (y0 + y1) / 2, Z3 - .15 + (PD + .15) / 2), MF, C_PRED)
+box("Predio_3_Oeste_Verga", (1.56, 1.48, PD - 2.34), (-7.28, .6, Z3 + 2.34 + (PD - 2.34) / 2), MF, C_PRED); box("Predio_3_Oeste_Base", (1.56, 1.48, .12), (-7.28, .6, Z3 - .09 - .06), MF, C_PRED)
 box("Predio_3_Fundo_301", (5.3, 3.4, PD + .15), (-3.75, 7.4, Z3 - .15 + (PD + .15) / 2), MF, C_PRED)
 box("Predio_Andar_4", (17.1, 15.2, HT - Z3 - PD), (-.45, 1.5, (Z3 + PD + HT) / 2), MF, C_PRED)
 for sx, sy, tam in ((0, -1, (17.2, .16, .7)), (0, 1, (17.2, .16, .7)), (-1, 0, (.16, 15.3, .7)), (1, 0, (.16, 15.3, .7))):
@@ -816,7 +1058,7 @@ ph("Predio_Camera", "security_camera_01", -4.3, -6.25, FZ + 2.45, PI, C_PRED, al
 box("Portaria_Piso", (7.4, 7.6, FZ), (-2.7, -2.2, FZ / 2), M["piso_port"], C_PORT)
 plano("Portaria_Teto", -6.4, 1, -6, 1.6, FZ + PDT - .001, M["teto"], C_PORT, True)
 parede("Portaria_Parede_Sul", (-6.4, -6), (1, -6), M["parede_port"], C_PORT, vaos=[(.5, 2.2, .5, 2.4), (2.7, 4.7, 0, 2.4), (5.2, 6.9, .5, 2.4)], h=PDT, z0=FZ)
-parede("Portaria_Parede_Oeste", (-6.4, -6), (-6.4, 1.6), M["parede_port"], C_PORT, h=PDT, z0=FZ)
+parede("Portaria_Parede_Oeste", (-6.4, -6), (-6.4, 1.6), M["parede_port"], C_PORT, h=PDT, z0=FZ, vaos=[(6.1, 7.1, 0, 2.1)])       # vao do elevador
 parede("Portaria_Parede_Norte", (-6.4, 1.6), (1, 1.6), M["parede_port"], C_PORT, h=PDT, z0=FZ)
 parede("Portaria_Parede_Leste", (1, -6), (1, 1.6), M["parede_port"], C_PORT, h=PDT, z0=FZ)
 janela("Portaria_Vidro_O", -5.05, -6, True, 1.7, .5, 2.4, C_PORT, FZ, 1); janela("Portaria_Vidro_L", -.35, -6, True, 1.7, .5, 2.4, C_PORT, FZ, 1)
@@ -849,19 +1091,37 @@ for k, (dy, dz) in enumerate(((-.25, .12), (.2, .1), (-.05, -.15))):
     box("Portaria_Aviso_Papel", (.005, .21, .29), (-6.26, -2.4 + dy, FZ + 1.55 + dz), M["papel"], C_MIU)
 texto("Portaria_Texto_Avisos", "AVISOS DO CONDOMÍNIO", .05, (-6.26, -2.4, FZ + 1.97), "+x", M["texto_pr"], C_MIU)
 modelo_ph("Portaria_Sofa", "sofa_02", (-4.4, .95, FZ), 0, C_PORT, max_tris=2500, alt=.8) or box("Portaria_Banco", (1.6, .5, .45), (-4.6, 1.2, FZ + .22), M["mad"], C_PORT)
-modelo_ph("Portaria_Planta_A", "potted_plant_01", (-5.9, -5.5, FZ), 0, C_PORT, max_tris=2500, alt=1.1)
-modelo_ph("Portaria_Planta_B", "potted_plant_02", (.5, -5.5, FZ), 1.0, C_PORT, max_tris=2500, alt=.9)
+vaso_planta("Portaria_Planta_A", -5.9, -5.5, FZ, 1.1, C_PORT, M["louca"])
+vaso_planta("Portaria_Planta_B", .5, -5.5, FZ, .9, C_PORT, M["louca"])
 plafon("Luz_Portaria_A", -2.7, -3.6, 110, FZ + PDT, C_PORT); plafon("Luz_Portaria_B", -2.7, -.4, 110, FZ + PDT, C_PORT)
 
 def elevador(nome, y0, z0, col, andar):
-    """Porta do elevador na parede oeste (x = -6.4): duas folhas de aco fechadas, batente, botao e indicador."""
+    """Elevador na parede oeste (x = -6.4): batente, duas folhas de aco que correm para os lados (A_Elevador_*), botao, indicador
+    e a cabine por tras (paredes de inox, espelho, corrimao, painel de botoes e luz)."""
     x = -6.29
-    box(nome + "_Batente", (.06, 1.14, 2.2), (x - .01, y0 + .5, z0 + 1.1), M["aluminio"], col)
-    for s in (0, 1): box(nome + "_Folha", (.03, .49, 2.1), (x + .03, y0 + .25 + s * .5, z0 + 1.05), M["aco_elev"], col)
+    box(nome + "_Batente_Cima", (.26, 1.14, .1), (-6.4, y0 + .5, z0 + 2.15), M["aluminio"], col)
+    for sy in (-.04, 1.04): box(nome + "_Batente_Lado", (.26, .08, 2.1), (-6.4, y0 + sy, z0 + 1.05), M["aluminio"], col)
+    for k, (yc, rz) in enumerate(((y0 + .25, 0), (y0 + .75, PI))):                 # folha 1 corre para -Y; folha 2 para +Y
+        r = vazio("A_%s_%d" % (nome, k + 1), (-6.42, yc, z0), C_INT, rz); r["abre"] = "gaveta"; r["curso"] = .47
+        box(r.name + "_Folha", (.03, .5, 2.1), (0, 0, 1.05), M["aco_elev"], C_INT, r)
     box(nome + "_Painel", (.02, .1, .2), (x + .01, y0 + 1.22, z0 + 1.15), M["inox"], C_MIU)
     cyl(nome + "_Botao", .018, .018, .012, (x + .025, y0 + 1.22, z0 + 1.15), M["led_verm"], C_MIU, rot=(0, PI / 2, 0), seg=12)
     box(nome + "_Indicador", (.02, .22, .09), (x + .01, y0 + .5, z0 + 2.3), M["preto"], C_MIU)
     texto(nome + "_Andar", andar, .06, (x + .022, y0 + .5, z0 + 2.3), "+x", M["led_verm"], C_MIU)
+    # cabine: x -8.0 .. -6.5, y y0-0.2 .. y0+1.2
+    xa, xb, ya, yb = -8.0, -6.52, y0 - .2, y0 + 1.2; cab = nome + "_Cabine"
+    box(cab + "_Piso", (xb - xa, yb - ya, .06), ((xa + xb) / 2, (ya + yb) / 2, z0 - .03), M["piso_port"], col)
+    plano(cab + "_Teto", xa, xb, ya, yb, z0 + 2.3, M["teto"], col, True)
+    box(cab + "_Fundo", (.04, yb - ya, 2.3), (xa - .02, (ya + yb) / 2, z0 + 1.15), M["aco_elev"], col)
+    for yl in (ya - .02, yb + .02): box(cab + "_Lado", (xb - xa, .04, 2.3), ((xa + xb) / 2, yl, z0 + 1.15), M["aco_elev"], col)
+    for yl, ll in ((y0 - .12, .16), (y0 + 1.12, .16)): box(cab + "_Frente", (.04, ll, 2.3), (xb + .0, yl, z0 + 1.15), M["aco_elev"], col)
+    box(cab + "_Espelho", (.01, 1.0, 1.1), (xa + .005, (ya + yb) / 2, z0 + 1.55), M["espelho"], C_MIU)
+    barra(cab + "_Corrimao", (xa + .08, ya + .15, z0 + .95), (xa + .08, yb - .15, z0 + .95), .018, M["inox"], C_MIU, seg=8)
+    box(cab + "_Botoeira", (.16, .02, .5), (xb - .25, yb - .01, z0 + 1.2), M["inox"], C_MIU)
+    for k in range(5): cyl(cab + "_Botao", .014, .014, .008, (xb - .25, yb - .024, z0 + 1.02 + k * .08), M["led_verm"] if k == (0 if andar == "T" else 3) else M["branco"], C_MIU, rot=(PI / 2, 0, 0), seg=10)
+    cyl(cab + "_Plafon", .14, .14, .03, ((xa + xb) / 2, (ya + yb) / 2, z0 + 2.285), M["lamp_f"], col, seg=16)
+    luz(cab + "_Luz", "POINT", 9, "#f4f6ff", ((xa + xb) / 2, (ya + yb) / 2, z0 + 2.05), C_LUZ, shadow_soft_size=.15)
+    ponto(nome.replace("Elevador_", "Cabine_"), -7.3, y0 + .5, (1, 0), z0)
 elevador("Elevador_Terreo", .1, FZ, C_PORT, "T")
 elevador("Elevador_Andar_3", .1, Z3, C_COR, "3")
 box("Portaria_Porta_Escada", (.04, .86, 2.08), (-6.28, -.7, FZ + 1.04), M["porta_ferro"], C_PORT)
@@ -873,7 +1133,7 @@ plano("Corredor_Teto", -6.4, 8, 0, 1.6, Z3 + PD - .001, M["teto"], C_COR, True)
 V_COR_N = [(3.0, 3.9, 0, 2.1), (9.9, 10.8, 0, 2.1)]                                 # portas do 301 e do 302
 parede("Corredor_Parede_Norte", (-6.4, 1.55), (8, 1.55), M["parede_cor"], C_COR, vaos=V_COR_N, t=.1, ext=.05)
 parede("Corredor_Parede_Sul", (-6.4, 0), (8, 0), M["parede_cor"], C_COR, vaos=[(.4, 1.3, 0, 2.1)])      # porta da escada
-parede("Corredor_Parede_Oeste", (-6.4, 0), (-6.4, 1.6), M["parede_cor"], C_COR)
+parede("Corredor_Parede_Oeste", (-6.4, 0), (-6.4, 1.6), M["parede_cor"], C_COR, vaos=[(.1, 1.1, 0, 2.1)])       # vao do elevador
 parede("Corredor_Parede_Leste", (8, 0), (8, 1.6), M["parede_cor"], C_COR)
 for nome, x in (("303", -2.95), ("304", 3.95)):                                      # portas dos aptos do lado sul: sempre fechadas
     box("Corredor_Porta_%s" % nome, (.86, .04, 2.08), (x, .115, Z3 + 1.04), M["porta_mad"], C_COR)
@@ -1108,12 +1368,12 @@ rack("Rack_TV", 6.5, 1.72, PI, C_SAL)
 box("TV_Tela", (1.15, .035, .66), (6.5, 1.93, Z3 + .93), M["tv"], C_SAL, bevel=.004); box("TV_Pe", (.5, .2, .02), (6.5, 1.93, Z3 + .555), M["preto"], C_SAL); box("TV_Haste", (.08, .04, .08), (6.5, 1.94, Z3 + .59), M["preto"], C_SAL)
 modelo_ph("Sofa", "Sofa_01", (6.95, 4.93, Z3), SOFA_RZ, C_SAL, max_tris=4000, alt=.82) or box("Sofa", (1.9, .85, .8), (6.9, 5.0, Z3 + .4), M["tecido_cad"], C_SAL)
 modelo_ph("Mesa_Centro", "modern_coffee_table_01", (6.8, 3.6, Z3), 0, C_SAL, max_tris=1500, alt=.4) or mesa("Mesa_Centro", 6.7, 3.5, (.8, .5), .42, C_SAL)
-box("Tapete_Sala", (2.3, 1.7, .012), (6.8, 3.6, Z3 + .006), M["tapete"], C_SAL)
+box("Tapete_Sala", (2.3, 1.7, .012), (6.8, 3.6, Z3 + .006), M["tapete_est"], C_SAL)
 mesa("Mesa_Jantar", 4.9, 3.2, (.8, 1.2), .76, C_SAL)
 for k, (dx, dy, rz) in enumerate(((-.62, -.28, -PI / 2), (-.62, .28, -PI / 2), (.62, -.28, PI / 2), (.62, .28, PI / 2))):
     if not ph("Cadeira_Jantar_%d" % k, "dining_chair_02", 4.9 + dx * 1.05, 3.2 + dy, Z3, rz + CADEIRA_RZ, C_SAL, alt=.92, tris=1200):
         cadeira("Cadeira_Jantar_%d" % k, 4.9 + dx + (-.21 if dx < 0 else .21), 3.2 + dy, rz + PI, C_SAL)
-modelo_ph("Planta_Sala", "potted_plant_01", (7.55, 2.1, Z3), 0, C_SAL, max_tris=2500, alt=1.2)
+vaso_planta("Planta_Sala", 7.55, 2.15, Z3, 1.1, C_SAL)
 ph("Quadro_Sala_A", "hanging_picture_frame_01", 6.5, 5.4, Z3 + 1.45, QUADRO_RZ, C_SAL, alt=.55, tris=600); ph("Quadro_Sala_B", "hanging_picture_frame_02", 7.3, 5.4, Z3 + 1.5, QUADRO_RZ, C_SAL, alt=.42, tris=600)
 def armario_alto(nome, x, y, rz, col, w=1.2, d=.5, h=2.2, m=None, prat=(.5, .95, 1.4, 1.85)):
     m = m or M["mdf_br"]; mv = Movel(nome, x, y, rz, col, d)
@@ -1135,10 +1395,22 @@ def bancada_cozinha(nome, x, y, rz, col, w=2.2, d=.55, h=.86):
         if i == 2:
             hz = (h - .1 - 2 * T) / 3
             for k in range(3): mv.gaveta(x0 + wm / 2, .1 + T + k * hz + .002, wm - .006, hz - .004, m)
-        else: mv.folha(x0 + (.003 if i != 1 else wm - .003), .102, wm - .006, h - .104, m, 1 if i != 1 else -1, zp=h - .22)
+        else:
+            mv.folha(x0 + (.003 if i != 1 else wm - .003), .102, wm - .006, h - .104, m, 1 if i != 1 else -1, zp=h - .22)
+            xc = x0 + wm / 2                                # o que se guarda no armario de baixo: panelas, pratos, potes
+            if i == 0:
+                for k in range(3): cyl("Mv_%s_Panela" % nome, .11 - k * .015, .11 - k * .015, .1, mv.W((xc, -d / 2, .1 + T + .05 + k * .1)), M["panela"], col, seg=14)
+                cyl("Mv_%s_Frigideira" % nome, .12, .12, .04, mv.W((xc, -d / 2, .5 + T / 2 + .02)), M["preto"], col, seg=14)
+            elif i == 3:
+                for k, m_ in enumerate(("lata_a", "lata_b", "lata_c")): mv.cx("Pote", (.1, .1, .16), (xc - .14 + k * .14, -d / 2, .1 + T + .08), M[m_])
+                cyl("Mv_%s_Pratos" % nome, .11, .11, .09, mv.W((xc, -d / 2, .5 + T / 2 + .045)), M["louca"], col, seg=16)
+            else:
+                for k, m_ in enumerate(("frasco_a", "frasco_c", "frasco_b")): cyl("Mv_%s_Limpeza" % nome, .04, .04, .24, mv.W((xc - .12 + k * .12, -d / 2 - .08, .1 + T + .12)), M[m_], col, seg=10)
     mv.cx("Tampo", (w + .02, d + .04, .03), (0, -d / 2 - .02, h + .015), M["granito"])
     mv.cx("Cuba", (.46, .36, .012), (-w / 2 + wm, -d / 2, h + .032), M["inox"]); mv.cx("Torneira", (.03, .03, .26), (-w / 2 + wm, -.07, h + .16), M["inox"])
     mv.cx("Torneira_Bica", (.025, .16, .025), (-w / 2 + wm, -.15, h + .28), M["inox"])
+    for k in range(2): cyl("Mv_%s_Prato_Pia" % nome, .1, .1, .014, mv.W((-w / 2 + wm - .06 + k * .05, -d / 2 + .02, h + .045 + k * .014)), M["louca"], col, seg=16)      # louca na pia
+    cyl("Mv_%s_Copo_Pia" % nome, .035, .03, .1, mv.W((-w / 2 + wm + .13, -d / 2 - .06, h + .09)), M["vidro_f2"], col, seg=10)
     mv.colisao(w, h + .03)
     # armario de cima
     ma = Movel(nome + "_Aereo", x, y, rz, col, .32); za = 1.5
@@ -1146,12 +1418,24 @@ def bancada_cozinha(nome, x, y, rz, col, w=2.2, d=.55, h=.86):
         x0 = -w / 2 + i * wm
         ma.casco(x0, x0 + wm, za, za + .62, m, prat=(za + .31,))
         ma.folha(x0 + (.003 if i % 2 == 0 else wm - .003), za + .002, wm - .006, .616, m, 1 if i % 2 == 0 else -1, zp=.1, pux=.1)
+        xc = x0 + wm / 2                                    # armario de cima: copos, pratos e mantimentos
+        if i < 2:
+            for k in range(4): cyl("Mv_%s_Copo" % nome, .032, .028, .1, ma.W((xc - .15 + k * .1, -.16, za + T + .05)), M["vidro_f2"], col, seg=10)
+            cyl("Mv_%s_Pratos" % nome, .105, .105, .1, ma.W((xc, -.16, za + .31 + T / 2 + .05)), M["louca"], col, seg=16)
+        else:
+            for k, m_ in enumerate(("lata_b", "lata_a", "lata_c", "frasco_c")): ma.cx("Mantimento", (.09, .12, rnd.uniform(.14, .22)), (xc - .17 + k * .115, -.17, za + T + .1), M[m_])
+            for k, m_ in enumerate(("lata_c", "lata_b")): cyl("Mv_%s_Lata" % nome, .04, .04, .11, ma.W((xc - .08 + k * .16, -.16, za + .31 + T / 2 + .055)), M[m_], col, seg=12)
     return mv
 bancada_cozinha("Bancada", .25, 4.075, PI, C_COZ)
 def geladeira(nome, x, y, rz, col, w=.66, d=.62, h=1.75):
     mv = Movel(nome, x, y, rz, col, d); m = M["geladeira"]; zf = h - .46
     mv.casco(-w / 2, w / 2, .04, zf, m, prat=(.45, .8, 1.05)); mv.casco(-w / 2, w / 2, zf, h, m)
-    mv.folha(w / 2 - .003, .05, w - .006, zf - .056, m, -1, tf=.05, ang=1.9, zp=zf - .5, pux=.3)
+    pg = mv.folha(w / 2 - .003, .05, w - .006, zf - .056, m, -1, tf=.05, ang=1.9, zp=zf - .5, pux=.3)
+    for k, (ix, iz, m_) in enumerate(((-.2, .95, "lata_a"), (-.33, 1.05, "lata_b"), (-.26, .82, "lata_c"), (-.42, .9, "frasco_a"))):      # imas e um papel na porta
+        box(pg.name + "_Ima", (.045, .006, .045), (ix, -.003, iz), M[m_], C_INT, pg)
+    box(pg.name + "_Recado", (.12, .003, .16), (-.3, -.002, 1.0 - .2), M["papel"], C_INT, pg)
+    for z_, itens in ((.04 + T, ("frasco_a", "frasco_c", "lata_b")), (.45 + T / 2, ("lata_a", "frasco_b")), (.8 + T / 2, ("frasco_c", "lata_c", "frasco_a")), (1.05 + T / 2, ("lata_b",))):      # dentro da geladeira
+        for k, m_ in enumerate(itens): cyl("Mv_%s_Item" % nome, .04, .04, rnd.uniform(.14, .24), mv.W((-.18 + k * .16, -d / 2, z_ + .11)), M[m_], col, seg=10)
     mv.folha(w / 2 - .003, zf + .004, w - .006, h - zf - .008, m, -1, tf=.05, ang=1.9, zp=.12, pux=.14)
     mv.colisao(w, h); return mv
 geladeira("Geladeira", -.88, 6.1, PI / 2, C_COZ)
@@ -1237,8 +1521,6 @@ for nome, pos, v in (("Interruptor_Sala", (4.62, 1.705, Z3 + 1.1), "y"), ("Inter
     tomada(nome, pos, v, C_MIU)
 # sala
 ph("Poltrona", "ArmChair_01", 7.3, 2.75, None, SOFA_RZ + PI * .75, C_SAL, alt=.85, tris=2500)
-ph("Almofadas", "throw_pillows_01", 6.6, 4.85, Z3 + .42, 0, C_SAL, alt=.3, tris=900)
-ph("Planta_Pachira", "pachira_aquatica_01", 7.5, 5.1, None, 0, C_SAL, alt=1.3, tris=3000)
 ph("Vaso_Rack", "ceramic_vase_01", 5.95, 1.9, Z3 + .545, 0, C_SAL, alt=.28, tris=500); ph("Livros_Rack", "book_encyclopedia_set_01", 7.05, 1.9, Z3 + .545, PI, C_SAL, alt=.26, tris=800)
 ph("Estante_Sala", "wooden_bookshelf_worn", 5.0, 1.9, None, PI, C_SAL, alt=1.7, tris=2500)
 ph("Porta_Retrato", "standing_picture_frame_01", 6.45, 3.55, Z3 + .4, .5, C_SAL, alt=.2, tris=400)
@@ -1247,21 +1529,22 @@ ph("Fruteira", "wooden_bowl_01", 4.9, 3.2, Z3 + .76, 0, C_SAL, alt=.09, tris=500
 # quartos
 ph("Despertador", "alarm_clock_01", 7.08, 8.7, Z3 + .55, 0, C_QUA, alt=.13, tris=500); ph("Pufe", "Ottoman_01", 6.1, 6.55, None, 0, C_QUA, alt=.42, tris=1200)
 ph("Vaso_Comoda", "ceramic_vase_03", 5.05, 6.15, Z3 + .86, 0, C_QUA, alt=.3, tris=500); ph("Retrato_Comoda", "standing_picture_frame_01", 5.05, 6.7, Z3 + .86, -PI / 2, C_QUA, alt=.22, tris=400)
-ph("Notebook", "classic_laptop", 2.85, 8.62, Z3 + .76, PI, C_QUA, alt=.24, tris=1200); ph("Luminaria_Mesa", "desk_lamp_arm_01", 3.4, 8.72, Z3 + .76, 2.6, C_QUA, alt=.45, tris=900)
-ph("Blocos_Notas", "office_notepads", 2.62, 8.55, Z3 + .76, .3, C_QUA, alt=.04, tris=300); ph("Fichario", "binder_notebook", 3.3, 8.5, Z3 + .76, -.4, C_QUA, alt=.05, tris=300)
-ph("Controle_Jogo", "gamepad", 4.2, 7.5, Z3 + .52, .8, C_QUA, alt=.06, tris=500); ph("Bola", "football", 4.5, 5.85, None, 0, C_QUA, alt=.22, tris=500)
+ph("Notebook", "classic_laptop", 2.85, 8.62, Z3 + .76, PI, C_QUA, alt=.24, tris=1200)
+box("Caderno", (.21, .29, .018), (2.62, 8.55, Z3 + .769), M["roupa_a"], C_QUA, rot=(0, 0, .3)); box("Folhas_Soltas", (.21, .297, .004), (3.32, 8.5, Z3 + .762), M["papel"], C_QUA, rot=(0, 0, -.4))
+ph("Bola", "football", 4.5, 5.85, None, 0, C_QUA, alt=.22, tris=500)
 ph("Botas", "rubber_boots", 2.1, 6.2, None, 1.2, C_QUA, alt=.32, tris=700); box("Cartaz_Quarto_2", (.7, .012, 1.0), (4.0, 5.57, Z3 + 1.5), M["cartaz"], C_QUA)
-ph("Planta_Quarto", "calathea_orbifolia_01", 5.1, 7.4, None, 0, C_QUA, alt=.75, tris=2000)
+vaso_planta("Planta_Quarto", 5.1, 7.45, Z3, .8, C_QUA, M["louca"])
 # cozinha e area de servico
 box("Microondas", (.48, .36, .28), (-.5, 4.3, Z3 + 1.03), M["inox"], C_COZ, bevel=.008); box("Microondas_Porta", (.34, .01, .22), (-.56, 4.485, Z3 + 1.03), M["micro"], C_COZ)
 ph("Chaleira", "vintage_electric_kettle", 1.2, 4.3, Z3 + .89, 2.5, C_COZ, alt=.22, tris=700); ph("Panela", "pot_enamel_01", -.72, 5.03, Z3 + .9, 0, C_COZ, alt=.14, tris=700)
-ph("Tabua", "wooden_cutting_board", -.05, 4.42, Z3 + .89, .4, C_COZ, alt=.025, tris=300)
+box("Tabua", (.34, .22, .02), (-.05, 4.42, Z3 + .9), M["mad"], C_COZ, rot=(0, 0, .4), bevel=.004)
 for k in range(5): box("Escorredor_Prato", (.012, .2, .2), (.13 + k * .05, 4.28, Z3 + 1.0), M["louca"], C_COZ, bevel=.004)
 box("Escorredor", (.34, .28, .03), (.23, 4.28, Z3 + .905), M["inox"], C_COZ)
 cyl("Relogio_Cozinha", .15, .15, .03, (.4, 6.725, Z3 + 2.05), M["louca"], C_COZ, rot=(PI / 2, 0, 0), seg=24); box("Relogio_Ponteiro", (.012, .01, .11), (.4, 6.705, Z3 + 2.09), M["preto"], C_MIU)
-ph("Lixeira_Cozinha", "metal_trash_can", 1.5, 6.5, None, 0, C_COZ, alt=.55, tris=800)
+cyl("Lixeira_Cozinha", .13, .16, .42, (1.5, 6.5, Z3 + .21), M["branco"], C_COZ, seg=16); cyl("Lixeira_Cozinha_Tampa", .17, .17, .03, (1.5, 6.5, Z3 + .435), M["inox"], C_COZ, seg=16)
 ph("Limpador", "all_purpose_cleaner", -.72, 7.35, Z3 + .9, 0, C_COZ, alt=.26, tris=400); ph("Agua_Sanitaria", "bleach_bottle", -.6, 7.2, None, 0, C_COZ, alt=.3, tris=400)
-ph("Vassoura", "plastic_broom", -.8, 8.75, None, 0, C_COZ, alt=1.3, tris=600); ph("Cesto_Roupa", "wicker_basket_01", .9, 8.55, None, 0, C_COZ, alt=.45, tris=1200)
+barra("Vassoura_Cabo", (-.82, 8.82, Z3 + .12), (-.86, 8.9, Z3 + 1.35), .012, M["mad"], C_MIU, seg=6); box("Vassoura_Cerdas", (.3, .06, .14), (-.82, 8.8, Z3 + .07), M["roupa_b"], C_COZ)
+cyl("Cesto_Roupa", .2, .24, .45, (.9, 8.55, Z3 + .225), M["branco"], C_COZ, seg=16); box("Cesto_Roupa_Dentro", (.3, .3, .1), (.9, 8.55, Z3 + .44), M["roupa_a"], C_COZ, bevel=.04)
 for k in range(2): barra("Varal", (-.85, 7.2 + k * .3, Z3 + 2.2), (1.7, 7.2 + k * .3, Z3 + 2.2), .006, M["branco"], C_MIU, seg=4)
 for k, (xr, m_) in enumerate(((-.3, "roupa_c"), (.3, "roupa_a"), (.95, "roupa_b"))): box("Varal_Roupa", (.42, .02, .55), (xr, 7.2 + (k % 2) * .3, Z3 + 1.92), M[m_], C_COZ)
 # banheiro
@@ -1270,10 +1553,44 @@ for k, m_ in enumerate(("frasco_a", "frasco_b", "frasco_c")): cyl("Frasco_Box", 
 box("Prateleira_Box", (.12, .5, .02), (-.82, 2.62, Z3 + 1.09), M["vidro"], C_VID); box("Tapete_Banheiro", (.5, .8, .015), (.85, 3.0, Z3 + .0075), M["lencol"], C_BAN)
 for k, m_ in enumerate(("frasco_c", "frasco_a")): cyl("Frasco_Pia", .03, .03, .14, (.58 + k * .1, 3.82, Z3 + .92), M[m_], C_BAN, seg=10)
 # portaria e corredor
-ph("Placa_Piso_Molhado", "WetFloorSign_01", -1.6, .6, FZ, .4, C_PORT, alt=.62, tris=500); ph("Portaria_Planta_C", "potted_plant_04", -5.8, 1.1, FZ, 0, C_PORT, alt=1.0, tris=2500)
-ph("Portaria_Camera", "security_camera_01", .7, 1.3, FZ + 2.7, 2.4, C_PORT, alt=.22, tris=500); ph("Portaria_Prancheta", "clipboard", -.55, -3.3, FZ + .765, .3, C_PORT, alt=.02, tris=300)
+ph("Placa_Piso_Molhado", "WetFloorSign_01", -1.6, .6, FZ, .4, C_PORT, alt=.62, tris=500); vaso_planta("Portaria_Planta_C", -5.8, 1.1, FZ, 1.0, C_PORT, M["louca"])
+ph("Portaria_Camera", "security_camera_01", .7, 1.3, FZ + 2.7, 2.4, C_PORT, alt=.22, tris=500); box("Portaria_Prancheta", (.23, .32, .008), (-.55, -3.3, FZ + .766), M["mad"], C_PORT, rot=(0, 0, .3)); box("Portaria_Prancheta_Folha", (.21, .29, .003), (-.55, -3.3, FZ + .772), M["papel"], C_MIU, rot=(0, 0, .3))
 ph("Portaria_Quadro", "hanging_picture_frame_03", -3.2, 1.47, FZ + 1.6, QUADRO_RZ, C_PORT, alt=.7, tris=600)
-ph("Corredor_Planta", "potted_plant_04", 7.5, 1.1, None, 0, C_COR, alt=.9, tris=2500); ph("Corredor_Camera", "security_camera_01", -6.1, 1.35, Z3 + 2.45, -2.2, C_COR, alt=.2, tris=500)
+vaso_planta("Corredor_Planta", 7.5, 1.1, Z3, .9, C_COR, M["louca"]); ph("Corredor_Camera", "security_camera_01", -6.1, 1.35, Z3 + 2.45, -2.2, C_COR, alt=.2, tris=500)
+
+# sapatos, mochila e roupas pelo quarto; objetos nos armarios do banheiro e do corredor
+for nome, x, y, rz, m_ in (("Sapato_A", 5.55, 8.2, .2, "sapato"), ("Sapato_B", 5.68, 8.22, -.1, "sapato"), ("Sapato_C", 3.75, 6.4, 1.3, "sapato_m"), ("Sapato_D", 3.78, 6.55, 1.5, "sapato_m"), ("Chinelo_A", 6.9, 6.75, .3, "roupa_a"), ("Chinelo_B", 7.03, 6.72, .1, "roupa_a")):
+    box(nome, (.1, .27, .08 if "Sapato" in nome else .03), (x, y, Z3 + (.04 if "Sapato" in nome else .015)), M[m_], C_QUA, rot=(0, 0, rz), bevel=.015)
+box("Roupa_Cadeira", (.4, .05, .5), (2.9, 8.07, Z3 + .75), M["roupa_d"], C_QUA, bevel=.015); box("Toalha_Cama", (.5, .7, .03), (6.5, 7.3, Z3 + .525), M["roupa_c"], C_QUA, bevel=.01)
+for k, m_ in enumerate(("frasco_c", "frasco_a", "frasco_b", "frasco_c")): cyl("Banheiro_Frasco_Gabinete", .035, .035, .16, (.62 + k * .13, 3.72, Z3 + .25 + T + .08), M[m_], C_BAN, seg=10)
+for k in range(3): cyl("Banheiro_Papel_Reserva", .055, .055, .1, (.7 + k * .12, 3.72, Z3 + .52 + T / 2 + .05), M["papel"], C_BAN, seg=12)
+for k, m_ in enumerate(("frasco_b", "frasco_c", "frasco_a")): cyl("Banheiro_Frasco_Espelheira", .025, .025, .1, (.7 + k * .15, 3.86, Z3 + 1.25 + T + .05), M[m_], C_BAN, seg=10)
+
+# ================================================================== 6c. portaria e corredor: detalhes de uso
+for nome, tam, pos in (("Rodape_Port_N", (7.2, .015, .1), (-2.7, 1.49, FZ + .05)), ("Rodape_Port_L", (.015, 7.4, .1), (.89, -2.2, FZ + .05)), ("Rodape_Port_O", (.015, 5.4, .1), (-6.29, -3.2, FZ + .05))):
+    box(nome, tam, pos, M["rodape"], C_PORT)
+box("Portaria_Tapete", (2.4, 1.6, .012), (-4.4, -.4, FZ + .006), M["tapete_est"], C_PORT)
+mesa("Portaria_Mesa_Centro", -4.4, -.2, (.9, .5), .4, C_PORT, M["mad_esc"], z=FZ)
+for k, (dx, m_) in enumerate(((-.2, "roupa_b"), (.05, "roupa_a"), (.22, "papel"))): box("Portaria_Revista", (.21, .28, .008), (-4.4 + dx, -.2, FZ + .405 + k * .008), M[m_], C_PORT, rot=(0, 0, k * .4))
+cyl("Portaria_Relogio", .16, .16, .03, (-2.0, 1.48, FZ + 2.3), M["louca"], C_PORT, rot=(PI / 2, 0, 0), seg=24); box("Portaria_Relogio_Ponteiro", (.012, .01, .12), (-2.0, 1.46, FZ + 2.34), M["preto"], C_MIU)
+box("Portaria_Bebedouro", (.32, .32, 1.0), (.7, .9, FZ + .5), M["branco"], C_PORT, bevel=.02); cyl("Portaria_Bebedouro_Galao", .13, .13, .38, (.7, .9, FZ + 1.2), M["bebedouro"], C_VID, seg=14)
+cyl("Portaria_Extintor", .07, .07, .45, (-6.2, -5.4, FZ + .9), M["extintor"], C_PORT, seg=14); box("Portaria_Extintor_Placa", (.02, .2, .2), (-6.29, -5.4, FZ + 1.75), M["extintor"], C_MIU)
+box("Portaria_Placa_Saida", (.4, .03, .16), (-2.7, -5.88, FZ + 2.6), M["placa_verde"], C_PORT); texto("Portaria_Texto_Saida", "SAÍDA", .07, (-2.7, -5.86, FZ + 2.6), "+y", M["texto_br"], C_MIU)
+texto("Portaria_Texto_Elevador", "ELEVADOR", .07, (-6.285, .6, FZ + 2.5), "+x", M["texto_pr"], C_MIU)
+for k in range(3): box("Portaria_Chave", (.01, .03, .08), (.855, -2.8 + k * .2, FZ + 1.6), M["metal"], C_MIU)
+cyl("Portaria_Lixeira", .13, .11, .5, (-6.1, 1.3, FZ + .25), M["inox"], C_PORT, seg=14); cyl("Portaria_Guarda_Chuva", .12, .12, .5, (-1.2, -5.6, FZ + .25), M["preto"], C_PORT, seg=12)
+box("Portaria_Regras", (.5, .02, .7), (-.6, 1.49, FZ + 1.6), M["papel"], C_PORT); texto("Portaria_Texto_Regras", "REGULAMENTO INTERNO", .035, (-.6, 1.475, FZ + 1.88), "-y", M["texto_pr"], C_MIU)
+for k in range(9): box("Portaria_Regras_Linha", (.4, .005, .012), (-.6, 1.478, FZ + 1.8 - k * .06), M["preto"], C_MIU)
+# corredor
+for nome, tam, pos in (("Rodape_Cor_S1", (1.8, .015, .08), (-4.3, .11, Z3 + .04)), ("Rodape_Cor_S2", (5.9, .015, .08), (.5, .11, Z3 + .04)), ("Rodape_Cor_S3", (3.5, .015, .08), (6.2, .11, Z3 + .04))):
+    box(nome, tam, pos, M["rodape"], C_COR)
+for x, y in ((-2.3, 1.49), (4.6, 1.49), (-2.3, .11), (4.6, .11)):                 # campainhas ao lado das quatro portas
+    box("Corredor_Campainha", (.07, .012, .1), (x, y, Z3 + 1.25), M["branco"], C_MIU); cyl("Corredor_Campainha_Botao", .012, .012, .006, (x, y + (.008 if y < 1 else -.008), Z3 + 1.25), M["preto"], C_MIU, rot=(PI / 2, 0, 0), seg=10)
+texto("Corredor_Texto_Andar", "3º ANDAR", .09, (-6.285, 1.42, Z3 + 2.35), "+x", M["texto_pr"], C_MIU)
+box("Corredor_Placa_Saida", (.4, .03, .16), (-5.55, .12, Z3 + 2.32), M["placa_verde"], C_COR); texto("Corredor_Texto_Saida", "SAÍDA", .07, (-5.55, .14, Z3 + 2.32), "+y", M["texto_br"], C_MIU)
+for x in (-.9, 6.0): box("Corredor_Quadro_%d" % x, (.6, .02, .45), (x, 1.49, Z3 + 1.55), M[("roupa_e", "roupa_a")[x > 0]], C_COR); box("Corredor_Quadro_Moldura_%d" % x, (.68, .015, .53), (x, 1.495, Z3 + 1.55), M["mad_esc"], C_COR)
+cyl("Corredor_Lixeira", .12, .1, .45, (7.75, 1.35, Z3 + .225), M["inox"], C_COR, seg=14)
+box("Corredor_Banco", (.9, .32, .05), (1.2, .28, Z3 + .43), M["mad"], C_COR); [box("Corredor_Banco_Pe", (.05, .28, .42), (1.2 + sx * .4, .28, Z3 + .21), M["mad"], C_COR) for sx in (-1, 1)]
 
 # ================================================================== 7. sol, ceu, pontos, cameras
 # Ceu: HDRI diurno do Poly Haven (CC0), so como luz difusa do ceu (o disco do sol do arquivo e cortado). O sol e uma lampada
@@ -1305,7 +1622,7 @@ camera("Camera_Quarto_1", (5.3, 5.8, Z3 + 1.65), (7.6, 8.6, Z3 + .9), 13)
 camera("Camera_Quarto_2", (2.3, 5.8, Z3 + 1.65), (4.2, 8.8, Z3 + .9), 13)
 camera("Camera_Banheiro", (1.6, 3.2, Z3 + 1.65), (-.4, 2.6, Z3 + .9), 13)
 camera("Camera_Vizinho", (-2.9, 2.0, Z3 + 1.65), (-5.4, 4.6, Z3 + 1.0), 14)
-camera("Camera_Patio", (6.6, 9.4, Z3 + 1.6), (-2, 26, 4.0), 16); camera("Camera_Morros", (9.5, 10, Z3 + 6.5), (40, 250, 60), 14); camera("Camera_Morros_2", (-60, 60, 30), (-150, 300, 60), 20); camera("Camera_Rua_2", (14, -8.0, 1.7), (-8, -7.0, 5.0), 16)
+camera("Camera_Patio", (6.6, 9.4, Z3 + 1.6), (-2, 26, 4.0), 16); camera("Camera_Morros", (9.5, 10, Z3 + 6.5), (40, 250, 60), 14); camera("Camera_Faixa", (-2, -12.5, 1.7), (12, -12.5, .2), 16); camera("Camera_Viaturas", (-2.5, -7.4, 1.7), (-11, -10.6, .8), 16); camera("Camera_Elevador", (-3.6, -.4, FZ + 1.6), (-7.3, .6, FZ + 1.2), 16); camera("Camera_Mesa_Q2", (3.6, 7.2, Z3 + 1.7), (2.9, 8.8, Z3 + .7), 16); camera("Camera_Sala_N", (5.6, 2.6, Z3 + 1.6), (6.2, 5.5, Z3 + .9), 14); camera("Camera_Rua_2", (14, -8.0, 1.7), (-8, -7.0, 5.0), 16)
 p = camera("Camera_Planta", (2.0, 4.0, Z3 + 30.0), (2.0, 4.0, 0)); p.data.type = "ORTHO"; p.data.ortho_scale = 19; p.data.clip_start = 30 - PD + .06
 p.rotation_euler = (0, 0, 0)
 scene.camera = bpy.data.objects["Camera_Sala"]

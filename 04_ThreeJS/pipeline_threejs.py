@@ -99,8 +99,18 @@ def neutro(path):
     p = os.path.join(os.path.dirname(path), "tecido_neutro_cor.png")
     return p if os.path.exists(p) else path
 
+# Peso do arquivo no Quest: sem luzes dinamicas, o mapa de relevo quase nao aparece (so mexe no reflexo do ceu), entao fica
+# de fora; a rugosidade so entra nos pisos de dentro, que refletem; e o que so se ve de fora ou de longe usa a cor em 512 px.
+COM_RUGOSIDADE = {"laminado", "granilite", "piso_corredor", "piso_cozinha", "azulejo", "marmore"}
+LONGE_512 = {"asfalto", "calcada", "pavers", "grama", "terra", "concreto", "parede_lisa", "fachada_placas", "fachada_amarela", "fachada_pastilha", "telha", "morro_pedra", "metal_pintado", "reboco", "reboco_pintado"}
+def reduzir(path, nome, lado):
+    out = os.path.join(CACHE, "%s_%d.jpg" % (nome, lado))
+    if not os.path.exists(out):
+        src = bpy.data.images.load(path); src.scale(lado, lado); src.filepath_raw = out; src.file_format = "JPEG"; src.save(); bpy.data.images.remove(src)
+    return out
 def aplicar_pbr(mat, pasta, tile, tile_antigo=1.0, tint=None, recolor=None, metal=0.0, alvo_lin=None):
-    diff, rough, nor = maps(pasta)
+    diff, rough, nor = maps(pasta); nor = None
+    if pasta not in COM_RUGOSIDADE: rough = None
     if recolor:
         diff = recolor(diff)
     alvo = tuple(alvo_lin) if alvo_lin else (lin(hx(tint)) if tint else tuple(mat.diffuse_color[:3]))
@@ -124,7 +134,7 @@ def aplicar_pbr(mat, pasta, tile, tile_antigo=1.0, tint=None, recolor=None, meta
             t.image.colorspace_settings.name = "Non-Color"
         L(mp.outputs["Vector"], t.inputs["Vector"])
         return t
-    td = tex(diff, False)
+    td = tex(reduzir(diff, pasta + "_cor" + ("_" + recolor.__name__ if recolor else ""), 512) if pasta in LONGE_512 and not (mat.name.startswith("Parede")) else diff, False)
     media = media_linear(td.image)
     fator = [min(1.6, a / max(m, 1e-3)) for a, m in zip(alvo, media)]
     mix = nt.nodes.new("ShaderNodeMix"); mix.data_type = "RGBA"; mix.blend_type = "MULTIPLY"
@@ -170,11 +180,11 @@ say("%d materiais trocados por PBR com texturas CC0" % n_pbr)
 SEM_LIGHTMAP = {"09_Luzes_Cameras", "99_Colisao", "98_Colisao_Extra", "08_Interativos", "13_Vidros", "14_Miudos", "15_Vegetacao", "16_Grama", "18_Fachada_Miudos"}
 # niveis:  rapido (teste, ~2 min) | padrao (~5 min) | alta (~30-60 min)
 ALTA = "alta" in ARGS
-RES = {"05_Apto_Estrutura": 2048, "01_Rua_Patio": 2048, "02_Predio": 1024, "15_Vegetacao": 2048, "17_Entorno_Longe": 1024, "03_Portaria": 1024, "04_Corredor_Escada": 1024, "06_Sala": 1024, "07_Cozinha_Servico": 1024, "10_Quartos": 1024, "11_Banheiro": 1024, "12_Vizinho_301": 1024}
+RES = {"05_Apto_Estrutura": 2048, "01_Rua_Patio": 2048, "02_Predio": 1024, "15_Vegetacao": 2048, "17_Entorno_Longe": 1024, "19_Veiculos": 1024, "03_Portaria": 1024, "04_Corredor_Escada": 1024, "06_Sala": 1024, "07_Cozinha_Servico": 1024, "10_Quartos": 1024, "11_Banheiro": 1024, "12_Vizinho_301": 1024}
 RES_PADRAO = 512
 # a luz e calculada com o ceu e o sol em nivel natural (la fora fica certo); o site clareia so os lightmaps de dentro,
 # como a vista se acostuma ao entrar em casa
-GANHOS = {"01_Rua_Patio": 1.6, "02_Predio": 1.6, "17_Entorno_Longe": 1.0}; GANHO_INTERIOR = 3.0      # rua e predios proximos um pouco mais claros; morros e cidade ao longe como calculados
+GANHOS = {"01_Rua_Patio": 1.6, "02_Predio": 1.6, "17_Entorno_Longe": 1.0, "19_Veiculos": 1.6}; GANHO_INTERIOR = 3.0      # rua e predios proximos um pouco mais claros; morros e cidade ao longe como calculados
 AMOSTRAS = 24 if RAPIDO else (600 if ALTA else 256)      # alta: so mais amostras (lightmaps maiores pesam no Quest)
 scene.render.engine = "CYCLES"; scene.cycles.device = "CPU"
 scene.cycles.samples = AMOSTRAS; scene.cycles.use_denoising = False
@@ -266,8 +276,8 @@ def para_jpg(img, dados):
     if not os.path.exists(out):
         w, h = img.size
         copia = img.copy()
-        if max(w, h) > 1024:
-            k = 1024 / max(w, h); copia.scale(max(1, int(w * k)), max(1, int(h * k)))
+        if max(w, h) > 512:
+            k = 512 / max(w, h); copia.scale(max(1, int(w * k)), max(1, int(h * k)))
         copia.filepath_raw = out; copia.file_format = "JPEG"; copia.save(); bpy.data.images.remove(copia)
     novo = bpy.data.images.load(out, check_existing=True)
     if dados: novo.colorspace_settings.name = "Non-Color"
