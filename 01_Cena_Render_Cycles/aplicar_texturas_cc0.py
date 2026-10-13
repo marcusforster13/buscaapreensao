@@ -50,7 +50,7 @@ def grafite(path):
 
 def neutro(path):
     """Tecido em tom neutro e claro (sem cor), para tingir com a cor de cada estofado."""
-    out = os.path.join(os.path.dirname(path), "tecido_neutro_cor.png")
+    out = os.path.join(os.path.dirname(path), "tecido_neutro_cor.png")      # um por pasta de tecido
     if not os.path.exists(out):
         src = bpy.data.images.load(path)
         w, h = src.size; px = np.empty(w * h * 4, np.float32); src.pixels.foreach_get(px)
@@ -102,7 +102,7 @@ def pbr_caixa(mat, pasta, tile, tint=None, recolor=None, relevo=.35, metal=0.0):
         L(mp.outputs["Vector"], t.inputs["Vector"])
         return t
     td = tex(diff, False)
-    fator = [min(1.0, a / max(m, 1e-3)) for a, m in zip(alvo, media_linear(td.image))]
+    fator = [min(1.6, a / max(m, 1e-3)) for a, m in zip(alvo, media_linear(td.image))]      # pode clarear ate 60%: paredes brancas de verdade
     mix = nt.nodes.new("ShaderNodeMix"); mix.data_type = "RGBA"; mix.blend_type = "MULTIPLY"
     next(i for i in mix.inputs if i.name == "Factor" and i.type == "VALUE").default_value = 1.0
     L(td.outputs["Color"], next(i for i in mix.inputs if i.name == "A" and i.type == "RGBA"))
@@ -126,29 +126,54 @@ def pbr_caixa(mat, pasta, tile, tint=None, recolor=None, relevo=.35, metal=0.0):
 TABELA = {
     "Asfalto":            ("asfalto", 3.0, "#3a3a3c", None, .5),
     "Meio_Fio_Concreto":  ("concreto", 1.5, None, None, .35),
-    "Calcada_Concreto":   ("concreto", 2.0, None, None, .3),
+    "Calcada_Concreto":   ("calcada", 2.0, "#a8a49a", None, .35),
+    "Piso_Intertravado":  ("pavers", 1.6, "#a39f95", None, .4),
+    "Grama":              ("grama", 1.6, "#3f6a2c", None, .9),
+    "Grama_Longe":        ("grama", 9.0, "#3a4d2c", None, .5),
+    "Terra_Canteiro":     ("terra", 1.2, "#4a3a2c", None, .6),
+    "Pedra_Morro":        ("morro_pedra", 38.0, "#75706a", None, .9),
     "Concreto_Aparente":  ("concreto", 2.0, None, None, .25),
-    "Fachada_Areia":      ("reboco_pintado", 2.0, None, None, .25),
-    "Fachada_Branca":     ("reboco_pintado", 2.0, None, None, .25),
-    "Fachada_Terracota":  ("reboco_pintado", 2.0, None, None, .25),
-    "Fachada_Cinza":      ("concreto", 2.0, None, None, .2),
-    "Parede_Apto":        ("reboco_pintado", 2.0, None, None, .12),
-    "Parede_Corredor":    ("reboco_pintado", 2.0, None, None, .15),
-    "Parede_Portaria":    ("reboco_pintado", 2.0, None, None, .15),
-    "Teto_Laje":          ("reboco", 2.5, None, None, .1),
-    "Piso_Laminado":      ("piso_madeira", 1.6, "#a57c52", None, .2),
-    "Madeira_Movel":      ("madeira_tabuas", 1.2, "#9a7650", None, .12),
+    "Poste_Concreto":     ("concreto", 1.0, None, None, .25),
+    "Muro_Pintado":       ("parede_lisa", 2.5, "#cfc9b8", None, .3),
+    "Fachada_Pastilha":   ("azulejo", 1.0, "#d6cbb0", None, .3),
+    "Fachada_Pastilha_Azul": ("azulejo", 1.0, "#a9bcc6", None, .3),
+    "Fachada_Placas":     ("fachada_placas", 2.4, "#b9b6ae", None, .3),
+    "Fachada_Pintada_Creme": ("parede_lisa", 3.0, "#e3d6b4", None, .25),
+    "Fachada_Pintada_Salmao": ("parede_lisa", 3.0, "#d9a58a", None, .25),
+    "Fachada_Pintada_Branca": ("parede_lisa", 3.0, "#e9e6dc", None, .25),
+    "Fachada_Pintada_Verde": ("parede_lisa", 3.0, "#a9bba0", None, .25),
+    "Fachada_Pintada_Cinza": ("parede_lisa", 3.0, "#a3a5a8", None, .25),
+    "Fachada_Amarela":    ("fachada_amarela", 2.5, "#e0c070", None, .3),
+    "Embasamento_Granito": ("marmore", 1.5, "#5d5a56", None, .05),
+    "Telha_Ceramica":     ("telha", 1.6, "#a8573a", None, .7),
+    "Parede_Apto":        ("parede_lisa", 2.5, "#f2f1ec", None, .06),
+    "Parede_Corredor":    ("parede_lisa", 2.5, "#e3ddcb", None, .06),
+    "Parede_Portaria":    ("parede_lisa", 2.5, "#e6e0d0", None, .06),
+    "Teto_Laje":          ("parede_lisa", 3.0, "#f6f5f1", None, .04),
+    "Piso_Laminado":      ("laminado", 1.8, "#b39a7c", None, .15),
+    "Piso_Ceramica":      ("piso_cozinha", 1.8, "#dcd6c8", None, .2),
+    "Piso_Porcelanato":   ("piso_corredor", 2.0, "#c9c3b6", None, .15),
+    "Piso_Granito_Portaria": ("granilite", 2.0, "#c2bcae", None, .08),
+    "Azulejo_Branco":     ("azulejo", 1.2, "#ecebe5", None, .2),
+    "Granito_Preto":      ("marmore", 1.2, "#2c2c30", None, .05),
+    "Madeira_Movel":      ("madeira_clara", 1.2, "#a8845c", None, .1),
     "Madeira_Escura_Movel": ("madeira_escura", 1.2, "#5a3d2a", None, .12),
     "Porta_Madeira":      ("madeira_escura", 1.4, "#7a5638", None, .12),
-    "Geladeira_Branca":   ("plastico_branco", .4, "#ffffff", None, .05),
-    "Lencol_Azul":        ("tecido", .5, "#6f8fb0", neutro, .3),
-    "Lencol_Cinza":       ("tecido", .5, "#8b8f94", neutro, .3),
-    "Colchao":            ("tecido", .5, "#e2ddd0", neutro, .3),
-    "Travesseiro":        ("tecido", .4, "#eeeae0", neutro, .3),
-    "Tecido_Cadeira":     ("tecido", .4, "#6b5c4c", neutro, .3),
-    "Tapete":             ("tecido", .3, "#8a6f5a", neutro, .5),
-    "Capacho":            ("tecido", .25, "#5a4a38", neutro, .6),
+    "Lencol_Azul":        ("malha", .5, "#6f8fb0", neutro, .3),
+    "Lencol_Cinza":       ("malha", .5, "#8b8f94", neutro, .3),
+    "Colchao":            ("malha", .5, "#e2ddd0", neutro, .3),
+    "Travesseiro":        ("malha", .4, "#eeeae0", neutro, .3),
+    "Cortina_Branca":     ("linho", .6, "#e6e2d8", neutro, .4),
+    "Tecido_Cadeira":     ("linho", .4, "#6b5c4c", neutro, .3),
+    "Tapete":             ("carpete", .8, "#8a7866", neutro, .6),
+    "Capacho":            ("carpete", .4, "#5a4a38", neutro, .6),
+    "Roupa_Azul":         ("malha", .4, "#2f4a6e", neutro, .3),
+    "Roupa_Vermelha":     ("malha", .4, "#8e2f2a", neutro, .3),
+    "Roupa_Branca":       ("malha", .4, "#e4e0d6", neutro, .3),
+    "Roupa_Cinza":        ("malha", .4, "#5c5f63", neutro, .3),
+    "Roupa_Verde":        ("malha", .4, "#476349", neutro, .3),
     "Porta_Corta_Fogo":   ("metal_pintado", 1.0, "#8f2f28", grafite, .15),
+    "Grade_Ferro":        ("metal_pintado", 1.0, "#2c2e30", grafite, .15),
     "Aco_Elevador":       ("metal_inox", .5, "#c8c8c8", None, .08),
     "Inox":               ("metal_inox", .3, "#ffffff", None, .08),
 }

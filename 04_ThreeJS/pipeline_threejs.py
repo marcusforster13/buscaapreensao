@@ -126,7 +126,7 @@ def aplicar_pbr(mat, pasta, tile, tile_antigo=1.0, tint=None, recolor=None, meta
         return t
     td = tex(diff, False)
     media = media_linear(td.image)
-    fator = [min(1.0, a / max(m, 1e-3)) for a, m in zip(alvo, media)]
+    fator = [min(1.6, a / max(m, 1e-3)) for a, m in zip(alvo, media)]
     mix = nt.nodes.new("ShaderNodeMix"); mix.data_type = "RGBA"; mix.blend_type = "MULTIPLY"
     next(i for i in mix.inputs if i.name == "Factor" and i.type == "VALUE").default_value = 1.0
     L(td.outputs["Color"], next(i for i in mix.inputs if i.name == "A" and i.type == "RGBA"))
@@ -167,11 +167,14 @@ for m in bpy.data.materials:
 say("%d materiais trocados por PBR com texturas CC0" % n_pbr)
 
 # ------------------------------------------------------------------ 2. lightmaps (bake do Cycles)
-SEM_LIGHTMAP = {"09_Luzes_Cameras", "99_Colisao", "98_Colisao_Extra", "08_Interativos", "13_Vidros", "14_Miudos"}
+SEM_LIGHTMAP = {"09_Luzes_Cameras", "99_Colisao", "98_Colisao_Extra", "08_Interativos", "13_Vidros", "14_Miudos", "15_Vegetacao", "16_Grama", "18_Fachada_Miudos"}
 # niveis:  rapido (teste, ~2 min) | padrao (~5 min) | alta (~30-60 min)
 ALTA = "alta" in ARGS
-RES = {"05_Apto_Estrutura": 2048, "01_Rua_Patio": 1024, "03_Portaria": 1024, "04_Corredor_Escada": 1024, "06_Sala": 1024, "07_Cozinha_Servico": 1024, "10_Quartos": 1024, "11_Banheiro": 1024, "12_Vizinho_301": 1024}
+RES = {"05_Apto_Estrutura": 2048, "01_Rua_Patio": 2048, "02_Predio": 1024, "15_Vegetacao": 2048, "17_Entorno_Longe": 1024, "03_Portaria": 1024, "04_Corredor_Escada": 1024, "06_Sala": 1024, "07_Cozinha_Servico": 1024, "10_Quartos": 1024, "11_Banheiro": 1024, "12_Vizinho_301": 1024}
 RES_PADRAO = 512
+# a luz e calculada com o ceu e o sol em nivel natural (la fora fica certo); o site clareia so os lightmaps de dentro,
+# como a vista se acostuma ao entrar em casa
+GANHOS = {"01_Rua_Patio": 1.6, "02_Predio": 1.6, "17_Entorno_Longe": 1.0}; GANHO_INTERIOR = 3.0      # rua e predios proximos um pouco mais claros; morros e cidade ao longe como calculados
 AMOSTRAS = 24 if RAPIDO else (600 if ALTA else 256)      # alta: so mais amostras (lightmaps maiores pesam no Quest)
 scene.render.engine = "CYCLES"; scene.cycles.device = "CPU"
 scene.cycles.samples = AMOSTRAS; scene.cycles.use_denoising = False
@@ -225,6 +228,8 @@ for col in bpy.data.collections:
     px = np.empty(res * res * 4, np.float32); img.pixels.foreach_get(px)
     rgb = px.reshape(res, res, 4)[..., :3]
     rgb = np.stack([blur(rgb[..., c]) for c in range(3)], -1)
+    if col.name not in GANHOS:                      # interior: menos cor refletida do piso de madeira nas paredes e no teto
+        lum = rgb.mean(-1, keepdims=True); rgb = lum + (rgb - lum) * .4
     vmax = float(min(max(np.percentile(rgb, 99.7), 1e-3), 3.0))      # teto: superficies coladas nas lampadas nao roubam a escala
     enc = np.clip(rgb / vmax, 0, 1) ** (1 / 2.2)
     out = np.ones((res, res, 4), np.float32); out[..., :3] = enc
@@ -233,7 +238,7 @@ for col in bpy.data.collections:
     dst.pixels.foreach_set(out.ravel()); dst.filepath_raw = os.path.join(LMDIR, arq); dst.file_format = "PNG"; dst.save()
     bpy.data.images.remove(dst)
     for o in objs:
-        lm_json[sanitize(o.name)] = {"lm": "lightmaps/" + arq, "max": round(vmax, 5)}
+        lm_json[sanitize(o.name)] = {"lm": "lightmaps/" + arq, "max": round(vmax, 5), "ganho": GANHOS.get(col.name, GANHO_INTERIOR)}
     say("lightmap %s: %d objetos, %dpx, max %.3f" % (col.name, len(objs), res, vmax))
 for m in bpy.data.materials:
     if m.node_tree and m.node_tree.nodes.get("LM_BAKE"):
@@ -329,7 +334,7 @@ if os.path.isdir(aud_src):
 cfg = {"gerado_em": time.strftime("%Y-%m-%d %H:%M"), "qualidade": "rapida" if RAPIDO else ("alta" if ALTA else "padrao"),
        "lightmaps": lm_json, "lightmap_ganho": round(math.pi, 5), "exposicao": 1.0,
        "env": env_arq, "env_intensidade": .5, "cameras": cams, "abre": abre,
-       "luz_dinamica": 1.0, "pontos": pontos}
+       "luz_dinamica": 1.0, "luz_externa": 2.4, "ceu_intensidade": 1.0, "pontos": pontos}
 with open(os.path.join(WEB, "cena.json"), "w", encoding="utf-8") as f:
     json.dump(cfg, f, ensure_ascii=False, indent=1)
 bpy.ops.wm.save_as_mainfile(filepath=os.path.join(BASE, "busca_THREE.blend"))

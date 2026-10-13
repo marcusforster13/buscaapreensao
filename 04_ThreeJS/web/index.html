@@ -83,7 +83,7 @@ THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 const $ = id => document.getElementById(id);
-const VERSAO = '1013-1533';      // carimbada por carimbar_versao.py a cada envio; entra no endereco dos arquivos para o navegador nao usar copia antiga
+const VERSAO = '1013-1709';      // carimbada por carimbar_versao.py a cada envio; entra no endereco dos arquivos para o navegador nao usar copia antiga
 window.__versao = VERSAO; window.__arq = {};
 // endereco de um arquivo com a marca do conteudo dele: muda so quando o arquivo muda (o resto fica guardado no navegador)
 const H = window.__h = p => p + '?h=' + (window.__arq[p] || VERSAO);
@@ -111,14 +111,15 @@ document.body.appendChild(VRButton.createButton(renderer));
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xb9d2ea);
-const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.05, 300);
+scene.fog = new THREE.FogExp2(0xc6d9ea, 0.0019);      // nevoa do dia: os morros ao longe ficam azulados, como na vida real
+const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.05, 1200);
 camera.position.set(0, 1.6, 0);
 const rig = new THREE.Group(); rig.add(camera); scene.add(rig);
 scene.add(new THREE.HemisphereLight(0xdfe9f5, 0x8a8275, 0.25));   // preenchimento para o que nao tem lightmap
 
 /* ceu de dia procedural: nitido em qualquer resolucao.
    O HDRI fica so para os reflexos (vidros, lataria, asfalto). Tecla C alterna para o HDRI. */
-const ceu = new THREE.Mesh(new THREE.SphereGeometry(250, 64, 32), new THREE.ShaderMaterial({
+const ceu = new THREE.Mesh(new THREE.SphereGeometry(1000, 64, 32), new THREE.ShaderMaterial({
   side: THREE.BackSide, depthWrite: false, fog: false,
   uniforms: { uTempo: { value: 0 } },
   vertexShader: `varying vec3 vDir;
@@ -143,7 +144,7 @@ if (CFG.env) {
     tex.mapping = THREE.EquirectangularReflectionMapping;
     const pm = new THREE.PMREMGenerator(renderer);
     scene.environment = pm.fromEquirectangular(tex).texture;
-    hdriFundo = tex;
+    hdriFundo = tex;      // o HDRI fica so para os reflexos; o ceu a vista e o azul liso (tecla C alterna)
   });
 }
 function alternarCeu() {
@@ -168,20 +169,23 @@ const iluminar = m => { if (m.metalness > .45) m.metalness = .45;      // metal 
   if (!m.lightMap) { m.lightMap = lmBranco; m.lightMapIntensity = CFG.luz_dinamica ?? 1.1; } return m; };
 gltf.scene.traverse(o => {
   if (!o.isMesh) return;
-  let p = o, lm = null, estatico = false;
-  while (p) { lm = lm || CFG.lightmaps[p.name]; estatico = estatico || /_Estatico/.test(p.name); p = p.parent; }
+  let p = o, lm = null, estatico = false, grama = false;
+  while (p) { lm = lm || CFG.lightmaps[p.name]; estatico = estatico || /_Estatico/.test(p.name); grama = grama || /16_Grama|15_Vegetacao|18_Fachada_Miudos/.test(p.name); p = p.parent; }
   const conv = m0 => {
     const m = m0.clone();
     if (/Vidro_Janela/.test(m.name)) { m.transparent = true; m.opacity = .12; m.depthWrite = false; m.roughness = .05; }      // vidros das janelas, do box e da portaria
+    if (/Vidro_Guarda/.test(m.name)) { m.transparent = true; m.opacity = .35; m.depthWrite = false; m.roughness = .05; }      // guarda-corpo de vidro das varandas
+    if (/Vidro_Fachada/.test(m.name)) { m.roughness = .06; m.metalness = .55; m.userData.reflexo = 1.2; }      // janelas dos predios: refletem o ceu
+    if (/Grama_Lamina/.test(m.name)) m.side = THREE.DoubleSide;
     if (/Espelho/.test(m.name)) { m.metalness = .95; m.roughness = .04; m.color.setScalar(.9); }      // espelheira do banheiro: reflete o ambiente
     if (/Modelo_Notebook_Tela|Modelo_Celular|Modelo_Monitor/.test(m.name)) { m.color.setScalar(.12); m.emissiveIntensity = .8; }      // telas: so o brilho proprio, sem estourar
     if (m.emissive) m.userData.emi0 = m.emissiveIntensity;
     if (m.transmission > 0) { m.transmission = 0; m.transparent = true; m.opacity = 0.45; m.roughness = 0.05; }
-    m.envMapIntensity = CFG.env_intensidade ?? 0.35;
+    m.envMapIntensity = m.userData.reflexo ?? CFG.env_intensidade ?? 0.35;
     if (lm && o.geometry.attributes.uv1) {
-      m.lightMap = lmTex[lm.lm]; m.userData.lmBase = lm.max * CFG.lightmap_ganho;
+      m.lightMap = lmTex[lm.lm]; m.userData.lmBase = lm.max * CFG.lightmap_ganho * (lm.ganho ?? 1);
       m.lightMapIntensity = m.userData.lmBase; lmMats.push(m);
-    } else if (!lm) { iluminar(m); if (/Espelho/.test(m0.name)) m.metalness = .95; }      // pecas sem lightmap: luz uniforme (as que abrem recebem depois a luz do comodo, em abrir.js)
+    } else if (!lm) { iluminar(m); if (/Espelho/.test(m0.name)) m.metalness = .95; if (grama) m.lightMapIntensity = CFG.luz_externa ?? 2.6; }      // pecas sem lightmap: luz uniforme (as que abrem recebem depois a luz do comodo, em abrir.js)
     return m;
   };
   o.material = Array.isArray(o.material) ? o.material.map(conv) : conv(o.material);

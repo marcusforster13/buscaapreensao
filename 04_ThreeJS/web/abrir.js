@@ -34,13 +34,13 @@ export function iniciarAbrir(ctx) {
     const u = uv1.getX(h.face.a) * bar.x + uv1.getX(h.face.b) * bar.y + uv1.getX(h.face.c) * bar.z;
     const v = uv1.getY(h.face.a) * bar.x + uv1.getY(h.face.b) * bar.y + uv1.getY(h.face.c) * bar.z;
     const t = pixels(lmTex[lm.lm]), d = t.g.getImageData(clamp(Math.floor(u * t.w), 0, t.w - 1), clamp(Math.floor(v * t.h), 0, t.h - 1), 1, 1).data;
-    return Math.pow((d[0] + d[1] + d[2]) / 765, 2.2) * lm.max;
+    return Math.pow((d[0] + d[1] + d[2]) / 765, 2.2) * lm.max * (lm.ganho ?? 1);
   }
   function luzLocal(centro, frente) {          // media de tres pontos do piso a frente da peca, sem os extremos (mancha de sol, sombra do movel)
     const vs = [];
     for (const k of [.35, .65, .95]) { const l = luzNoPiso(V.copy(centro).addScaledVector(frente, k).setY(centro.y + .6)); if (l != null) vs.push(l); }
     if (!vs.length) return null;
-    vs.sort((a, b) => a - b); return clamp(vs[Math.floor(vs.length / 2)], .05, .55);
+    vs.sort((a, b) => a - b); return clamp(vs[Math.floor(vs.length / 2)], .08, .9);
   }
 
   /* ---------- pecas ---------- */

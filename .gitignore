@@ -28,3 +28,6 @@ desktop.ini
 # guardados no computador do autor
 # (o HDRI de 5 MB vai para o repositorio)
 *.hdr.bak
+
+# modelos do Poly Haven: baixaveis de novo por modelos/baixar_polyhaven.py (420 MB)
+01_Cena_Render_Cycles/modelos/polyhaven/
