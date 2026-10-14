@@ -28,8 +28,6 @@ def _civil(s, extra=None):
     d.update(extra or {}); return d
 PAPEIS = {
     # Busca e Apreensao: equipe, portaria, moradores e vizinha
-    "pm_parceiro": ("Police_Male_01", {"parada": "m_idle_neutral_01", "falando": "m_gestic_talk_neutral_01", "andando": "m_walk_fast_01", "correndo": "m_run_fast_01"}),
-    "pm_apoio": ("Police_Male_01", {"parada": "m_idle_neutral_01", "falando": "m_gestic_talk_neutral_01", "andando": "m_walk_fast_01"}),
     "policial_civil": ("Police_Male_06", {"parada": "m_idle_neutral_01", "falando": "m_gestic_talk_neutral_01", "andando": "m_walk_fast_01"}),      # roupa comum, colete e distintivo
     "porteiro": ("Male_Adult_14", _civil("m")),
     "morador": ("Male_Adult_10", _civil("m", {"irritado": "m_idle_angry_01", "sentado_parado": "m_idle_neutral_01+sentado_parado"})),
@@ -326,6 +324,52 @@ def redirecionar(src, arm, rest_ref, ini, fim, fator, passo=2, pose=None, no_lug
     arm.animation_data.action = None
     return acao
 
+def corrigir_boca(arm, malhas):
+    """Alguns modelos (ex.: Police_Male_06) tem vertices de dentro da boca presos a cabeca enquanto os vizinhos seguem a
+    mandibula: ao abrir a boca para falar, eles viram uma ponta espetada. Abre a mandibula de teste, mede quanto cada
+    vertice perto da boca andou e, onde um vertice destoa dos vizinhos, copia para ele a media dos pesos dos vizinhos."""
+    from mathutils import Quaternion
+    pb = next((b for b in arm.pose.bones if "MJaw" in b.name), None)
+    if not pb: return 0
+    bpy.context.view_layer.update()
+    centro = arm.matrix_world @ pb.head
+    def posicoes():
+        dg = bpy.context.evaluated_depsgraph_get(); r = {}
+        for o in malhas:
+            ev = o.evaluated_get(dg); me = ev.to_mesh(); r[o.name] = [o.matrix_world @ v.co for v in me.vertices]; ev.to_mesh_clear()
+        return r
+    pb.rotation_mode = "QUATERNION"; q0 = pb.rotation_quaternion.copy()
+    antes = posicoes()
+    pb.rotation_quaternion = q0 @ Quaternion((0, 0, 1), .3); bpy.context.view_layer.update()
+    depois = posicoes()
+    pb.rotation_quaternion = q0; bpy.context.view_layer.update()
+    total = 0
+    for o in malhas:
+        a, b = antes[o.name], depois[o.name]
+        if len(a) != len(o.data.vertices): continue
+        d = [(b[i] - a[i]).length for i in range(len(a))]
+        viz = [[] for _ in a]
+        for e in o.data.edges: i, j = e.vertices; viz[i].append(j); viz[j].append(i)
+        perto = [i for i in range(len(a)) if (a[i] - centro).length < .1]
+        ruins = set()
+        for i in perto:
+            if not viz[i]: continue
+            ds = sorted(d[j] for j in viz[i]); med = ds[len(ds) // 2]
+            if med > .004 and (d[i] < .35 * med or d[i] > 2.5 * med + .004): ruins.add(i)
+        if not ruins: continue
+        nomes = {g.index: g.name for g in o.vertex_groups}
+        pesos = {i: {nomes[g.group]: g.weight for g in o.data.vertices[i].groups if g.group in nomes} for i in range(len(a))}
+        for i in ruins:
+            boas = [j for j in viz[i] if j not in ruins] or viz[i]
+            soma = {}
+            for j in boas:
+                for n_, w in pesos[j].items(): soma[n_] = soma.get(n_, 0) + w / len(boas)
+            for g in o.vertex_groups: g.remove([i])
+            for n_, w in soma.items():
+                if w > .001: o.vertex_groups[n_].add([i], w, "REPLACE")
+        total += len(ruins)
+    return total
+
 def reduzir(img, nome, dados):
     """Salva a textura em 1024 px (JPG para cor, PNG para normal) e devolve a imagem nova."""
     ext = "PNG" if dados else "JPEG"
@@ -399,6 +443,8 @@ for papel, (pasta, anims) in PAPEIS.items():
     malhas = [o for o in bpy.context.scene.objects if o.type == "MESH"]
     for o in [o for o in bpy.context.scene.objects if o.type == "EMPTY"]:
         bpy.data.objects.remove(o, do_unlink=True)
+    n_boca = corrigir_boca(arm, malhas)
+    if n_boca: say("%s: %d vertices da boca presos errado, corrigidos" % (papel, n_boca))
     # No Rocketbox a RAIZ do esqueleto guarda a altura do quadril (0,92 m em pe, 0,33 m agachado) e a direcao
     # do corpo, e cada FBX de animacao vem com a pose do 1o quadro no lugar da T-pose. Por isso a animacao e
     # redirecionada osso a osso no espaco do mundo (ver redirecionar) e gravada so nos ossos do personagem.

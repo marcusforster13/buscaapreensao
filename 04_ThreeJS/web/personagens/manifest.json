@@ -1,21 +1,4 @@
 {
- "pm_parceiro": {
-  "arquivo": "personagens/pm_parceiro.glb",
-  "animacoes": [
-   "parada",
-   "falando",
-   "andando",
-   "correndo"
-  ]
- },
- "pm_apoio": {
-  "arquivo": "personagens/pm_apoio.glb",
-  "animacoes": [
-   "parada",
-   "falando",
-   "andando"
-  ]
- },
  "policial_civil": {
   "arquivo": "personagens/policial_civil.glb",
   "animacoes": [

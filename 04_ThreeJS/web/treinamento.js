@@ -572,8 +572,7 @@ export async function iniciar(ctx) {
   // chave, modelo, nome, onde fica (x, y, andar), para onde olha (dx, dy), voz, altura
   const ELENCO = [
     ['civil', 'policial_civil', 'Inspetor Souza (Polícia Civil)', [-1.9, -3.5, 0], [-.4, -1], 'm', 1.8],
-    ['parceiro', 'pm_parceiro', 'Policial parceiro', [-3.5, -3.6, 0], [.4, -1], 'm', 1.8],
-    ['apoio', 'pm_apoio', 'Policial de apoio', [-3.0, -5.2, 0], [0, 1], 'm', 1.8],
+    // (o parceiro e o apoio da PM foram tirados a pedido do usuario: a equipe e o aluno e o inspetor)
     ['porteiro', 'porteiro', 'Porteiro', [-.1, -2.6, 0], [-1, 0], 'm', 1.75],
     ['morador', 'morador', 'Morador', [3.95, 2.35, 3], [0, -1], 'm', 1.78],      // perto da porta de entrada, fora da mesa de jantar
     ['mulher', 'mulher', 'Moradora', [6.4, 4.4, 3], [0, -1], 'f', 1.66],
@@ -689,7 +688,7 @@ export async function iniciar(ctx) {
         diz(civil(), 'Certo. Vamos esperar dar cinco horas.').then(() => legenda('', 'Meia hora depois: 05h05.', 3));
       } else if (op.id === 'subir') {
         if (!A.leu) registrar('subir_sem_ler');
-        A.fase = 'corredor'; diz(civil(), 'Vamos de elevador. O apoio vem junto.').then(() => dica('Chame o elevador (botão ao lado da porta), entre e aperte o painel.', 6));
+        A.fase = 'corredor'; diz(civil(), 'Vamos de elevador.').then(() => dica('Chame o elevador (botão ao lado da porta), entre e aperte o painel. No andar, bata do lado da porta, fora da linha dela.', 7));
       } else if (op.id === 'auto') lavrarAuto();
       else if (op.id === 'sem_auto') { registrar('sem_auto'); finalizar(); }
     }, `Agora: ${A.hora}. ${A.fase === 'portaria' ? 'Leia o mandado (X ou V) e confira com o local.' : ''}`);
@@ -801,6 +800,8 @@ export async function iniciar(ctx) {
   }
   function bater(anunciou) {
     const v = S.variacao; A.bateu = true; A.fase = 'entrada';
+    camera.getWorldPosition(V); if (Math.abs(V.x - 3.95) > .45) registrar('fora_linha_porta');      // porta do 302: de x 3,5 a 4,4; ao lado = fora da linha de tiro
+    else dica('Você bateu bem na frente da porta. O certo é ficar ao lado, encostado na parede, fora da linha dela.', 6);
     if (anunciou) registrar('bater_anunciar');
     if (A.hora < '05:00') registrar('cumprir_madrugada');
     if (v.endereco !== 'correto') registrar('cumprir_endereco_errado');
@@ -1157,7 +1158,7 @@ export async function iniciar(ctx) {
     if (!A) return ['Aguarde o próximo cumprimento'];
     if (A.fase === 'fim') return ['Cumprimento concluído'];
     if (A.fase === 'portaria') { if (!A.leu) L.push('Leia o mandado (X ou V)'); L.push('Confira endereço, bloco, apartamento e validade com o inspetor'); if (v.horario === 'madrugada' && !A.esperou) L.push(`Agora são ${A.hora}`); L.push('Fale com o porteiro'); L.push('Quando estiver tudo certo, combine a subida com o inspetor'); }
-    else if (!A.entrou) { if (!S.feitos.has('apoio_escada') && !S.feitos.has('apoio_corredor')) L.push('Posicione o policial de apoio'); L.push('Vá até a porta certa, bata e anuncie-se'); if (A.recusou) L.push('O morador se recusa: leia o mandado e decida'); if (A.ausente) L.push('Ninguém em casa: chame uma testemunha antes de entrar'); }
+    else if (!A.entrou) { L.push('Vá até a porta certa e bata do lado dela, fora da linha da porta'); L.push('Anuncie-se: polícia, mandado de busca'); if (A.recusou) L.push('O morador se recusa: leia o mandado e decida'); if (A.ausente) L.push('Ninguém em casa: chame uma testemunha antes de entrar'); }
     else { if (!A.acompanha && !A.testemunhas.size) L.push('Peça ao morador que acompanhe a busca'); L.push('Procure só onde o que o mandado pede poderia estar'); L.push('Fotografe, isole e lacre o que encontrar'); if (v.inquilino === 'quarto_trancado') L.push('Há um quarto trancado: descubra de quem é'); L.push('No fim, fale com o inspetor para lavrar o auto'); }
     return L.slice(0, 6);
   }
