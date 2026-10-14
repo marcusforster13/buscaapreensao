@@ -57,7 +57,7 @@
       "id": "F2", "nome": "Corredor: posicionamento da equipe",
       "acoes": [
         { "id": "apoio_escada", "texto": "Posicionar o apoio na escada (rota de fuga)", "pontos": 3, "validar": true },
-        { "id": "apoio_corredor", "texto": "Posicionar o apoio no corredor, fora da linha da porta", "pontos": 3, "validar": true },
+        { "id": "apoio_corredor", "texto": "Posicionar o parceiro ao lado da porta, fora da linha de tiro", "pontos": 3, "validar": true },
         { "id": "conferir_porta", "texto": "Conferir o número da porta antes de bater", "pontos": 4, "base": "CPP art. 243" },
         { "id": "orientar_vizinho", "texto": "Orientar o vizinho curioso a voltar para casa (ou convidá-lo como testemunha)", "pontos": 2, "condicao": "variacao.vizinho == 'sai_corredor'" }
       ],

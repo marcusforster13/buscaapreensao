@@ -1,5 +1,5 @@
 {
- "gerado_em": "2026-10-14 10:42",
+ "gerado_em": "2026-10-14 11:19",
  "qualidade": "alta",
  "lightmaps": {
   "01_Rua_Patio_Estatico": {
@@ -14,7 +14,7 @@
   },
   "03_Portaria_Estatico": {
    "lm": "lightmaps/LM_03_Portaria.png",
-   "max": 2.74134,
+   "max": 2.75437,
    "ganho": 3.0
   },
   "04_Corredor_Escada_Estatico": {
@@ -29,7 +29,7 @@
   },
   "06_Sala_Estatico": {
    "lm": "lightmaps/LM_06_Sala.png",
-   "max": 1.43364,
+   "max": 1.43363,
    "ganho": 3.0
   },
   "07_Cozinha_Servico_Estatico": {
@@ -59,7 +59,7 @@
   },
   "19_Veiculos_Estatico": {
    "lm": "lightmaps/LM_19_Veiculos.png",
-   "max": 1.34731,
+   "max": 1.31739,
    "ganho": 1.6
   }
  },

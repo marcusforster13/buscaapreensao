@@ -19,7 +19,7 @@ TMP = os.path.join(AQUI, "_texturas_web")
 os.makedirs(WEB, exist_ok=True); os.makedirs(TMP, exist_ok=True)
 FORCAR = "--forcar" in sys.argv
 
-# papeis do cassino clandestino. "animacao+pose" = pose gerada por IK sobre a animacao base
+# papeis da busca e apreensao. "animacao+pose" = pose gerada por IK sobre a animacao base
 def _civil(s, extra=None):
     fala = "m_gestic_talk_neutral_01" if s == "m" else "f_gestic_talk_nervous_01"
     d = {"parada": s + "_idle_neutral_01", "falando": fala, "nervoso": s + "_idle_nervous_01", "andando": "m_walk_fast_01",
@@ -27,17 +27,16 @@ def _civil(s, extra=None):
          "algemado": s + "_idle_neutral_01+maos_nas_costas", "algemado_andando": "m_walk_fast_01+maos_nas_costas"}
     d.update(extra or {}); return d
 PAPEIS = {
+    # Busca e Apreensao: equipe, portaria, moradores e vizinha
     "pm_parceiro": ("Police_Male_04", {"parada": "m_idle_neutral_01", "falando": "m_gestic_talk_neutral_01", "andando": "m_walk_fast_01", "correndo": "m_run_fast_01"}),
     "pm_apoio": ("Police_Male_01", {"parada": "m_idle_neutral_01", "falando": "m_gestic_talk_neutral_01", "andando": "m_walk_fast_01"}),
-    "responsavel": ("Male_Adult_14", _civil("m", {"irritado": "m_idle_angry_01"})),
-    "atendente": ("Female_Adult_08", _civil("f")),
-    "seguranca": ("Male_Adult_20", _civil("m", {"irritado": "m_idle_angry_01", "apontando": "m_idle_neutral_01+apontando"})),
-    "seguranca_2": ("Male_Adult_10", _civil("m", {"apontando": "m_idle_neutral_01+apontando"})),
-    "atirador": ("Male_Adult_04", _civil("m", {"sentado_parado": "m_idle_neutral_01+sentado_parado", "sentado_apontando": "m_idle_neutral_01+sentado_apontando", "apontando": "m_idle_neutral_01+apontando"})),
-    "apostador_a": ("Male_Adult_13", _civil("m", {"sentado_jogando": "m_idle_neutral_01+sentado_jogando"})),
-    "apostador_b": ("Male_Adult_16", _civil("m")),
-    "apostador_c": ("Female_Adult_01", _civil("f", {"sentado_jogando": "f_idle_neutral_01+sentado_jogando"})),
-    "apostador_d": ("Male_Adult_01", _civil("m")),
+    "policial_civil": ("Male_Adult_13", {"parada": "m_idle_neutral_01", "falando": "m_gestic_talk_neutral_01", "andando": "m_walk_fast_01"}),
+    "porteiro": ("Male_Adult_04", _civil("m")),
+    "morador": ("Male_Adult_10", _civil("m", {"irritado": "m_idle_angry_01", "sentado_parado": "m_idle_neutral_01+sentado_parado"})),
+    "mulher": ("Female_Adult_01", _civil("f", {"sentado_parado": "f_idle_neutral_01+sentado_parado"})),
+    "crianca": ("Female_Child_01", _civil("f")),
+    "idoso": ("Male_Adult_20", _civil("m", {"sentado_parado": "m_idle_neutral_01+sentado_parado"})),
+    "vizinha": ("Female_Adult_08", _civil("f")),
 }
 
 REF_TPOSE = "Female_Adult_08"     # T-pose adulta usada como referencia para as criancas

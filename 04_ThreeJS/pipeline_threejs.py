@@ -180,20 +180,52 @@ say("%d materiais trocados por PBR com texturas CC0" % n_pbr)
 SEM_LIGHTMAP = {"09_Luzes_Cameras", "99_Colisao", "98_Colisao_Extra", "08_Interativos", "13_Vidros", "14_Miudos", "15_Vegetacao", "16_Grama", "18_Fachada_Miudos"}
 # niveis:  rapido (teste, ~2 min) | padrao (~5 min) | alta (~30-60 min)
 ALTA = "alta" in ARGS
-RES = {"05_Apto_Estrutura": 2048, "01_Rua_Patio": 2048, "02_Predio": 1024, "15_Vegetacao": 2048, "17_Entorno_Longe": 1024, "19_Veiculos": 1024, "03_Portaria": 1024, "04_Corredor_Escada": 1024, "06_Sala": 1024, "07_Cozinha_Servico": 1024, "10_Quartos": 1024, "11_Banheiro": 1024, "12_Vizinho_301": 1024}
+RES = {"05_Apto_Estrutura": 2048, "01_Rua_Patio": 2048, "02_Predio": 1024, "15_Vegetacao": 2048, "17_Entorno_Longe": 1024, "19_Veiculos": 1024, "03_Portaria": 2048, "04_Corredor_Escada": 2048, "06_Sala": 2048, "07_Cozinha_Servico": 2048, "10_Quartos": 2048, "11_Banheiro": 1024, "12_Vizinho_301": 1024}
 RES_PADRAO = 512
 # a luz e calculada com o ceu e o sol em nivel natural (la fora fica certo); o site clareia so os lightmaps de dentro,
 # como a vista se acostuma ao entrar em casa
-GANHOS = {"01_Rua_Patio": 1.6, "02_Predio": 1.6, "17_Entorno_Longe": 1.0, "19_Veiculos": 1.6}; GANHO_INTERIOR = 3.0      # rua e predios proximos um pouco mais claros; morros e cidade ao longe como calculados
+GANHOS = {"01_Rua_Patio": 1.75, "02_Predio": 1.75, "17_Entorno_Longe": 1.1, "19_Veiculos": 1.75}; GANHO_INTERIOR = 3.0      # rua e predios proximos um pouco mais claros; morros e cidade ao longe como calculados
 AMOSTRAS = 24 if RAPIDO else (600 if ALTA else 256)      # alta: so mais amostras (lightmaps maiores pesam no Quest)
 scene.render.engine = "CYCLES"; scene.cycles.device = "CPU"
 scene.cycles.samples = AMOSTRAS; scene.cycles.use_denoising = False
 scene.cycles.sample_clamp_indirect = 3.0; scene.cycles.sample_clamp_direct = 12.0      # interior com lampadas pequenas: sem vaga-lumes
 scene.cycles.caustics_reflective = False; scene.cycles.caustics_refractive = False
-# o que abre (gavetas, portas) e os vidros ficam fora do bake: o interior dos moveis recebe a luz do comodo e o sol entra pelas janelas
-MOVEIS = [o for o in scene.objects if any(c.name in ("08_Interativos", "13_Vidros") for c in o.users_collection)]
+# os moveis que abrem nao recebem lightmap (o site da a eles a luz do comodo), mas fazem sombra no piso e na parede (antes
+# ficavam escondidos e pareciam flutuar). Ficam fora do bake so os vidros (o sol entra pelas janelas) e o que muda muito de
+# lugar: as portas dos comodos e as do elevador.
+def raiz(o):
+    while o.parent: o = o.parent
+    return o
+MOVEIS = [o for o in scene.objects if any(c.name == "13_Vidros" for c in o.users_collection)
+          or (any(c.name == "08_Interativos" for c in o.users_collection) and raiz(o).name.startswith(("A_Passagem_", "A_Elevador_")))]
 for o in MOVEIS:
     o.hide_render = True
+
+def denoise(img, res):
+    """Tira o granulado do bake com o filtro de ruido do Blender (OIDN, no compositor), na imagem em ponto flutuante.
+    Devolve a matriz (res, res, 3) ou None se o compositor nao estiver disponivel."""
+    try:
+        tmp_in = os.path.join(CACHE, "_lm_bruto.exr"); tmp_out = os.path.join(CACHE, "_lm_limpo.exr")
+        img.filepath_raw = tmp_in; img.file_format = "OPEN_EXR"; img.save()
+        r = scene.render; guard = (r.engine, r.resolution_x, r.resolution_y, r.resolution_percentage, r.filepath, r.image_settings.file_format, getattr(scene, "compositing_node_group", None))
+        ng = bpy.data.node_groups.new("Denoise_LM", "CompositorNodeTree"); scene.compositing_node_group = ng
+        ni = ng.nodes.new("CompositorNodeImage"); ni.image = bpy.data.images.load(tmp_in, check_existing=False)
+        nd = ng.nodes.new("CompositorNodeDenoise"); no = ng.nodes.new("NodeGroupOutput"); ng.interface.new_socket("Image", in_out="OUTPUT", socket_type="NodeSocketColor")
+        try: nd.inputs["HDR"].default_value = True
+        except Exception: pass
+        ng.links.new(ni.outputs[0], nd.inputs[0]); ng.links.new(nd.outputs[0], no.inputs[0])
+        escondidos = [o for o in scene.objects if not o.hide_render]
+        for o in escondidos: o.hide_render = True                 # o render so serve para rodar o compositor
+        r.engine = "BLENDER_WORKBENCH"; r.resolution_x = r.resolution_y = res; r.resolution_percentage = 100
+        r.image_settings.file_format = "OPEN_EXR"; r.filepath = tmp_out
+        bpy.ops.render.render(write_still=True)
+        for o in escondidos: o.hide_render = False
+        r.engine, r.resolution_x, r.resolution_y, r.resolution_percentage, r.filepath, r.image_settings.file_format, cg = guard
+        scene.compositing_node_group = cg; bpy.data.node_groups.remove(ng); bpy.data.images.remove(ni.image)
+        out = bpy.data.images.load(tmp_out, check_existing=False); px = np.empty(res * res * 4, np.float32); out.pixels.foreach_get(px); bpy.data.images.remove(out)
+        return px.reshape(res, res, 4)[..., :3]
+    except Exception as e:
+        say("aviso: filtro de ruido indisponivel (%s); usando o desfoque simples" % e); return None
 
 def blur(a):
     k = np.array([1, 4, 6, 4, 1], np.float32) / 16
@@ -237,9 +269,10 @@ for col in bpy.data.collections:
     bpy.ops.object.bake(type="DIFFUSE", pass_filter={"DIRECT", "INDIRECT"}, margin=6, use_clear=True)
     px = np.empty(res * res * 4, np.float32); img.pixels.foreach_get(px)
     rgb = px.reshape(res, res, 4)[..., :3]
-    rgb = np.stack([blur(rgb[..., c]) for c in range(3)], -1)
+    limpo = denoise(img, res) if not RAPIDO else None
+    rgb = limpo if limpo is not None else np.stack([blur(rgb[..., c]) for c in range(3)], -1)
     if col.name not in GANHOS:                      # interior: menos cor refletida do piso de madeira nas paredes e no teto
-        lum = rgb.mean(-1, keepdims=True); rgb = lum + (rgb - lum) * .4
+        lum = rgb.mean(-1, keepdims=True); rgb = lum + (rgb - lum) * .8      # .8: guarda o tom quente do sol, como numa foto
     vmax = float(min(max(np.percentile(rgb, 99.7), 1e-3), 3.0))      # teto: superficies coladas nas lampadas nao roubam a escala
     enc = np.clip(rgb / vmax, 0, 1) ** (1 / 2.2)
     out = np.ones((res, res, 4), np.float32); out[..., :3] = enc

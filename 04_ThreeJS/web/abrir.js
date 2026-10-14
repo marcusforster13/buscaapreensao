@@ -9,6 +9,7 @@ export function iniciarAbrir(ctx) {
   const { scene, camera, rig, renderer, cena, CFG, estaticos, lmTex } = ctx;
   const PI = Math.PI, clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const V = new THREE.Vector3(), V2 = new THREE.Vector3(), Q = new THREE.Quaternion();
+  const semCeu = t => { t.envMapIntensity = CFG.env_interior ?? .05; if (scene.environment && t.envMap !== scene.environment) { t.envMap = scene.environment; t.needsUpdate = true; } };      // dentro dos comodos: reflexo fraco, sem a luz do ceu
   const invisivel = () => new THREE.MeshBasicMaterial({ visible: false });
   scene.updateMatrixWorld(true);
 
@@ -23,11 +24,13 @@ export function iniciarAbrir(ctx) {
     }
     return telas.get(tex);
   }
+  let ultimoDentro = false;      // o ultimo piso lido e de dentro de um comodo (ali o ceu nao ilumina: ver index.html)
   function luzNoPiso(p) {
     rc.set(V2.set(p.x, p.y, p.z), BAIXO); rc.far = 3.5;
     const h = rc.intersectObjects(estaticos, false)[0]; if (!h || !h.face) return null;
     const geo = h.object.geometry, uv1 = geo.attributes.uv1, pos = geo.attributes.position; if (!uv1) return null;
     let lm = null, o = h.object; while (o && !lm) { lm = CFG.lightmaps[o.name]; o = o.parent; }
+    let q = h.object; ultimoDentro = false; while (q) { if (/^(03|04|05|06|07|10|11|12)_/.test(q.name)) ultimoDentro = true; q = q.parent; }
     if (!lm || !lmTex[lm.lm]) return null;
     ta.fromBufferAttribute(pos, h.face.a); tb.fromBufferAttribute(pos, h.face.b); tc.fromBufferAttribute(pos, h.face.c);
     THREE.Triangle.getBarycoord(h.object.worldToLocal(pl.copy(h.point)), ta, tb, tc, bar);
@@ -72,7 +75,7 @@ export function iniciarAbrir(ctx) {
     const centroW = meio.clone().applyMatrix4(o.matrixWorld); centroW.y = pW.y;
     let L = luzLocal(centroW, frente); const L2 = d.colide ? luzLocal(centroW, frente.clone().negate()) : null;
     if (L != null && L2 != null) L = (L + L2) / 2; else if (L == null) L = L2;
-    if (L != null) for (const m of p.ms) for (const mt of [].concat(m.material)) { mt.lightMapIntensity = L * PI * 1.1; mt.userData.luzBase = mt.lightMapIntensity; }
+    if (L != null) for (const m of p.ms) for (const mt of [].concat(m.material)) { mt.lightMapIntensity = L * PI * 1.1; mt.userData.luzBase = mt.lightMapIntensity; if (ultimoDentro) semCeu(mt); }
     // portas dos comodos: enquanto fechadas, uma caixa invisivel entra na colisao
     if (d.colide) {
       const larg = d.larg || .88, col = new THREE.Mesh(new THREE.BoxGeometry(larg, 2.1, .12), invisivel());
@@ -198,8 +201,33 @@ export function iniciarAbrir(ctx) {
   }
   function apontarMouse(ray) { realcar('mouse', alvoDe(ray)?.object.userData.peca || null); }
 
+  // miudezas sem lightmap (objetos sobre os moveis, quadros, itens soltos; juntos em poucas malhas que cobrem o predio todo):
+  // cada vertice recebe, como cor, a luz da superficie logo abaixo dele (lida no lightmap, em celulas de 30 cm). Os que ficam
+  // dentro dos comodos perdem a luz do ceu, como as paredes.
+  const comLm = estaticos.filter(o => o.geometry.attributes.uv1), salvo = estaticos.slice();
+  estaticos.length = 0; estaticos.push(...comLm);
+  const cel = new Map(), VW = new THREE.Vector3();
+  function luzCelula(p) {
+    const k = Math.floor(p.x / .3) + ',' + Math.floor(p.y / .5) + ',' + Math.floor(p.z / .3);
+    if (!cel.has(k)) { const l = luzNoPiso(V.set(p.x, p.y + .25, p.z)); cel.set(k, l == null ? null : [clamp(l, .08, .9), ultimoDentro]); }
+    return cel.get(k);
+  }
+  cena.traverse(m => {
+    if (!m.isMesh || m.userData.peca || !/14_Miudos/.test(m.parent?.name + m.name)) return;
+    const mts = [].concat(m.material); if (!mts.every(t => t.lightMap?.image?.width === 1)) return;
+    const pos = m.geometry.attributes.position, cor = new Float32Array(pos.count * 3); let dentro = 0;
+    for (let i = 0; i < pos.count; i++) {
+      VW.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld);
+      const c = luzCelula(VW), l = c ? c[0] : .6; if (c && c[1]) dentro++;
+      cor[i * 3] = cor[i * 3 + 1] = cor[i * 3 + 2] = l / .9;
+    }
+    m.geometry.setAttribute('color', new THREE.BufferAttribute(cor, 3));
+    for (const t of mts) { t.vertexColors = true; t.lightMapIntensity = .9 * PI * 1.1; t.needsUpdate = true; if (dentro > pos.count / 2) semCeu(t); }
+  });
+  estaticos.length = 0; estaticos.push(...salvo);
+
   const api = {
-    clique, pegar, soltar, quadro, apontarMouse, pecas, ouvintes, aviso, luzLocal,
+    clique, pegar, soltar, quadro, apontarMouse, pecas, ouvintes, aviso, luzLocal, get dentro() { return ultimoDentro; },
     segurando: c => maos.has(c),
     abrir(nome, f = 1, jaAgora = false) { const p = pecas.find(q => q.nome === nome); if (!p) return; p.alvo = f; if (jaAgora) { p.f = f; aplicar(p); } },
     trancar(nome, sim = true) { const p = pecas.find(q => q.nome === nome); if (p) p.trancada = sim; },

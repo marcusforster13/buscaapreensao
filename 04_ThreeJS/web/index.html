@@ -66,8 +66,8 @@
 
 <script type="importmap">
 {"imports":{
-  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+  "three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/",
   "three-mesh-bvh":"https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.7.3/build/index.module.js"
 }}
 </script>
@@ -83,7 +83,7 @@ THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 const $ = id => document.getElementById(id);
-const VERSAO = '1014-1042';      // carimbada por carimbar_versao.py a cada envio; entra no endereco dos arquivos para o navegador nao usar copia antiga
+const VERSAO = '1014-1128';      // carimbada por carimbar_versao.py a cada envio; entra no endereco dos arquivos para o navegador nao usar copia antiga
 window.__versao = VERSAO; window.__arq = {};
 // endereco de um arquivo com a marca do conteudo dele: muda so quando o arquivo muda (o resto fica guardado no navegador)
 const H = window.__h = p => p + '?h=' + (window.__arq[p] || VERSAO);
@@ -103,9 +103,11 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMapping = THREE.AgXToneMapping;      // mesmo tom de cor do Blender (AgX), mais natural que o ACES
 renderer.toneMappingExposure = CFG.exposicao ?? 1;
 renderer.xr.enabled = true;
+renderer.xr.setFramebufferScaleFactor(1.25);      // imagem mais nitida no Quest (a cena e leve o bastante)
+renderer.xr.setFoveation(.5);                     // as bordas da lente, que ja sao borradas, renderizam com menos detalhe
 document.body.appendChild(renderer.domElement);
 document.body.appendChild(VRButton.createButton(renderer));
 
@@ -144,6 +146,9 @@ if (CFG.env) {
     tex.mapping = THREE.EquirectangularReflectionMapping;
     const pm = new THREE.PMREMGenerator(renderer);
     scene.environment = pm.fromEquirectangular(tex).texture;
+    // envMapIntensity so vale quando o material tem o proprio envMap (o scene.environment usa so scene.environmentIntensity):
+    // os materiais de dentro dos comodos (reflexo fraco, ver conv) recebem o mapa direto
+    scene.traverse(o => { if (o.isMesh) for (const m of [].concat(o.material)) if (m.envMapIntensity < .2 && !m.envMap) { m.envMap = scene.environment; m.needsUpdate = true; } });
     hdriFundo = tex;      // o HDRI fica so para os reflexos; o ceu a vista e o azul liso (tecla C alterna)
   });
 }
@@ -153,10 +158,11 @@ function alternarCeu() {
 }
 
 /* ---------- carregar cena e lightmaps ---------- */
-const draco = new DRACOLoader().setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/gltf/');
+const draco = new DRACOLoader().setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/libs/draco/gltf/');
 const gltf = await new GLTFLoader().setDRACOLoader(draco).loadAsync(H('cena.glb'), e => {
   if (e.total) $('pct').textContent = Math.round(e.loaded / e.total * 100) + '%';
 });
+const ANISO = Math.min(8, renderer.capabilities.getMaxAnisotropy());
 const tl = new THREE.TextureLoader(), lmTex = {};
 await Promise.all([...new Set(Object.values(CFG.lightmaps).map(v => v.lm))].map(f =>
   tl.loadAsync(H(f)).then(t => { t.flipY = false; t.channel = 1; t.colorSpace = THREE.SRGBColorSpace; lmTex[f] = t; })));
@@ -169,11 +175,11 @@ const iluminar = m => { if (m.metalness > .45) m.metalness = .45;      // metal 
   if (!m.lightMap) { m.lightMap = lmBranco; m.lightMapIntensity = CFG.luz_dinamica ?? 1.1; } return m; };
 gltf.scene.traverse(o => {
   if (!o.isMesh) return;
-  let p = o, lm = null, estatico = false, grama = false;
-  while (p) { lm = lm || CFG.lightmaps[p.name]; estatico = estatico || /_Estatico/.test(p.name); grama = grama || /16_Grama|15_Vegetacao|18_Fachada_Miudos/.test(p.name); p = p.parent; }
+  let p = o, lm = null, estatico = false, grama = false, dentro = false;
+  while (p) { lm = lm || CFG.lightmaps[p.name]; estatico = estatico || /_Estatico/.test(p.name); grama = grama || /16_Grama|15_Vegetacao|18_Fachada_Miudos/.test(p.name); dentro = dentro || /^(03|04|05|06|07|10|11|12)_/.test(p.name); p = p.parent; }
   const conv = m0 => {
     const m = m0.clone();
-    if (/Vidro_Janela/.test(m.name)) { m.transparent = true; m.opacity = .12; m.depthWrite = false; m.roughness = .05; }      // vidros das janelas, do box e da portaria
+    if (/Vidro_Janela/.test(m.name)) { m.transparent = true; m.opacity = .06; m.depthWrite = false; m.roughness = .05; }      // vidros das janelas, do box e da portaria
     if (/Vidro_Guarda/.test(m.name)) { m.transparent = true; m.opacity = .35; m.depthWrite = false; m.roughness = .05; }      // guarda-corpo de vidro das varandas
     if (/Vidro_Fachada/.test(m.name)) { m.roughness = .06; m.metalness = .55; m.userData.reflexo = 1.2; }      // janelas dos predios: refletem o ceu
     if (/Grama_Lamina/.test(m.name)) m.side = THREE.DoubleSide;
@@ -182,6 +188,10 @@ gltf.scene.traverse(o => {
     if (m.emissive) m.userData.emi0 = m.emissiveIntensity;
     if (m.transmission > 0) { m.transmission = 0; m.transparent = true; m.opacity = 0.45; m.roughness = 0.05; }
     m.envMapIntensity = m.userData.reflexo ?? CFG.env_intensidade ?? 0.35;
+    // dentro dos comodos o ceu nao entra: a luz do HDRI clareava parede, teto e piso por igual e apagava as sombras do bake.
+    // Ali fica so a luz calculada (lightmap), com um reflexo bem fraco para pisos e moveis encerados.
+    if (dentro && !/Vidro|Espelho/.test(m.name)) { m.envMapIntensity = CFG.env_interior ?? .05; if (scene.environment) m.envMap = scene.environment; }      // o HDRI pode chegar antes ou depois da cena
+    for (const k of ['map', 'roughnessMap', 'normalMap']) if (m[k]) m[k].anisotropy = ANISO;      // pisos e calcadas nitidos vistos de lado (em VR o olhar e sempre rasante)
     if (lm && o.geometry.attributes.uv1) {
       m.lightMap = lmTex[lm.lm]; m.userData.lmBase = lm.max * CFG.lightmap_ganho * (lm.ganho ?? 1);
       m.lightMapIntensity = m.userData.lmBase; lmMats.push(m);
@@ -463,7 +473,13 @@ import('./' + H('abrir.js')).then(m => m.iniciarAbrir({
 window.__cena = { scene, camera, renderer, rig };
 import('./' + H('mandado.js')).then(m => m.iniciarMandado({ scene, camera, renderer, controles })).catch(e => console.error('Mandado não carregou:', e));
 
-/* ---------- motor do treinamento: entra na proxima etapa (mandado, personagens, variacoes, relatorio) ---------- */
+/* ---------- motor do treinamento (cenario_ba_01.json) ---------- */
+import('./' + H('treinamento.js')).then(m => m.iniciar({
+  scene, camera, rig, renderer, hotspots, setLanterna, cena: gltf.scene, CFG, iluminar, irPara, controles, grips,
+  lanternaLigada: () => lantOn, colisao: () => alvosCol,
+  setYaw: y => { yaw = y; pitch = 0; },
+  ambiente: modo => { renderer.toneMappingExposure = modo === 'madrugada' ? .22 : (CFG.exposicao ?? 1); }      // antes do amanhecer: tudo escuro
+})).catch(e => console.error('Treinamento não carregou:', e));
 </script>
 </body>
 </html>

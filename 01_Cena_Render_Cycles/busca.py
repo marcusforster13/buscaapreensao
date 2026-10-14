@@ -311,7 +311,7 @@ def modelo_ph(nome, asset, pos, rz=0.0, col=None, escala=1.0, max_tris=2000, alt
     ob.location = pos; ob.rotation_euler = (0, 0, rz); ob.scale = (k, k, k)
     return ob
 
-def plafon(nome, x, y, watts, z=Z3 + PD, col=C_EST, cor="#fff8f0", m="lamp"):
+def plafon(nome, x, y, watts, z=Z3 + PD, col=C_EST, cor="#ffd9b0", m="lamp"):      # lampada de casa: branco quente (~3000 K)
     cyl(nome + "_Plafon", .15, .13, .05, (x, y, z - .025), M[m], col, seg=20)
     luz(nome + "_Luz", "POINT", watts * .45, cor, (x, y, z - .22), C_LUZ, shadow_soft_size=.18)      # o site clareia o interior (ganho dos lightmaps internos)
 
@@ -993,13 +993,12 @@ def viatura(nome, x, y, rz, texto_lado, m_faixa, arquivo="perua", cor="#eceded")
         cyl(nome + "_Brasao_Imagem", .09, .09, .004, (1.03, sy_(1.03, .89, lado) + lado * .006, .89), M["brasao"], C_VEIC, V_, rot=(PI / 2, 0, 0), seg=28)
 viatura("Viatura_PM", -7.0, -10.15, 0, "POLÍCIA MILITAR", M["faixa_pm"])
 viatura("Viatura_PC", -12.6, -10.15, 0, "POLÍCIA CIVIL", M["faixa_pc"], "seda", "#e6e6e4")
-for nome, arq, x, y, rz, cor in (("Carro_A", "hatch", 17.0, -10.2, 0, "#8d9096"), ("Carro_B", "suv", 24.0, -10.2, 0, "#2c2f36"), ("Carro_C", "compacto", -20.5, -10.2, 0, "#a3231c"),
-                                 ("Carro_D", "taxi", -5.0, -14.85, PI, None), ("Carro_E", "seda", 11.5, -14.85, PI, "#d9d9d6"), ("Carro_F", "minivan", 33.0, -14.85, PI, "#3a5a7a")):
+for nome, arq, x, y, rz, cor in (("Carro_A", "hatch", 17.0, -10.2, 0, "#8d9096"), ("Carro_D", "taxi", -5.0, -14.85, PI, None)):      # so dois carros civis: cada um tem uns 7 mil triangulos
     carro_modelo(nome, C_VEIC, arq, (x, y, .12), rz, cor=cor)
 
 # arvores, postes, carros e mobiliario urbano
-for i, (x, y, alt) in enumerate(((-7.5, -8.3, 6.5), (6.5, -8.3, 7.5), (20, -8.3, 6.8), (-22, -8.3, 7.2), (-14, -16.7, 7), (2, -16.7, 6.4), (30, -16.7, 7.4), (-5.5, 17.5, 6.2), (4.0, 15.5, 7.0), (9.6, 4.0, 5.5), (9.6, 20, 6.5))):
-    if i in (9, 10): palmeira("Palmeira_%d" % i, x, y, 0, alt)
+for i, (x, y, alt) in enumerate(((-7.5, -8.3, 6.5), (6.5, -8.3, 7.5), (20, -8.3, 6.8), (-22, -8.3, 7.2), (-14, -16.7, 7), (2, -16.7, 6.4), (30, -16.7, 7.4), (-5.5, 17.5, 6.2), (4.0, 15.5, 7.0), (10.4, 5.6, 11.0), (9.6, 20, 6.5))):      # a 9 (amendoeira alta no recuo leste) faz sombra de folhas na janela da sala
+    if i == 10: palmeira("Palmeira_%d" % i, x, y, 0, alt)
     else: arvore(("Ipe_Amarelo_%d" if i in (1, 5) else "Amendoeira_%d") % i, x, y, FZ, alt, flor=i in (1, 5), larga=i not in (1, 5))
     if y < 0: box("Arvore_Canteiro", (1.1, 1.1, .03), (x, y, FZ + .015), M["terra"], C_RUA)
 for i, (x, y, rz) in enumerate(((-15, -8.6, 0), (12, -8.6, 0), (38, -8.6, 0), (-36, -8.6, 0), (-2, -16.4, PI), (26, -16.4, PI), (-28, -16.4, PI))):
@@ -1090,10 +1089,10 @@ box("Portaria_Avisos", (.03, 1.0, .7), (-6.28, -2.4, FZ + 1.55), M["tapete"], C_
 for k, (dy, dz) in enumerate(((-.25, .12), (.2, .1), (-.05, -.15))):
     box("Portaria_Aviso_Papel", (.005, .21, .29), (-6.26, -2.4 + dy, FZ + 1.55 + dz), M["papel"], C_MIU)
 texto("Portaria_Texto_Avisos", "AVISOS DO CONDOMÍNIO", .05, (-6.26, -2.4, FZ + 1.97), "+x", M["texto_pr"], C_MIU)
-modelo_ph("Portaria_Sofa", "sofa_02", (-4.4, .95, FZ), 0, C_PORT, max_tris=2500, alt=.8) or box("Portaria_Banco", (1.6, .5, .45), (-4.6, 1.2, FZ + .22), M["mad"], C_PORT)
+modelo_ph("Portaria_Sofa", "sofa_02", (-2.4, .95, FZ), 0, C_PORT, max_tris=2500, alt=.8)      # longe da porta do elevador or box("Portaria_Banco", (1.6, .5, .45), (-4.6, 1.2, FZ + .22), M["mad"], C_PORT)
 vaso_planta("Portaria_Planta_A", -5.9, -5.5, FZ, 1.1, C_PORT, M["louca"])
 vaso_planta("Portaria_Planta_B", .5, -5.5, FZ, .9, C_PORT, M["louca"])
-plafon("Luz_Portaria_A", -2.7, -3.6, 110, FZ + PDT, C_PORT); plafon("Luz_Portaria_B", -2.7, -.4, 110, FZ + PDT, C_PORT)
+plafon("Luz_Portaria_A", -2.7, -3.6, 130, FZ + PDT, C_PORT); plafon("Luz_Portaria_B", -2.7, -.4, 130, FZ + PDT, C_PORT)
 
 def elevador(nome, y0, z0, col, andar):
     """Elevador na parede oeste (x = -6.4): batente, duas folhas de aco que correm para os lados (A_Elevador_*), botao, indicador
@@ -1336,7 +1335,7 @@ SOFA_RZ = 0.0; QUADRO_RZ = 0.0; CADEIRA_RZ = 0.0
 cama("Cama_Casal", 6.1, 8.88, 0, 1.4, C_QUA, M["lencol"])                      # cabeceira na parede norte, sob a janela
 criado("Criado_A", 5.12, 8.88, 0, C_QUA); criado("Criado_B", 7.08, 8.88, 0, C_QUA)
 guarda_roupa("Guarda_Roupa_Casal", 7.88, 6.52, -PI / 2, C_QUA, w=1.8, portas=3)
-comoda("Comoda", 4.87, 6.45, PI / 2, C_QUA, w=1.0)
+comoda("Comoda", 4.87, 7.05, PI / 2, C_QUA, w=1.0)                     # fora do giro da porta (raio .88 a partir de 5.9, 5.5)
 box("Abajur_Base", (.1, .1, .22), (5.12, 8.7, Z3 + .66), M["louca"], C_QUA); cyl("Abajur_Cupula", .09, .13, .16, (5.12, 8.7, Z3 + .85), M["cortina"], C_MIU, seg=14)
 ph("Quadro_Quarto_1", "hanging_picture_frame_03", 4.9, 7.9, Z3 + 1.4, QUADRO_RZ - PI / 2, C_QUA, alt=.6, tris=600)
 box("Tapete_Quarto_1", (1.9, 1.1, .012), (6.1, 6.6, Z3 + .006), M["tapete"], C_QUA)
@@ -1553,7 +1552,7 @@ for k, m_ in enumerate(("frasco_a", "frasco_b", "frasco_c")): cyl("Frasco_Box", 
 box("Prateleira_Box", (.12, .5, .02), (-.82, 2.62, Z3 + 1.09), M["vidro"], C_VID); box("Tapete_Banheiro", (.5, .8, .015), (.85, 3.0, Z3 + .0075), M["lencol"], C_BAN)
 for k, m_ in enumerate(("frasco_c", "frasco_a")): cyl("Frasco_Pia", .03, .03, .14, (.58 + k * .1, 3.82, Z3 + .92), M[m_], C_BAN, seg=10)
 # portaria e corredor
-ph("Placa_Piso_Molhado", "WetFloorSign_01", -1.6, .6, FZ, .4, C_PORT, alt=.62, tris=500); vaso_planta("Portaria_Planta_C", -5.8, 1.1, FZ, 1.0, C_PORT, M["louca"])
+ph("Placa_Piso_Molhado", "WetFloorSign_01", -1.0, -4.9, FZ, .4, C_PORT, alt=.62, tris=500)
 ph("Portaria_Camera", "security_camera_01", .7, 1.3, FZ + 2.7, 2.4, C_PORT, alt=.22, tris=500); box("Portaria_Prancheta", (.23, .32, .008), (-.55, -3.3, FZ + .766), M["mad"], C_PORT, rot=(0, 0, .3)); box("Portaria_Prancheta_Folha", (.21, .29, .003), (-.55, -3.3, FZ + .772), M["papel"], C_MIU, rot=(0, 0, .3))
 ph("Portaria_Quadro", "hanging_picture_frame_03", -3.2, 1.47, FZ + 1.6, QUADRO_RZ, C_PORT, alt=.7, tris=600)
 vaso_planta("Corredor_Planta", 7.5, 1.1, Z3, .9, C_COR, M["louca"]); ph("Corredor_Camera", "security_camera_01", -6.1, 1.35, Z3 + 2.45, -2.2, C_COR, alt=.2, tris=500)
@@ -1569,9 +1568,9 @@ for k, m_ in enumerate(("frasco_b", "frasco_c", "frasco_a")): cyl("Banheiro_Fras
 # ================================================================== 6c. portaria e corredor: detalhes de uso
 for nome, tam, pos in (("Rodape_Port_N", (7.2, .015, .1), (-2.7, 1.49, FZ + .05)), ("Rodape_Port_L", (.015, 7.4, .1), (.89, -2.2, FZ + .05)), ("Rodape_Port_O", (.015, 5.4, .1), (-6.29, -3.2, FZ + .05))):
     box(nome, tam, pos, M["rodape"], C_PORT)
-box("Portaria_Tapete", (2.4, 1.6, .012), (-4.4, -.4, FZ + .006), M["tapete_est"], C_PORT)
-mesa("Portaria_Mesa_Centro", -4.4, -.2, (.9, .5), .4, C_PORT, M["mad_esc"], z=FZ)
-for k, (dx, m_) in enumerate(((-.2, "roupa_b"), (.05, "roupa_a"), (.22, "papel"))): box("Portaria_Revista", (.21, .28, .008), (-4.4 + dx, -.2, FZ + .405 + k * .008), M[m_], C_PORT, rot=(0, 0, k * .4))
+box("Portaria_Tapete", (2.4, 1.6, .012), (-2.4, -.4, FZ + .006), M["tapete_est"], C_PORT)
+mesa("Portaria_Mesa_Centro", -2.4, -.2, (.9, .5), .4, C_PORT, M["mad_esc"], z=FZ)
+for k, (dx, m_) in enumerate(((-.2, "roupa_b"), (.05, "roupa_a"), (.22, "papel"))): box("Portaria_Revista", (.21, .28, .008), (-2.4 + dx, -.2, FZ + .405 + k * .008), M[m_], C_PORT, rot=(0, 0, k * .4))
 cyl("Portaria_Relogio", .16, .16, .03, (-2.0, 1.48, FZ + 2.3), M["louca"], C_PORT, rot=(PI / 2, 0, 0), seg=24); box("Portaria_Relogio_Ponteiro", (.012, .01, .12), (-2.0, 1.46, FZ + 2.34), M["preto"], C_MIU)
 box("Portaria_Bebedouro", (.32, .32, 1.0), (.7, .9, FZ + .5), M["branco"], C_PORT, bevel=.02); cyl("Portaria_Bebedouro_Galao", .13, .13, .38, (.7, .9, FZ + 1.2), M["bebedouro"], C_VID, seg=14)
 cyl("Portaria_Extintor", .07, .07, .45, (-6.2, -5.4, FZ + .9), M["extintor"], C_PORT, seg=14); box("Portaria_Extintor_Placa", (.02, .2, .2), (-6.29, -5.4, FZ + 1.75), M["extintor"], C_MIU)
@@ -1607,7 +1606,8 @@ if bg and os.path.exists(HDRI):
 elif bg:
     bg.inputs["Color"].default_value = (*lin(hx("#a9c8ee")), 1)
 if bg: bg.inputs["Strength"].default_value = FORCA_CEU
-luz("Sol", "SUN", 7, "#fff1dc", (60, 45, 62), C_LUZ, alvo=(0, 0, 0), angle=math.radians(1.6))
+# sol de meio da manha, mais baixo (~32 graus) e quente: entra fundo pela janela da sala e pelos quartos e desenha faixas no piso
+luz("Sol", "SUN", 7.5, "#ffe0b5", (60, 45, 47), C_LUZ, alvo=(0, 0, 0), angle=math.radians(1.2))
 
 ponto("Inicio", -2.7, -4.3, (0, 1), FZ); ponto("Parceiro", -1.6, -4.0, (-.4, 1), FZ); ponto("Porteiro", -.1, -2.6, (-1, 0), FZ)
 ponto("Elevador_Terreo", -5.7, .6, (1, 0), FZ); ponto("Elevador_Andar_3", -5.7, .6, (1, 0))
