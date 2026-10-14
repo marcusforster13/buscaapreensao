@@ -858,7 +858,7 @@ export async function iniciar(ctx) {
       { fala: 'Todo mundo de mãos na cabeça, contra a parede!', id: 'parede' },
     ].filter(o => k !== 'idoso' || o.id !== 'parede').concat(k === 'idoso' ? [{ fala: 'Seu Antônio, fique tranquilo, vamos procurar sem incomodar o senhor.', acao: 'cuidado_vulneraveis', id: 'idoso' }] : []), op => {
       if (op.id === 'parede') { penalidade(-5, 'Tratou a família como suspeita sem motivo (mãos na cabeça, contra a parede)'); diz(n, 'Pelo amor de Deus, eu não fiz nada!'); }
-      else diz(n, k === 'idoso' ? 'Obrigado, meu filho. Eu não levanto daqui.' : 'Tá… tá bom. Vem, filha, senta aqui comigo.');
+      else diz(n, k === 'idoso' ? 'Obrigado, meu filho. Eu não levanto daqui.' : 'Tá… tá bom. Eu fico aqui sentada.');
     });
   }
 
@@ -1198,7 +1198,7 @@ export async function iniciar(ctx) {
     clique: ray => usar(ray), gatilho: (ray, c) => usar(ray, c), botao, soltar: () => false,
     apontar, painelAberto: () => paineis.some(p => p.mesh.visible),
     menu: abrirMenu, quadro, estado: S, relatorio,
-    _t: { comecar, encerrar, objetivos, sortear, derivar, novaOcorrencia, npcs, itens, menuCivil, menuPorteiro, menuApoio, menuPorta, menuMorador, menuItem, menuQuartoInquilino, lavrarAuto, finalizar, bater, entrar, usar, empunhar, disparar, condutaMorador, resolverConduta, B, B3,
+    _t: { comecar, encerrar, objetivos, sortear, derivar, novaOcorrencia, npcs, itens, menuCivil, menuPorteiro, menuApoio, menuParceiro, menuVizinha, menuFamilia, menuConduta, relatorio, menuPorta, menuMorador, menuItem, menuQuartoInquilino, lavrarAuto, finalizar, bater, entrar, usar, empunhar, disparar, condutaMorador, resolverConduta, B, B3,
       ocorrencia: () => A, historico: HIST, botoes: () => (dialogo.mesh.visible ? dialogo : menu).botoes, painel: () => (dialogo.mesh.visible ? dialogo : menu.mesh.visible ? menu : null) }
   };
   return window.__trein;
