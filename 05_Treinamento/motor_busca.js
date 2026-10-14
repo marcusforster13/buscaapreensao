@@ -168,7 +168,7 @@
     ['idoso', 'idoso', 'Seu Antônio (idoso)', [6.1, 7.5, 3], [0, -1], 'm', 1.7],
     ['vizinha', 'vizinha', 'Vizinha do 301', [-2.95, 2.6, 3], [0, -1], 'f', 1.66],
   ];
-  const NA_PORTA = [3.95, 2.25];                              // morador atende na porta (por dentro)
+  const NA_PORTA = [4.15, 2.0];                               // morador atende na porta (por dentro), no vao do lado da macaneta, fora da folha entreaberta
   function limparNPCs() { Object.values(npcs).forEach(n => scene.remove(n)); for (const k in npcs) delete npcs[k]; }
   function criarNPCs(v) {
     limparNPCs();
@@ -401,7 +401,7 @@
     if (v.morador === 'recusa' && !A.avisado) { A.recusou = true; setTimeout(() => legenda('Morador (por trás da porta)', anunciou ? 'Polícia? Não vou abrir nada! Vocês não vão entrar aqui!' : 'Quem é? Não tô esperando ninguém.', 4), 1500); return; }
     // o morador abre a porta
     setTimeout(() => {
-      const ab = ABRIR(); ab?.trancar('A_Passagem_Apto_302', false); ab?.abrir('A_Passagem_Apto_302', .55);
+      const ab = ABRIR(); ab?.trancar('A_Passagem_Apto_302', false); ab?.abrir('A_Passagem_Apto_302', .75);
       const n = npcs.morador; if (!n) return; n.visible = true; n.position.copy(B3(...NA_PORTA)); n.userData.giroBase = olharPara(0, -1); n.rotation.y = n.userData.giroBase;
       diz(n, anunciou ? 'Polícia? O que é que vocês querem?' : 'Pois não?').then(menuMoradorPorta);
       if (v.vulneraveis === 'mulher') { npcs.mulher.visible = true; setTimeout(() => legenda('Moradora (lá dentro)', 'Carlos? Quem é a essa hora?', 4), 2500); }
