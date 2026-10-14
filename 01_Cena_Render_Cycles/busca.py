@@ -1691,7 +1691,7 @@ for k, m_ in enumerate(("frasco_a", "frasco_b", "frasco_c")): cyl("Frasco_Box", 
 box("Prateleira_Box", (.12, .5, .02), (-.82, 2.62, Z3 + 1.09), M["vidro"], C_VID); box("Tapete_Banheiro", (.5, .8, .015), (.85, 3.0, Z3 + .0075), M["lencol"], C_BAN)
 for k, m_ in enumerate(("frasco_c", "frasco_a")): cyl("Frasco_Pia", .03, .03, .14, (.58 + k * .1, 3.82, Z3 + .92), M[m_], C_BAN, seg=10)
 # portaria e corredor
-ph("Placa_Piso_Molhado", "WetFloorSign_01", -1.0, -4.9, FZ, .4, C_PORT, alt=.62, tris=500)
+# (placa de piso molhado tirada: o modelo vem escrito em ingles)
 ph("Portaria_Camera", "security_camera_01", .7, 1.3, FZ + 2.7, 2.4, C_PORT, alt=.22, tris=500); box("Portaria_Prancheta", (.23, .32, .008), (-.55, -3.3, FZ + .766), M["mad"], C_PORT, rot=(0, 0, .3)); box("Portaria_Prancheta_Folha", (.21, .29, .003), (-.55, -3.3, FZ + .772), M["papel"], C_MIU, rot=(0, 0, .3))
 ph("Portaria_Quadro", "hanging_picture_frame_03", -3.2, 1.47, FZ + 1.6, QUADRO_RZ, C_PORT, alt=.7, tris=600)
 vaso_planta("Corredor_Planta", 7.5, 1.1, Z3, .9, C_COR, M["louca"]); ph("Corredor_Camera", "security_camera_01", -6.1, 1.35, Z3 + 2.45, -2.2, C_COR, alt=.2, tris=500)
