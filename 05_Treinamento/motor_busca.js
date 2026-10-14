@@ -630,7 +630,11 @@
     fecharPaineis();
     let carregou = false; modelosProntos.then(() => { carregou = true; });
     await new Promise(r => setTimeout(r, 0));
-    if (!carregou) { menu.mostrar({ tag: 'Treinamento', titulo: 'Carregando personagens…', texto: 'Aguarde alguns segundos.', botoes: [] }); await Promise.race([modelosProntos, new Promise(r => setTimeout(r, 30000))]); menu.esconder(); }
+    if (!carregou) {      // no Quest os personagens (~50 MB) podem levar mais de um minuto na primeira vez; depois ficam guardados
+      const msg = () => menu.mostrar({ tag: 'Treinamento', titulo: 'Carregando personagens…', texto: `${Object.keys(modelos).length} de ${window.__totalPersonagens || '?'} prontos. Na primeira vez pode levar um ou dois minutos.`, botoes: [] });
+      msg(); const tm = setInterval(msg, 1500);
+      await Promise.race([modelosProntos, new Promise(r => setTimeout(r, 120000))]); clearInterval(tm); menu.esconder();
+    }
     HIST.length = 0;
     Object.assign(S, { ativo: true, inicio: performance.now(), fim: 0, erros: [], graves: [], log: [], historia: modo === 'historia', modo: modo === 'avaliacao' ? 'avaliacao' : 'treino' });
     S.fila = S.historia ? CEN.historia.slice(1) : [];
@@ -809,6 +813,8 @@
   const bt = document.createElement('button'); bt.type = 'button'; bt.textContent = 'Iniciar treinamento'; bt.id = 'bTrein';
   bt.onclick = aviso; document.getElementById('acoes')?.prepend(bt);
   const esperaAbrir = setInterval(() => { if (ABRIR()) { ABRIR().ouvintes.push(ouvinteAbrir); clearInterval(esperaAbrir); } }, 300);
+  setTimeout(() => { if (!S.ativo) aviso(); }, 1200);
+  renderer.xr.addEventListener('sessionstart', () => setTimeout(() => { if (!S.ativo) aviso(); }, 1500));
 
   window.__trein = {
     clique: ray => usar(ray), gatilho: (ray, c) => usar(ray, c), botao, soltar: () => false,

@@ -250,6 +250,7 @@ export async function iniciar(ctx) {
   /* personagens reais (Rocketbox, licenca MIT) convertidos para personagens/*.glb; se faltar, usa o boneco */
   const modelos = {};
   const modelosProntos = fetch(HQ('personagens/manifest.json')).then(r => r.ok ? r.json() : {}).then(man => {
+    window.__totalPersonagens = Object.keys(man).length;
     const gl = new GLTFLoader();
     return Promise.all(Object.entries(man).map(([papel, info]) => gl.loadAsync(HQ(info.arquivo)).then(g => { modelos[papel] = g; }).catch(() => { })));
   }).catch(() => { });
@@ -1040,7 +1041,11 @@ export async function iniciar(ctx) {
     fecharPaineis();
     let carregou = false; modelosProntos.then(() => { carregou = true; });
     await new Promise(r => setTimeout(r, 0));
-    if (!carregou) { menu.mostrar({ tag: 'Treinamento', titulo: 'Carregando personagens…', texto: 'Aguarde alguns segundos.', botoes: [] }); await Promise.race([modelosProntos, new Promise(r => setTimeout(r, 30000))]); menu.esconder(); }
+    if (!carregou) {      // no Quest os personagens (~50 MB) podem levar mais de um minuto na primeira vez; depois ficam guardados
+      const msg = () => menu.mostrar({ tag: 'Treinamento', titulo: 'Carregando personagens…', texto: `${Object.keys(modelos).length} de ${window.__totalPersonagens || '?'} prontos. Na primeira vez pode levar um ou dois minutos.`, botoes: [] });
+      msg(); const tm = setInterval(msg, 1500);
+      await Promise.race([modelosProntos, new Promise(r => setTimeout(r, 120000))]); clearInterval(tm); menu.esconder();
+    }
     HIST.length = 0;
     Object.assign(S, { ativo: true, inicio: performance.now(), fim: 0, erros: [], graves: [], log: [], historia: modo === 'historia', modo: modo === 'avaliacao' ? 'avaliacao' : 'treino' });
     S.fila = S.historia ? CEN.historia.slice(1) : [];
@@ -1219,6 +1224,8 @@ export async function iniciar(ctx) {
   const bt = document.createElement('button'); bt.type = 'button'; bt.textContent = 'Iniciar treinamento'; bt.id = 'bTrein';
   bt.onclick = aviso; document.getElementById('acoes')?.prepend(bt);
   const esperaAbrir = setInterval(() => { if (ABRIR()) { ABRIR().ouvintes.push(ouvinteAbrir); clearInterval(esperaAbrir); } }, 300);
+  setTimeout(() => { if (!S.ativo) aviso(); }, 1200);
+  renderer.xr.addEventListener('sessionstart', () => setTimeout(() => { if (!S.ativo) aviso(); }, 1500));
 
   window.__trein = {
     clique: ray => usar(ray), gatilho: (ray, c) => usar(ray, c), botao, soltar: () => false,
