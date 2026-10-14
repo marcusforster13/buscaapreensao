@@ -1,36 +1,36 @@
 BUSCA E APREENSAO - VERSAO VR OTIMIZADA
 
-DEPOIS: 395970 tris | 73 malhas | 493 slots de material (~draw calls) | 21 luzes
+DEPOIS: 386059 tris | 73 malhas | 485 slots de material (~draw calls) | 19 luzes
 
 Triangulos por colecao:
   15_Vegetacao                         122950
   16_Grama                              57772
   17_Entorno_Longe                      49164
   18_Fachada_Miudos                     37260
-  19_Veiculos                           30788
   01_Rua_Patio                          23096
-  06_Sala                               21111
+  19_Veiculos                           22476
+  06_Sala                               18612
   10_Quartos                             9020
+  07_Cozinha_Servico                     8834
   14_Miudos                              8813
-  07_Cozinha_Servico                     8114
   03_Portaria                            6245
   12_Vizinho_301                         5297
   08_Interativos                         5187
   13_Vidros                              4024
   04_Corredor_Escada                     2242
   02_Predio                              1981
-  05_Apto_Estrutura                      1602
+  05_Apto_Estrutura                      1782
   11_Banheiro                            1304
 
 Etapas:
   - Grama instanciada removida de 0 gramados; subdivisao=1, remesh 0.16 m, decimate 35% na folhagem.
-  - Modificadores aplicados em 6397 objetos; textos e fios convertidos em malha.
+  - Modificadores aplicados em 6421 objetos; textos e fios convertidos em malha.
   - Bake de 2 materiais procedurais em texturas de imagem.
   - 45 materiais com texturas CC0 convertidos para UV + PNG (cor, rugosidade, normal).
   - UVs em caixa (escala real em metros) aplicadas em todas as malhas.
   - Colisao: 507 caixas orientadas preparadas.
   - 56 conjuntos interativos unidos (1 malha por conjunto).
-  - 6068 objetos estaticos unidos em 1 malha por colecao (menos draw calls).
+  - 6092 objetos estaticos unidos em 1 malha por colecao (menos draw calls).
   - Exportado: busca_VR.glb
   - Exportado: busca_VR.fbx
   - Colisao: 507 caixas, 6084 tris -> colisao.glb / colisao.fbx

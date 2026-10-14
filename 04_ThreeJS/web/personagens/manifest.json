@@ -1,0 +1,96 @@
+{
+ "pm_parceiro": {
+  "arquivo": "personagens/pm_parceiro.glb",
+  "animacoes": [
+   "parada",
+   "falando",
+   "andando",
+   "correndo"
+  ]
+ },
+ "pm_apoio": {
+  "arquivo": "personagens/pm_apoio.glb",
+  "animacoes": [
+   "parada",
+   "falando",
+   "andando"
+  ]
+ },
+ "policial_civil": {
+  "arquivo": "personagens/policial_civil.glb",
+  "animacoes": [
+   "parada",
+   "falando",
+   "andando"
+  ]
+ },
+ "porteiro": {
+  "arquivo": "personagens/porteiro.glb",
+  "animacoes": [
+   "parada",
+   "falando",
+   "nervoso",
+   "andando",
+   "correndo",
+   "rendido",
+   "algemado",
+   "algemado_andando"
+  ]
+ },
+ "morador": {
+  "arquivo": "personagens/morador.glb",
+  "animacoes": [
+   "parada",
+   "falando",
+   "nervoso",
+   "andando",
+   "correndo",
+   "rendido",
+   "algemado",
+   "algemado_andando",
+   "irritado",
+   "sentado_parado"
+  ]
+ },
+ "mulher": {
+  "arquivo": "personagens/mulher.glb",
+  "animacoes": [
+   "parada",
+   "falando",
+   "nervoso",
+   "andando",
+   "correndo",
+   "rendido",
+   "algemado",
+   "algemado_andando",
+   "sentado_parado"
+  ]
+ },
+ "idoso": {
+  "arquivo": "personagens/idoso.glb",
+  "animacoes": [
+   "parada",
+   "falando",
+   "nervoso",
+   "andando",
+   "correndo",
+   "rendido",
+   "algemado",
+   "algemado_andando",
+   "sentado_parado"
+  ]
+ },
+ "vizinha": {
+  "arquivo": "personagens/vizinha.glb",
+  "animacoes": [
+   "parada",
+   "falando",
+   "nervoso",
+   "andando",
+   "correndo",
+   "rendido",
+   "algemado",
+   "algemado_andando"
+  ]
+ }
+}

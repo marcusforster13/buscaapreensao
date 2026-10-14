@@ -1001,7 +1001,7 @@ def viatura(nome, x, y, rz, texto_lado, m_faixa, arquivo="perua", cor="#eceded")
         v = "+y" if lado > 0 else "-y"
         texto(nome + "_Adesivo", texto_lado, .085, (-.15, sy_(-.15, .89, lado) + lado * .008, .89), v, M["texto_az"] if m_faixa is M["faixa_pm"] else M["texto_pr"], C_VEIC, V_)
         cyl(nome + "_Brasao_Imagem", .09, .09, .004, (1.03, sy_(1.03, .89, lado) + lado * .006, .89), M["brasao"], C_VEIC, V_, rot=(PI / 2, 0, 0), seg=28)
-viatura("Viatura_PM", -7.0, -10.15, 0, "POLÍCIA MILITAR", M["faixa_pm"])
+# (viatura da PM tirada a pedido do usuario)
 viatura("Viatura_PC", -12.6, -10.15, 0, "POLÍCIA CIVIL", M["faixa_pc"], "seda", "#e6e6e4")
 for nome, arq, x, y, rz, cor in (("Carro_A", "hatch", 17.0, -10.2, 0, "#8d9096"), ("Carro_D", "taxi", -5.0, -14.85, PI, None)):      # so dois carros civis: cada um tem uns 7 mil triangulos
     carro_modelo(nome, C_VEIC, arq, (x, y, .12), rz, cor=cor)
@@ -1216,7 +1216,7 @@ box("Apto_Piso_Quartos", (6.2, 3.5, .15), (4.9, 7.25, Z3 - .075), M["piso_lam"],
 box("Apto_Piso_Molhado", (2.8, 7.4, .15), (.4, 5.3, Z3 - .075), M["piso_cer"], C_EST)
 plano("Apto_Teto", -1, 8, 1.6, 9, Z3 + PD - .001, M["teto"], C_EST, True)
 parede("Apto_Parede_Sul", (-1.1, 1.65), (8, 1.65), M["parede"], C_EST, vaos=[(4.6, 5.5, 0, 2.1)], t=.1, ext=.05)        # entrada do 302
-parede("Apto_Parede_Norte", (-1, 9), (8, 9), M["parede"], C_EST, vaos=[(.5, 1.9, 1.1, 2.1), (3.6, 5.0, 1.0, 2.2), (6.9, 8.3, 1.0, 2.2)])
+parede("Apto_Parede_Norte", (-1, 9), (8, 9), M["parede"], C_EST, vaos=[(.5, 1.9, 1.1, 2.1), (3.6, 5.0, 1.0, 2.2), (6.7, 8.1, 1.0, 2.2)])      # janela do quarto 1 centrada na parede (x 6.4)
 parede("Apto_Parede_Leste", (8, 1.6), (8, 9), M["parede"], C_EST, vaos=[(.7, 3.3, .7, 2.25)])
 parede("Apto_Parede_Oeste", (-1, 1.6), (-1, 9), M["parede"], C_EST)
 parede("Apto_Parede_Banheiro_Cozinha", (-1, 4.0), (1.8, 4.0), M["parede"], C_EST, t=.12)
@@ -1227,17 +1227,30 @@ parede("Apto_Parede_Circulacao_L", (3.1, 1.6), (3.1, 5.5), M["parede"], C_EST, t
 parede("Apto_Parede_Quartos_Sul", (1.8, 5.5), (8, 5.5), M["parede"], C_EST, t=.12, vaos=[(.2, 1.1, 0, 2.1), (3.2, 4.1, 0, 2.1)])    # quarto 2; quarto 1
 parede("Apto_Parede_Entre_Quartos", (4.8, 5.5), (4.8, 9), M["parede"], C_EST, t=.12)
 janela("Janela_Servico", .2, 9, True, 1.4, 1.1, 2.1, C_EST); janela("Janela_Quarto_2", 3.3, 9, True, 1.4, 1.0, 2.2, C_EST)
-janela("Janela_Quarto_1", 6.6, 9, True, 1.4, 1.0, 2.2, C_EST); janela("Janela_Sala", 8, 3.6, False, 2.6, .7, 2.25, C_EST, folhas=3)
+janela("Janela_Quarto_1", 6.4, 9, True, 1.4, 1.0, 2.2, C_EST); janela("Janela_Sala", 8, 3.6, False, 2.6, .7, 2.25, C_EST, folhas=3)
 # azulejo ate o teto no banheiro e ate 1,5 m na cozinha e na area de servico (placas finas coladas na parede)
 for nome, tam, pos in (("Azulejo_Banheiro_O", (.01, 2.3, PD), (-.895, 2.8, Z3 + PD / 2)), ("Azulejo_Banheiro_S", (2.7, .01, PD), (.4, 1.705, Z3 + PD / 2)),
                        ("Azulejo_Banheiro_N", (2.7, .01, PD), (.4, 3.935, Z3 + PD / 2)), ("Azulejo_Cozinha_S", (2.7, .01, 1.5), (.4, 4.065, Z3 + .75)),
                        ("Azulejo_Cozinha_O", (.01, 2.7, 1.5), (-.895, 5.4, Z3 + .75)), ("Azulejo_Servico_O", (.01, 2.1, 1.5), (-.895, 7.9, Z3 + .75))):
     box(nome, tam, pos, M["azulejo"], C_EST)
-for nome, tam, pos in (("Rodape_Sala_S", (3.5, .015, .08), (6.2, 1.71, Z3 + .04)), ("Rodape_Sala_N1", (1.8, .015, .08), (4.05, 5.43, Z3 + .04)),
-                       ("Rodape_Sala_N2", (2.0, .015, .08), (6.95, 5.43, Z3 + .04)), ("Rodape_Q1_L", (.015, 3.3, .08), (7.89, 7.25, Z3 + .04)),
-                       ("Rodape_Q2_O", (.015, 3.3, .08), (1.87, 7.25, Z3 + .04)), ("Rodape_Q_Meio_A", (.015, 3.3, .08), (4.73, 7.25, Z3 + .04)),
-                       ("Rodape_Q_Meio_B", (.015, 3.3, .08), (4.87, 7.25, Z3 + .04))):
-    box(nome, tam, pos, M["rodape"], C_EST)
+# rodapes da sala, do corredor e dos quartos: um por face de parede, com recorte nos vaos de porta
+# (nome, parede em X?, coordenada fixa, meia espessura da parede, lado da face, inicio, fim, vaos de porta)
+RODAPES = (("Sala_S", True, 1.65, .05, 1, 3.1, 8, [(3.5, 4.4)]), ("Sala_N", True, 5.5, .06, -1, 3.1, 8, [(5.0, 5.9)]),
+           ("Sala_L", False, 8, .1, -1, 1.65, 5.5, []), ("Sala_O", False, 3.1, .06, 1, 1.65, 5.5, [(3.8, 5.5)]),
+           ("Circ_O", False, 1.8, .06, 1, 1.65, 5.5, [(2.9, 3.6), (4.5, 5.4)]), ("Circ_L", False, 3.1, .06, -1, 1.65, 5.5, [(3.8, 5.5)]),
+           ("Circ_S", True, 1.65, .05, 1, 1.8, 3.1, []), ("Circ_N", True, 5.5, .06, -1, 1.8, 3.1, [(2.0, 2.9)]),
+           ("Q2_S", True, 5.5, .06, 1, 1.8, 4.8, [(2.0, 2.9)]), ("Q2_O", False, 1.8, .06, 1, 5.5, 9, []),
+           ("Q2_L", False, 4.8, .06, -1, 5.5, 9, []), ("Q2_N", True, 9, .1, -1, 1.8, 4.8, []),
+           ("Q1_S", True, 5.5, .06, 1, 4.8, 8, [(5.0, 5.9)]), ("Q1_O", False, 4.8, .06, 1, 5.5, 9, []),
+           ("Q1_L", False, 8, .1, -1, 5.5, 9, []), ("Q1_N", True, 9, .1, -1, 4.8, 8, []))
+for nome, em_x, c, meia, lado, ini, fim, vaos in RODAPES:
+    pos_c = c + lado * (meia + .0075); trechos, d = [], ini + .06
+    for v0, v1 in vaos: trechos.append((d, v0)); d = v1
+    trechos.append((d, fim - .06))
+    for k, (t0, t1) in enumerate(trechos):
+        if t1 - t0 < .05: continue
+        m_ = (t0 + t1) / 2
+        box("Rodape_%s_%d" % (nome, k), (t1 - t0, .015, .08) if em_x else (.015, t1 - t0, .08), (m_, pos_c, Z3 + .04) if em_x else (pos_c, m_, Z3 + .04), M["rodape"], C_EST)
 plafon("Luz_Sala", 5.6, 3.5, 45); plafon("Luz_Circulacao", 2.45, 3.4, 45); plafon("Luz_Banheiro", .4, 2.8, 50, cor="#f4f6ff", m="lamp_f")
 plafon("Luz_Cozinha", .4, 5.4, 60, cor="#f4f6ff", m="lamp_f"); plafon("Luz_Servico", .4, 7.9, 15, cor="#f4f6ff", m="lamp_f")
 plafon("Luz_Quarto_1", 6.4, 7.25, 36); plafon("Luz_Quarto_2", 3.3, 7.25, 36)
@@ -1253,10 +1266,11 @@ class Movel:
     def W(s, p): return s.o + s.R @ Vector(p)
     def cx(s, suf, tam, pos, m, col=None, bevel=0.0):
         return box("Mv_%s_%s" % (s.nome, suf), tam, s.W(pos), m, col or s.col, rot=(0, 0, s.rz), bevel=bevel)
-    def casco(s, x0, x1, z0, z1, m, prat=(), fundo=True, d=None, y0=0.0, topo=True):
+    def casco(s, x0, x1, z0, z1, m, prat=(), fundo=True, d=None, y0=0.0, topo=True, baixos={}):
         """Caixa aberta na frente, de x0 a x1 e de z0 a z1 (medidas de fora), com prateleiras nas alturas dadas."""
         d = d or s.d; w = x1 - x0; xc = (x0 + x1) / 2; yc = y0 - d / 2
-        for sx, x in ((-1, x0 + T / 2), (1, x1 - T / 2)): s.cx("Lado", (T, d, z1 - z0), (x, yc, (z0 + z1) / 2), m)
+        for sx, x in ((-1, x0 + T / 2), (1, x1 - T / 2)):      # baixos = {lado: altura}: lateral mais baixa (passa por baixo da cuba)
+            zt = baixos.get(sx, z1); s.cx("Lado", (T, d, zt - z0), (x, yc, (z0 + zt) / 2), m)
         s.cx("Base", (w - 2 * T, d, T), (xc, yc, z0 + T / 2), m)
         if topo: s.cx("Topo", (w - 2 * T, d, T), (xc, yc, z1 - T / 2), m)
         if fundo: s.cx("Fundo", (w - 2 * T, .008, z1 - z0 - 2 * T), (xc, y0 - .004, (z0 + z1) / 2), m)
@@ -1382,13 +1396,13 @@ passagem("Quarto_1", (5.9, 5.5), PI, M["porta_br"], ang=-1.5); batente("Batente_
 # para onde olha a frente dos modelos prontos (conferido nas previas): giro que faz a frente olhar para o sul (-Y)
 SOFA_RZ = 0.0; QUADRO_RZ = 0.0; CADEIRA_RZ = PI      # a cadeira de jantar do Poly Haven vem de costas: meia volta para olhar a mesa
 # ------------------------------------------------------------------ quarto 1 (casal)
-cama("Cama_Casal", 6.1, 8.88, 0, 1.4, C_QUA, M["lencol"])                      # cabeceira na parede norte, sob a janela
-criado("Criado_A", 5.12, 8.88, 0, C_QUA); criado("Criado_B", 7.08, 8.88, 0, C_QUA)
+cama("Cama_Casal", 6.4, 8.88, 0, 1.4, C_QUA, M["lencol"])                      # cabeceira na parede norte, sob a janela
+criado("Criado_A", 5.42, 8.88, 0, C_QUA); criado("Criado_B", 7.38, 8.88, 0, C_QUA)
 guarda_roupa("Guarda_Roupa_Casal", 7.88, 6.52, -PI / 2, C_QUA, w=1.8, portas=3)
 # (a comoda do quarto do casal foi tirada a pedido do usuario)
-box("Abajur_Base", (.1, .1, .22), (5.12, 8.7, Z3 + .66), M["louca"], C_QUA); cyl("Abajur_Cupula", .09, .13, .16, (5.12, 8.7, Z3 + .85), M["cortina"], C_MIU, seg=14)
+box("Abajur_Base", (.1, .1, .22), (5.42, 8.7, Z3 + .66), M["louca"], C_QUA); cyl("Abajur_Cupula", .09, .13, .16, (5.42, 8.7, Z3 + .85), M["cortina"], C_MIU, seg=14)
 ph("Quadro_Quarto_1", "hanging_picture_frame_03", 4.9, 7.9, Z3 + 1.4, QUADRO_RZ - PI / 2, C_QUA, alt=.6, tris=600)
-box("Tapete_Quarto_1", (1.9, 1.1, .012), (6.1, 6.6, Z3 + .006), M["tapete"], C_QUA)
+box("Tapete_Quarto_1", (1.9, 1.1, .012), (6.4, 6.6, Z3 + .006), M["tapete"], C_QUA)
 
 # ------------------------------------------------------------------ quarto 2 (inquilino)
 cama("Cama_Solteiro", 4.3, 8.88, 0, .9, C_QUA, M["lencol2"])                   # cabeceira na parede norte, no canto leste
@@ -1427,11 +1441,11 @@ ph("Quadro_Sala_A", "hanging_picture_frame_01", 6.5, 5.4, Z3 + 1.45, QUADRO_RZ, 
 def armario_alto(nome, x, y, rz, col, w=1.2, d=.5, h=2.2, m=None, prat=(.5, .95, 1.4, 1.85)):
     m = m or M["mdf_br"]; mv = Movel(nome, x, y, rz, col, d)
     mv.casco(-w / 2, w / 2, .06, h, m, prat=prat); mv.cx("Rodape", (w - .04, .02, .06), (0, -d + .04, .03), m)
-    mv.folha(-w / 2 + .003, .062, w / 2 - .005, h - .064, m, 1, zp=1.0, pux=.16); mv.folha(w / 2 - .003, .062, w / 2 - .005, h - .064, m, -1, zp=1.0, pux=.16)
+    mv.folha(-w / 2 + .003, .062, w / 2 - .005, h - .064, m, 1, zp=1.0, pux=.16, ang=1.5); mv.folha(w / 2 - .003, .062, w / 2 - .005, h - .064, m, -1, zp=1.0, pux=.16, ang=1.5)      # ate ~86 graus: nao entram na parede do lado
     for z in prat[:3]:
         for k in range(2): mv.cx("Dobrados", (w * .32, d * .6, rnd.uniform(.1, .22)), ((k - .5) * w * .45, -d / 2, z + T / 2 + .11), M[rnd.choice(ROUPAS)], bevel=.01)
     mv.colisao(w, h); return mv
-armario_alto("Armario_Circulacao", 2.45, 1.71, PI, C_SAL)
+armario_alto("Armario_Circulacao", 2.45, 1.71, PI, C_SAL, w=1.06)      # o corredor tem 1,18 m: folga dos dois lados para as portas
 
 # ------------------------------------------------------------------ cozinha e area de servico
 def bancada_cozinha(nome, x, y, rz, col, w=2.2, d=.55, h=.86):
@@ -1440,7 +1454,7 @@ def bancada_cozinha(nome, x, y, rz, col, w=2.2, d=.55, h=.86):
     mv.cx("Rodape", (w - .04, .02, .1), (0, -d + .05, .05), M["preto"])
     for i in range(4):
         x0 = -w / 2 + i * wm
-        mv.casco(x0, x0 + wm, .1, h, m, prat=() if i == 2 else (.5,), topo=i > 1)      # sob a cuba nao ha tampo de mdf
+        mv.casco(x0, x0 + wm, .1, h, m, prat=() if i == 2 else (.5,), topo=i > 1, baixos={1: h - .18} if i == 0 else ({-1: h - .18} if i == 1 else {}))      # sob a cuba: sem tampo e com a lateral do meio baixa
         if i == 2:
             hz = (h - .1 - 2 * T) / 3
             for k in range(3): mv.gaveta(x0 + wm / 2, .1 + T + k * hz + .002, wm - .006, hz - .004, m)
@@ -1469,8 +1483,8 @@ def bancada_cozinha(nome, x, y, rz, col, w=2.2, d=.55, h=.86):
     for sy in (-1, 1): mv.cx("Cuba_Parede", (cl, .008, fd), (xs, yc + sy * (cp / 2 - .004), zf + fd / 2), M["inox"])
     for sx in (-1, 1): mv.cx("Cuba_Borda", (.015, cp + .03, .004), (xs + sx * (cl / 2 + .0075), yc, h + .032), M["inox"])
     for sy in (-1, 1): mv.cx("Cuba_Borda", (cl + .03, .015, .004), (xs, yc + sy * (cp / 2 + .0075), h + .032), M["inox"])
-    cyl("Mv_%s_Ralo" % nome, .04, .04, .006, mv.W((xs + .1, yc + .05, zf + .006)), M["inox"], col, seg=16)
-    cyl("Mv_%s_Ralo_Furo" % nome, .03, .03, .004, mv.W((xs + .1, yc + .05, zf + .01)), M["preto"], col, seg=16)
+    cyl("Mv_%s_Ralo" % nome, .04, .04, .006, mv.W((xs, yc, zf + .006)), M["inox"], col, seg=16)
+    cyl("Mv_%s_Ralo_Furo" % nome, .03, .03, .004, mv.W((xs, yc, zf + .01)), M["preto"], col, seg=16)
     # torneira gourmet: base, coluna, curva e bica para dentro da cuba, alavanca do lado
     bx, by = xs, yc + cp / 2 + .06
     cyl("Mv_%s_Torneira_Base" % nome, .028, .028, .03, mv.W((bx, by, h + .045)), M["inox"], col, seg=16)
@@ -1479,7 +1493,7 @@ def bancada_cozinha(nome, x, y, rz, col, w=2.2, d=.55, h=.86):
     cyl("Mv_%s_Torneira_Bico" % nome, .016, .016, .02, mv.W((bx, by - .16, h + .215)), M["inox"], col, seg=12)
     barra("Mv_%s_Torneira_Alavanca" % nome, mv.W((bx + .03, by, h + .2)), mv.W((bx + .1, by, h + .23)), .007, M["inox"], col, seg=8)
     # louca suja dentro da cuba, copo, esponja e detergente ao lado
-    for k in range(3): cyl("Mv_%s_Prato_Pia" % nome, .1, .1, .014, mv.W((xs - .08 + k * .015, yc - .03, zf + .012 + k * .014)), M["louca"], col, seg=18)
+    for k in range(3): cyl("Mv_%s_Prato_Pia" % nome, .1, .1, .014, mv.W((xs - .13 + k * .012, yc - .04, zf + .012 + k * .014)), M["louca"], col, seg=18)
     cyl("Mv_%s_Copo_Pia" % nome, .035, .03, .1, mv.W((xs + .14, yc - .08, zf + .055)), M["vidro_f2"], col, seg=12)
     mv.cx("Esponja", (.1, .065, .03), (xs + cl / 2 + .12, yc + .1, h + .045), M.setdefault("esponja", mat("Esponja", "#e3c13a", .95)))
     mv.cx("Esponja_Verde", (.1, .065, .012), (xs + cl / 2 + .12, yc + .1, h + .066), M.setdefault("esponja_v", mat("Esponja_Verde", "#2f6b3a", .95)))
@@ -1619,13 +1633,13 @@ def cortina(nome, x, y, ao_longo_x, larg, col, lado=1, z0=Z3 + .12, h=2.3, m=Non
 def tomada(nome, pos, virado, col, interruptor=False):
     box(nome, {"x": (.012, .075, .115), "y": (.075, .012, .115)}[virado], pos, M["branco"], C_MIU, bevel=.003)
 cortina("Cortina_Sala", 7.84, 3.6, False, 2.6, C_SAL, -1); cortina("Cortina_Sala_B", 7.84, 3.6, False, 2.6, C_SAL, 1)
-cortina("Cortina_Quarto_1", 6.6, 8.84, True, 1.4, C_QUA, 1, m=M["lencol"]); cortina("Cortina_Quarto_2", 3.3, 8.84, True, 1.4, C_QUA, -1, m=M["lencol2"])
+cortina("Cortina_Quarto_1", 6.4, 8.84, True, 1.4, C_QUA, 1, m=M["lencol"]); cortina("Cortina_Quarto_2", 3.3, 8.84, True, 1.4, C_QUA, -1, m=M["lencol2"])
 for nome, pos, v in (("Interruptor_Sala", (4.62, 1.705, Z3 + 1.1), "y"), ("Interruptor_Q1", (5.94, 5.565, Z3 + 1.1), "y"), ("Interruptor_Q2", (3.02, 5.565, Z3 + 1.1), "y"),
                      ("Interruptor_Cozinha", (1.735, 5.5, Z3 + 1.1), "x"), ("Interruptor_Banheiro", (1.735, 2.75, Z3 + 1.1), "x"), ("Tomada_Sala", (6.0, 1.705, Z3 + .3), "y"),
                      ("Tomada_Q1", (7.895, 6.0, Z3 + .3), "x"), ("Tomada_Q2", (2.4, 8.895, Z3 + .3), "y"), ("Tomada_Cozinha", (.9, 4.07, Z3 + 1.15), "y"), ("Interruptor_Corredor", (3.3, 1.495, Z3 + 1.1), "y")):
     tomada(nome, pos, v, C_MIU)
 # sala
-ph("Poltrona", "ArmChair_01", 7.3, 2.75, None, SOFA_RZ + PI * .75, C_SAL, alt=.85, tris=2500)
+# (poltrona da sala tirada a pedido do usuario)
 ph("Vaso_Rack", "ceramic_vase_01", 5.95, 1.9, Z3 + .545, 0, C_SAL, alt=.28, tris=500); ph("Livros_Rack", "book_encyclopedia_set_01", 7.05, 1.9, Z3 + .545, PI, C_SAL, alt=.26, tris=800)
 ph("Estante_Sala", "wooden_bookshelf_worn", 5.0, 1.9, None, PI, C_SAL, alt=1.7, tris=2500)
 ph("Porta_Retrato", "standing_picture_frame_01", 6.45, 3.55, Z3 + .4, .5, C_SAL, alt=.2, tris=400)
@@ -1640,7 +1654,26 @@ ph("Bola", "football", 4.5, 5.85, None, 0, C_QUA, alt=.22, tris=500)
 ph("Botas", "rubber_boots", 2.1, 6.2, None, 1.2, C_QUA, alt=.32, tris=700); box("Cartaz_Quarto_2", (.7, .012, 1.0), (4.0, 5.57, Z3 + 1.5), M["cartaz"], C_QUA)
 # (a planta do quarto do casal foi tirada a pedido do usuario)
 # cozinha e area de servico
-box("Microondas", (.48, .36, .28), (-.5, 4.3, Z3 + 1.03), M["inox"], C_COZ, bevel=.008); box("Microondas_Porta", (.34, .01, .22), (-.56, 4.485, Z3 + 1.03), M["micro"], C_COZ)
+def microondas(nome, x, y, z, col, w=.48, d=.36, h=.28):
+    """Micro-ondas de bancada com a frente para +Y: gabinete com cantos arredondados, porta com visor escuro e moldura,
+    puxador embutido, painel com visor digital e teclado, grade de ventilacao na lateral e pezinhos."""
+    fy = y + d / 2; zc = z + .01 + h / 2
+    box(nome, (w, d, h), (x, y, zc), M["inox"], col, bevel=.012, seg=3)
+    wp = w * .7; xp = x - w / 2 + .01 + wp / 2                               # porta (lado esquerdo)
+    box(nome + "_Porta", (wp, .012, h - .03), (xp, fy + .004, zc), M["branco"], col, bevel=.006)
+    box(nome + "_Visor", (wp - .08, .006, h - .1), (xp - .01, fy + .011, zc + .005), M["micro"], col)
+    box(nome + "_Visor_Tela", (wp - .1, .004, h - .12), (xp - .01, fy + .0145, zc + .005), M.setdefault("tela_micro", mat("Tela_Microondas", "#2a2c2e", .5, .3)), col)
+    box(nome + "_Puxador", (.018, .02, h - .08), (xp + wp / 2 - .025, fy + .02, zc), M["metal"], col, bevel=.004)
+    xpn = x + w / 2 - .01 - (w - wp - .03) / 2; lp = w - wp - .03            # painel de controle (lado direito)
+    box(nome + "_Painel", (lp, .008, h - .03), (xpn, fy + .003, zc), M["preto"], col)
+    box(nome + "_Display", (lp - .03, .004, .03), (xpn, fy + .008, zc + h / 2 - .045), M.setdefault("display_verde", mat("Display_Verde", "#062010", .3, emit="#3dff8a", forca=1.2)), col)
+    for i in range(4):
+        for j in range(3): box(nome + "_Tecla", (.018, .004, .012), (xpn - .025 + j * .025, fy + .008, zc + .03 - i * .02), M["metal"], col)
+    cyl(nome + "_Botao_Gira", .016, .016, .012, (xpn, fy + .01, zc - h / 2 + .045), M["metal"], col, rot=(PI / 2, 0, 0), seg=16)
+    for k in range(6): box(nome + "_Ventilacao", (.003, .12, .006), (x + w / 2 + .0005, y - .05, zc + .06 - k * .015), M["preto"], col)
+    for sx in (-1, 1):
+        for sy in (-1, 1): cyl(nome + "_Pe", .012, .012, .01, (x + sx * (w / 2 - .04), y + sy * (d / 2 - .04), z + .005), M["preto"], col, seg=8)
+microondas("Microondas", -.5, 4.3, Z3 + .89, C_COZ)
 ph("Chaleira", "vintage_electric_kettle", 1.2, 4.3, Z3 + .89, 2.5, C_COZ, alt=.22, tris=700); ph("Panela", "pot_enamel_01", -.72, 5.03, Z3 + .9, 0, C_COZ, alt=.14, tris=700)
 box("Tabua", (.34, .22, .02), (-.05, 4.42, Z3 + .9), M["mad"], C_COZ, rot=(0, 0, .4), bevel=.004)
 for k in range(5): box("Escorredor_Prato", (.012, .2, .2), (.13 + k * .05, 4.28, Z3 + 1.0), M["louca"], C_COZ, bevel=.004)

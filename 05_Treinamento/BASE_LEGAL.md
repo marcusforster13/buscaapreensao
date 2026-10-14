@@ -58,7 +58,7 @@ treinamento observa se ele usa e quando.
    outra pessoa, sem crime aparente?
 4. Mandado que autoriza apreender o celular mas não fala do acesso: o que o policial pode fazer no local (modo avião,
    desligar, pedir a senha)?
-5. Só mulher e crianças em casa; idoso acamado: cuidados exigidos e quem acompanha a busca.
+5. Só a esposa em casa; idoso acamado: cuidados exigidos e quem acompanha a busca.
 6. Ninguém em casa: porteiro vale como "vizinho" do art. 245, § 4º? Quem decide o arrombamento?
 7. Arma de choque: norma interna que regula o emprego e em que variações o uso seria aceito.
 8. Morador que tenta jogar algo pela janela ou no vaso: contenção, algemas e enquadramento.

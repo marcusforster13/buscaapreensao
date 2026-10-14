@@ -73,7 +73,7 @@
         { "id": "intimar_abrir", "texto": "Intimar o morador a abrir a porta", "pontos": 3, "base": "CPP art. 245" },
         { "id": "arrombar_apos_recusa", "texto": "Diante da recusa, entrar à força com o mínimo de dano", "pontos": 5, "base": "CPP art. 245, § 2º", "condicao": "variacao.morador == 'recusa'" },
         { "id": "chamar_testemunha_ausente", "texto": "Ninguém em casa: chamar o porteiro ou um vizinho para assistir antes de entrar", "pontos": 8, "base": "CPP art. 245, § 4º", "condicao": "variacao.morador == 'ausente'" },
-        { "id": "cuidado_vulneraveis", "texto": "Mulher e crianças / idoso acamado: acalmar, manter juntos e longe da busca, sem expor as crianças", "pontos": 5, "base": "CPP art. 248", "condicao": "variacao.vulneraveis != 'nenhum'", "validar": true }
+        { "id": "cuidado_vulneraveis", "texto": "Esposa em casa / idoso acamado: acalmar, manter longe da busca e sem expor a pessoa", "pontos": 5, "base": "CPP art. 248", "condicao": "variacao.vulneraveis != 'nenhum'", "validar": true }
       ],
       "erros": [
         { "id": "entrar_sem_anunciar", "texto": "Entrar sem se anunciar quando não havia motivo", "pontos": -8, "base": "CPP art. 245" },
@@ -137,7 +137,7 @@
     "horario": ["dia", "dia", "dia", "madrugada"],
     "validade": ["valido", "valido", "valido", "valido", "vencido"],
     "morador": ["colabora", "colabora", "recusa", "ausente"],
-    "vulneraveis": ["nenhum", "nenhum", "mulher_criancas", "idoso_acamado"],
+    "vulneraveis": ["nenhum", "nenhum", "mulher", "idoso_acamado"],
     "objeto": ["a_vista", "escondido", "escondido", "ausente"],
     "extra": ["nenhum", "nenhum", "arma", "droga", "dinheiro", "documentos_terceiro"],
     "inquilino": ["nao", "nao", "quarto_trancado"],
@@ -154,7 +154,7 @@
       "variacao": { "endereco": "correto", "horario": "madrugada", "validade": "valido", "morador": "recusa", "vulneraveis": "nenhum", "objeto": "escondido", "extra": "arma", "inquilino": "quarto_trancado", "dados": "nao_autoriza", "conduta": "jogar_janela", "vizinho": "nao" } },
     { "titulo": "Cumprimento 4 de 5 · Ninguém em casa", "texto": "Ninguém atende. Quem acompanha a busca?",
       "variacao": { "endereco": "correto", "horario": "dia", "validade": "valido", "morador": "ausente", "vulneraveis": "nenhum", "objeto": "escondido", "extra": "dinheiro", "inquilino": "nao", "dados": "autoriza", "conduta": "nenhuma", "vizinho": "sai_corredor" } },
-    { "titulo": "Cumprimento 5 de 5 · Família em casa", "texto": "Só a mulher e as crianças em casa. O morador oferece dinheiro quando chega.",
-      "variacao": { "endereco": "correto", "horario": "dia", "validade": "valido", "morador": "colabora", "vulneraveis": "mulher_criancas", "objeto": "escondido", "extra": "documentos_terceiro", "inquilino": "nao", "dados": "nao_autoriza", "conduta": "suborno", "vizinho": "nao" } }
+    { "titulo": "Cumprimento 5 de 5 · Família em casa", "texto": "Só a esposa em casa. O morador oferece dinheiro quando chega.",
+      "variacao": { "endereco": "correto", "horario": "dia", "validade": "valido", "morador": "colabora", "vulneraveis": "mulher", "objeto": "escondido", "extra": "documentos_terceiro", "inquilino": "nao", "dados": "nao_autoriza", "conduta": "suborno", "vizinho": "nao" } }
   ]
 }

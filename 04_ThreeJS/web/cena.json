@@ -1,55 +1,55 @@
 {
- "gerado_em": "2026-10-14 14:13",
+ "gerado_em": "2026-10-14 15:22",
  "qualidade": "alta",
  "lightmaps": {
   "01_Rua_Patio_Estatico": {
    "lm": "lightmaps/LM_01_Rua_Patio.png",
-   "max": 1.85491,
+   "max": 1.85132,
    "ganho": 1.75
   },
   "02_Predio_Estatico": {
    "lm": "lightmaps/LM_02_Predio.png",
-   "max": 2.14258,
+   "max": 2.14062,
    "ganho": 1.75
   },
   "03_Portaria_Estatico": {
    "lm": "lightmaps/LM_03_Portaria.png",
-   "max": 1.29691,
+   "max": 1.29551,
    "ganho": 3.0
   },
   "04_Corredor_Escada_Estatico": {
    "lm": "lightmaps/LM_04_Corredor_Escada.png",
-   "max": 2.22617,
+   "max": 2.22695,
    "ganho": 3.0
   },
   "05_Apto_Estrutura_Estatico": {
    "lm": "lightmaps/LM_05_Apto_Estrutura.png",
-   "max": 2.14805,
+   "max": 2.09909,
    "ganho": 3.0
   },
   "06_Sala_Estatico": {
    "lm": "lightmaps/LM_06_Sala.png",
-   "max": 1.17751,
+   "max": 1.04958,
    "ganho": 3.0
   },
   "07_Cozinha_Servico_Estatico": {
    "lm": "lightmaps/LM_07_Cozinha_Servico.png",
-   "max": 0.63597,
+   "max": 0.61803,
    "ganho": 3.0
   },
   "10_Quartos_Estatico": {
    "lm": "lightmaps/LM_10_Quartos.png",
-   "max": 1.00352,
+   "max": 0.94398,
    "ganho": 3.0
   },
   "11_Banheiro_Estatico": {
    "lm": "lightmaps/LM_11_Banheiro.png",
-   "max": 0.69365,
+   "max": 0.69212,
    "ganho": 3.0
   },
   "12_Vizinho_301_Estatico": {
    "lm": "lightmaps/LM_12_Vizinho_301.png",
-   "max": 1.88686,
+   "max": 1.55039,
    "ganho": 3.0
   },
   "17_Entorno_Longe_Estatico": {
@@ -59,7 +59,7 @@
   },
   "19_Veiculos_Estatico": {
    "lm": "lightmaps/LM_19_Veiculos.png",
-   "max": 1.05273,
+   "max": 1.36719,
    "ganho": 1.75
   }
  },
@@ -413,11 +413,11 @@
   },
   "A_Fol_Armario_Circulacao_1": {
    "tipo": "porta",
-   "ang": -1.75
+   "ang": -1.5
   },
   "A_Fol_Armario_Circulacao_2": {
    "tipo": "porta",
-   "ang": 1.75
+   "ang": 1.5
   },
   "A_Fol_Bancada_1": {
    "tipo": "porta",
@@ -479,11 +479,11 @@
   },
   "A_Fol_Armario_Servico_1": {
    "tipo": "porta",
-   "ang": -1.75
+   "ang": -1.5
   },
   "A_Fol_Armario_Servico_2": {
    "tipo": "porta",
-   "ang": 1.75
+   "ang": 1.5
   },
   "A_Fol_Gabinete_Banheiro_1": {
    "tipo": "porta",

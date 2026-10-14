@@ -28,13 +28,12 @@ def _civil(s, extra=None):
     d.update(extra or {}); return d
 PAPEIS = {
     # Busca e Apreensao: equipe, portaria, moradores e vizinha
-    "pm_parceiro": ("Police_Male_04", {"parada": "m_idle_neutral_01", "falando": "m_gestic_talk_neutral_01", "andando": "m_walk_fast_01", "correndo": "m_run_fast_01"}),
+    "pm_parceiro": ("Police_Male_01", {"parada": "m_idle_neutral_01", "falando": "m_gestic_talk_neutral_01", "andando": "m_walk_fast_01", "correndo": "m_run_fast_01"}),
     "pm_apoio": ("Police_Male_01", {"parada": "m_idle_neutral_01", "falando": "m_gestic_talk_neutral_01", "andando": "m_walk_fast_01"}),
-    "policial_civil": ("Male_Adult_13", {"parada": "m_idle_neutral_01", "falando": "m_gestic_talk_neutral_01", "andando": "m_walk_fast_01"}),
-    "porteiro": ("Male_Adult_04", _civil("m")),
+    "policial_civil": ("Police_Male_06", {"parada": "m_idle_neutral_01", "falando": "m_gestic_talk_neutral_01", "andando": "m_walk_fast_01"}),      # roupa comum, colete e distintivo
+    "porteiro": ("Male_Adult_14", _civil("m")),
     "morador": ("Male_Adult_10", _civil("m", {"irritado": "m_idle_angry_01", "sentado_parado": "m_idle_neutral_01+sentado_parado"})),
     "mulher": ("Female_Adult_01", _civil("f", {"sentado_parado": "f_idle_neutral_01+sentado_parado"})),
-    "crianca": ("Female_Child_01", _civil("f")),
     "idoso": ("Male_Adult_20", _civil("m", {"sentado_parado": "m_idle_neutral_01+sentado_parado"})),
     "vizinha": ("Female_Adult_08", _civil("f")),
 }

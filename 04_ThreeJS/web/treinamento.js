@@ -549,7 +549,7 @@ export async function iniciar(ctx) {
     v.endereco === 'correto' ? 'mandado com o endereço certo' : v.endereco === 'apto_errado' ? 'mandado com o apartamento 203' : 'mandado do Bloco A',
     v.horario === 'madrugada' ? 'equipe pronta às 4h30' : 'de dia', v.validade === 'vencido' ? 'mandado vencido' : null,
     { colabora: 'morador colabora', recusa: 'morador se recusa a abrir', ausente: 'ninguém em casa' }[v.morador],
-    { nenhum: null, mulher_criancas: 'só mulher e crianças', idoso_acamado: 'idoso acamado' }[v.vulneraveis],
+    { nenhum: null, mulher: 'só a esposa em casa', idoso_acamado: 'idoso acamado' }[v.vulneraveis],
     { a_vista: 'objeto à vista', escondido: 'objeto escondido', ausente: 'objeto não está lá' }[v.objeto],
     v.extra !== 'nenhum' ? 'achado fora do mandado: ' + v.extra.replace('_', ' ') : null, v.inquilino === 'quarto_trancado' ? 'quarto do inquilino trancado' : null,
     v.dados === 'autoriza' ? 'mandado autoriza o acesso aos dados' : 'mandado não autoriza o acesso aos dados',
@@ -563,9 +563,8 @@ export async function iniciar(ctx) {
     ['parceiro', 'pm_parceiro', 'Policial parceiro', [-3.5, -3.6, 0], [.4, -1], 'm', 1.8],
     ['apoio', 'pm_apoio', 'Policial de apoio', [-3.0, -5.2, 0], [0, 1], 'm', 1.8],
     ['porteiro', 'porteiro', 'Porteiro', [-.1, -2.6, 0], [-1, 0], 'm', 1.75],
-    ['morador', 'morador', 'Morador', [4.7, 2.9, 3], [0, -1], 'm', 1.78],
+    ['morador', 'morador', 'Morador', [3.95, 2.35, 3], [0, -1], 'm', 1.78],      // perto da porta de entrada, fora da mesa de jantar
     ['mulher', 'mulher', 'Moradora', [6.4, 4.4, 3], [0, -1], 'f', 1.66],
-    ['crianca', 'crianca', 'Criança', [6.9, 4.3, 3], [0, -1], 'c', 1.2],
     ['idoso', 'idoso', 'Seu Antônio (idoso)', [6.1, 7.5, 3], [0, -1], 'm', 1.7],
     ['vizinha', 'vizinha', 'Vizinha do 301', [-2.95, 2.6, 3], [0, -1], 'f', 1.66],
   ];
@@ -575,7 +574,7 @@ export async function iniciar(ctx) {
     limparNPCs();
     for (const [chave, papel, nome, [x, y, andar], [dx, dy], voz, alt] of ELENCO) {
       if (chave === 'morador' && v.morador === 'ausente') continue;
-      if ((chave === 'mulher' || chave === 'crianca') && v.vulneraveis !== 'mulher_criancas') continue;
+      if (chave === 'mulher' && v.vulneraveis !== 'mulher') continue;
       if (chave === 'idoso' && v.vulneraveis !== 'idoso_acamado') continue;
       if (chave === 'vizinha' && v.vizinho !== 'sai_corredor') continue;
       const n = personagem(papel, nome, /parceiro|apoio/.test(chave) ? 0x1b2a4a : 0x3d4045, alt);
@@ -585,7 +584,7 @@ export async function iniciar(ctx) {
       n.position.copy(p); n.rotation.y = n.userData.giroBase; scene.add(n); npcs[chave] = n;
     }
     // quem esta no apartamento so aparece quando a porta abre; o morador "colabora" vem atender
-    for (const k of ['morador', 'mulher', 'crianca', 'idoso']) if (npcs[k]) npcs[k].visible = false;
+    for (const k of ['morador', 'mulher', 'idoso']) if (npcs[k]) npcs[k].visible = false;
     if (npcs.vizinha) npcs.vizinha.visible = false;
     if (npcs.idoso) { const u = npcs.idoso.userData; u.sentado = true; u.semVirar = true; u.base = 'sentado_parado'; animar(npcs.idoso, 'sentado_parado', 1e6, 0); npcs.idoso.position.y = Z3 - .22; }
   }
@@ -803,7 +802,7 @@ export async function iniciar(ctx) {
       const ab = ABRIR(); ab?.trancar('A_Passagem_Apto_302', false); ab?.abrir('A_Passagem_Apto_302', .55);
       const n = npcs.morador; if (!n) return; n.visible = true; n.position.copy(B3(...NA_PORTA)); n.userData.giroBase = olharPara(0, -1); n.rotation.y = n.userData.giroBase;
       diz(n, anunciou ? 'Polícia? O que é que vocês querem?' : 'Pois não?').then(menuMoradorPorta);
-      if (v.vulneraveis === 'mulher_criancas') { npcs.mulher.visible = true; npcs.crianca.visible = true; setTimeout(() => legenda('Moradora (lá dentro)', 'Carlos, quem é? As crianças acordaram!', 4), 2500); }
+      if (v.vulneraveis === 'mulher') { npcs.mulher.visible = true; setTimeout(() => legenda('Moradora (lá dentro)', 'Carlos? Quem é a essa hora?', 4), 2500); }
       if (v.vulneraveis === 'idoso_acamado' && npcs.idoso) npcs.idoso.visible = true;
     }, 1800);
   }
@@ -822,8 +821,8 @@ export async function iniciar(ctx) {
   function entrar(forcado) {
     A.entrou = true; A.fase = 'busca'; const ab = ABRIR(); ab?.trancar('A_Passagem_Apto_302', false); ab?.abrir('A_Passagem_Apto_302', 1);
     const v = S.variacao, n = npcs.morador;
-    if (v.morador === 'recusa' && n) { n.visible = true; n.position.copy(B3(4.6, 3.0)); n.userData.giroBase = olharPara(-.3, -1); animar(n, n.userData.acoes?.irritado ? 'irritado' : 'parada', 1e6, .2); n.userData.base = n.userData.acoes?.irritado ? 'irritado' : 'parada'; }
-    if (v.vulneraveis === 'mulher_criancas') { npcs.mulher.visible = true; npcs.crianca.visible = true; }
+    if (v.morador === 'recusa' && n) { n.visible = true; n.position.copy(B3(3.95, 2.75)); n.userData.giroBase = olharPara(0, -1); animar(n, n.userData.acoes?.irritado ? 'irritado' : 'parada', 1e6, .2); n.userData.base = n.userData.acoes?.irritado ? 'irritado' : 'parada'; }
+    if (v.vulneraveis === 'mulher') npcs.mulher.visible = true;
     if (v.vulneraveis === 'idoso_acamado' && npcs.idoso) npcs.idoso.visible = true;
     // a equipe entra junto
     if (npcs.civil) rota(npcs.civil, [[3.95, 1.0], [3.95, 2.6], [4.0, 3.6]], 1.3, 'andando', null, Z3);
@@ -855,10 +854,10 @@ export async function iniciar(ctx) {
   function menuFamilia(n) {
     const k = n.userData.chave;
     painelOpc('Apartamento 302', n.userData.nome, [
-      { fala: 'Calma, senhora. É uma busca com mandado judicial. Fique com as crianças na sala, longe da busca.', acao: 'cuidado_vulneraveis', id: 'calma' },
+      { fala: 'Calma, senhora. É uma busca com mandado judicial. Fique aqui na sala, longe da busca, por favor.', acao: 'cuidado_vulneraveis', id: 'calma' },
       { fala: 'Todo mundo de mãos na cabeça, contra a parede!', id: 'parede' },
     ].filter(o => k !== 'idoso' || o.id !== 'parede').concat(k === 'idoso' ? [{ fala: 'Seu Antônio, fique tranquilo, vamos procurar sem incomodar o senhor.', acao: 'cuidado_vulneraveis', id: 'idoso' }] : []), op => {
-      if (op.id === 'parede') { penalidade(-5, 'Tratou a família como suspeita sem motivo (mãos na cabeça, contra a parede)'); diz(n, 'Pelo amor de Deus, são crianças!'); }
+      if (op.id === 'parede') { penalidade(-5, 'Tratou a família como suspeita sem motivo (mãos na cabeça, contra a parede)'); diz(n, 'Pelo amor de Deus, eu não fiz nada!'); }
       else diz(n, k === 'idoso' ? 'Obrigado, meu filho. Eu não levanto daqui.' : 'Tá… tá bom. Vem, filha, senta aqui comigo.');
     });
   }
