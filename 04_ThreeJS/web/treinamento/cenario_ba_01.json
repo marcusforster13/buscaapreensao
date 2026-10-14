@@ -1,0 +1,160 @@
+{
+  "id": "ba_01",
+  "titulo": "Busca e Apreensão — cumprimento de mandado em apartamento",
+  "versao": "0.1",
+  "status": "rascunho para validação (itens com validar=true dependem do procedimento da instituição e de conferência com os instrutores)",
+  "papel": "Policial militar em apoio. O responsável pelo cumprimento é o policial civil (personagem). O aluno é avaliado pela conduta dele: o que confere, o que propõe ao responsável, o que faz e o que deixa de fazer.",
+  "aprovacao": { "pontos_minimos": 70, "sem_falha_grave": true, "validar": true },
+  "base_legal": {
+    "_nota": "Rascunho: conferir cada referência com os instrutores (ver BASE_LEGAL.md).",
+    "CF art. 5º, XI": "A casa é asilo inviolável; com ordem judicial, só se entra durante o dia.",
+    "CF art. 5º, X e XII; STF Tema 977": "Intimidade e sigilo de dados: o conteúdo do celular e do computador só se acessa com autorização judicial ou consentimento do dono.",
+    "CPP art. 243": "O mandado indica a casa e o morador com a maior precisão possível, e o motivo e os fins da diligência.",
+    "CPP art. 245": "Busca de dia; mostrar e ler o mandado ao morador e intimá-lo a abrir.",
+    "CPP art. 245, § 2º": "Diante da desobediência, a porta pode ser arrombada.",
+    "CPP art. 245, § 3º": "Resistência do morador: força contra coisas do interior para descobrir o que se procura.",
+    "CPP art. 245, § 4º": "Casa sem moradores: intimar um vizinho, se houver e estiver presente, para assistir à diligência.",
+    "CPP art. 245, § 6º": "A coisa encontrada é apreendida e posta sob custódia.",
+    "CPP art. 245, § 7º": "Auto circunstanciado, assinado por duas testemunhas presenciais.",
+    "CPP art. 246": "Cômodo habitado em habitação coletiva tem a mesma proteção.",
+    "CPP art. 248": "Não molestar os moradores além do indispensável.",
+    "CPP art. 244": "Busca pessoal sem mandado só com fundada suspeita ou no curso da busca domiciliar.",
+    "CPP art. 249": "Busca em mulher feita por outra mulher, se não atrasar a diligência.",
+    "CPP arts. 158-A a 158-F": "Cadeia de custódia: fixar, coletar, acondicionar, lacrar e registrar cada vestígio.",
+    "Lei 13.869/2019, art. 22, § 1º, III": "Crime de abuso de autoridade: cumprir mandado de busca domiciliar depois das 21h ou antes das 5h.",
+    "STJ RHC 196.496": "A busca pode começar às 5h, mesmo sem luz do sol (conferir o acórdão).",
+    "STJ HC 965.224": "Provas anuladas porque o mandado impresso não foi apresentado (conferir o acórdão).",
+    "Súmula Vinculante 11": "Algemas só com resistência, fundado receio de fuga ou perigo, justificado por escrito.",
+    "Lei 13.060/2014": "Uso da força: prioridade aos instrumentos de menor potencial ofensivo; legalidade, necessidade e proporcionalidade.",
+    "CP art. 333": "Oferecer vantagem ao policial é corrupção ativa.",
+    "CP art. 347": "Inovar artificiosamente o estado de coisa para induzir a erro (destruir ou esconder prova): enquadramento a validar.",
+    "Lei 10.826/2003, arts. 12 e 14": "Posse ou porte irregular de arma de fogo: flagrante.",
+    "Lei 11.343/2006, art. 33": "Drogas encontradas: flagrante; quantidade e circunstâncias definem o enquadramento.",
+    "Lei 8.906/1994, art. 7º": "Direitos do advogado de acompanhar o cliente."
+  },
+  "fases": [
+    {
+      "id": "F1", "nome": "Portaria: conferência do mandado e do horário",
+      "acoes": [
+        { "id": "ler_mandado", "texto": "Ler o mandado antes de subir", "pontos": 4, "base": "CPP art. 243" },
+        { "id": "conferir_endereco", "texto": "Conferir endereço, bloco e número do apartamento com o local", "pontos": 6, "base": "CPP art. 243" },
+        { "id": "conferir_validade", "texto": "Conferir a data de expedição e a validade", "pontos": 2, "base": "CPP art. 243", "validar": true },
+        { "id": "apontar_divergencia", "texto": "Apontar ao responsável a divergência de endereço e propor não cumprir e comunicar o juízo", "pontos": 10, "base": "CPP art. 243", "condicao": "variacao.endereco != 'correto'", "validar": true },
+        { "id": "aguardar_horario", "texto": "Aguardar as 5h para iniciar a diligência", "pontos": 8, "base": "Lei 13.869/2019, art. 22, § 1º, III", "condicao": "variacao.horario == 'madrugada'" },
+        { "id": "porteiro_discreto", "texto": "Identificar-se ao porteiro sem revelar o alvo e pedir que não avise o morador", "pontos": 2, "validar": true }
+      ],
+      "erros": [
+        { "id": "subir_sem_ler", "texto": "Subir sem ler o mandado", "pontos": -4 },
+        { "id": "porteiro_avisa", "texto": "Revelar o alvo ao porteiro (o morador foi avisado)", "pontos": -3, "validar": true }
+      ],
+      "falhas_graves": [
+        { "id": "cumprir_endereco_errado", "texto": "Entrar no apartamento com o mandado de outro endereço", "base": "CF art. 5º, XI; CPP art. 243" },
+        { "id": "cumprir_madrugada", "texto": "Iniciar a busca antes das 5h", "base": "Lei 13.869/2019, art. 22, § 1º, III" },
+        { "id": "cumprir_vencido", "texto": "Cumprir mandado com a validade vencida", "base": "CPP art. 243", "validar": true }
+      ]
+    },
+    {
+      "id": "F2", "nome": "Corredor: posicionamento da equipe",
+      "acoes": [
+        { "id": "apoio_escada", "texto": "Posicionar o apoio na escada (rota de fuga)", "pontos": 3, "validar": true },
+        { "id": "apoio_corredor", "texto": "Posicionar o apoio no corredor, fora da linha da porta", "pontos": 3, "validar": true },
+        { "id": "conferir_porta", "texto": "Conferir o número da porta antes de bater", "pontos": 4, "base": "CPP art. 243" },
+        { "id": "orientar_vizinho", "texto": "Orientar o vizinho curioso a voltar para casa (ou convidá-lo como testemunha)", "pontos": 2, "condicao": "variacao.vizinho == 'sai_corredor'" }
+      ],
+      "erros": [
+        { "id": "porta_errada", "texto": "Bater na porta errada", "pontos": -4 }
+      ]
+    },
+    {
+      "id": "F3", "nome": "Entrada: anúncio, leitura do mandado e acesso",
+      "acoes": [
+        { "id": "bater_anunciar", "texto": "Bater e anunciar-se como polícia", "pontos": 5, "base": "CPP art. 245" },
+        { "id": "mostrar_ler", "texto": "Mostrar e ler o mandado ao morador", "pontos": 8, "base": "CPP art. 245; STJ HC 965.224" },
+        { "id": "intimar_abrir", "texto": "Intimar o morador a abrir a porta", "pontos": 3, "base": "CPP art. 245" },
+        { "id": "arrombar_apos_recusa", "texto": "Diante da recusa, entrar à força com o mínimo de dano", "pontos": 5, "base": "CPP art. 245, § 2º", "condicao": "variacao.morador == 'recusa'" },
+        { "id": "chamar_testemunha_ausente", "texto": "Ninguém em casa: chamar o porteiro ou um vizinho para assistir antes de entrar", "pontos": 8, "base": "CPP art. 245, § 4º", "condicao": "variacao.morador == 'ausente'" },
+        { "id": "cuidado_vulneraveis", "texto": "Mulher e crianças / idoso acamado: acalmar, manter juntos e longe da busca, sem expor as crianças", "pontos": 5, "base": "CPP art. 248", "condicao": "variacao.vulneraveis != 'nenhum'", "validar": true }
+      ],
+      "erros": [
+        { "id": "entrar_sem_anunciar", "texto": "Entrar sem se anunciar quando não havia motivo", "pontos": -8, "base": "CPP art. 245" },
+        { "id": "arrombar_sem_recusa", "texto": "Forçar a porta sem que o morador tenha se recusado", "pontos": -6, "base": "CPP art. 245, § 2º" },
+        { "id": "arma_apontada_sem_ameaca", "texto": "Apontar a arma para quem não oferece ameaça", "pontos": -5, "base": "Lei 13.060/2014" }
+      ],
+      "falhas_graves": [
+        { "id": "entrar_ausente_sem_testemunha", "texto": "Entrar na casa vazia sem testemunha", "base": "CPP art. 245, § 4º" }
+      ]
+    },
+    {
+      "id": "F4", "nome": "Busca",
+      "acoes": [
+        { "id": "morador_acompanha", "texto": "Fazer a busca na presença do morador ou das testemunhas", "pontos": 6, "base": "CPP arts. 245 e 248" },
+        { "id": "buscar_onde_cabe", "texto": "Procurar só onde o objeto do mandado poderia estar", "pontos": 6, "base": "CPP art. 248" },
+        { "id": "sem_dano", "texto": "Abrir e fechar gavetas e armários sem dano desnecessário", "pontos": 4, "base": "CPP art. 248" },
+        { "id": "achar_objeto", "texto": "Encontrar o que o mandado procura (celular, computador, documentos)", "pontos": 8, "condicao": "variacao.objeto != 'ausente'" },
+        { "id": "inquilino_correto", "texto": "Quarto trancado do inquilino: não arrombar; consultar o responsável e respeitar a proteção do cômodo", "pontos": 5, "base": "CPP art. 246", "condicao": "variacao.inquilino == 'quarto_trancado'", "validar": true },
+        { "id": "fora_mandado_correto", "texto": "Arma ou droga à vista: comunicar o responsável (flagrante); dinheiro ou documentos de terceiro: só registrar", "pontos": 6, "base": "Lei 10.826/2003; Lei 11.343/2006", "condicao": "variacao.extra != 'nenhum'", "validar": true },
+        { "id": "impedir_destruicao", "texto": "Impedir com a força mínima que o morador jogue fora ou destrua a prova", "pontos": 6, "base": "CPP art. 245, § 3º", "condicao": "variacao.conduta == 'jogar_janela' || variacao.conduta == 'jogar_vaso' || variacao.conduta == 'destruir'", "validar": true },
+        { "id": "recusar_suborno", "texto": "Recusar a oferta de dinheiro e comunicar o responsável (corrupção ativa)", "pontos": 6, "base": "CP art. 333", "condicao": "variacao.conduta == 'suborno'" },
+        { "id": "permitir_filmar", "texto": "Permitir que o morador filme e chame o advogado, sem atrasar a busca", "pontos": 4, "base": "Lei 8.906/1994, art. 7º", "condicao": "variacao.conduta == 'filma_advogado'", "validar": true }
+      ],
+      "erros": [
+        { "id": "revirar_onde_nao_cabe", "texto": "Revirar lugares onde o objeto não caberia", "pontos": -3, "base": "CPP art. 248" },
+        { "id": "dano_desnecessario", "texto": "Quebrar ou forçar móvel sem necessidade", "pontos": -5, "base": "CPP art. 248" },
+        { "id": "algemar_sem_motivo", "texto": "Algemar sem resistência, risco de fuga ou perigo", "pontos": -6, "base": "Súmula Vinculante 11" },
+        { "id": "revistar_sem_motivo", "texto": "Revistar o morador sem fundada suspeita", "pontos": -4, "base": "CPP art. 244" },
+        { "id": "choque_sem_motivo", "texto": "Usar a arma de choque sem resistência ativa", "pontos": -8, "base": "Lei 13.060/2014", "validar": true },
+        { "id": "arrombar_quarto_inquilino", "texto": "Arrombar o quarto do inquilino que não é alvo do mandado", "pontos": -8, "base": "CPP art. 246", "validar": true },
+        { "id": "ignorar_flagrante", "texto": "Ignorar arma ou droga encontrada", "pontos": -6, "validar": true },
+        { "id": "filmagem_impedida", "texto": "Tomar o celular do morador para impedir a filmagem", "pontos": -5, "validar": true }
+      ],
+      "falhas_graves": [
+        { "id": "acessar_celular", "texto": "Acessar o conteúdo do celular ou do computador sem autorização no mandado", "base": "CF art. 5º, X e XII; STF Tema 977", "condicao": "variacao.dados == 'nao_autoriza'" },
+        { "id": "aceitar_suborno", "texto": "Aceitar a vantagem oferecida", "base": "CP art. 317" },
+        { "id": "disparo_sem_ameaca", "texto": "Disparar arma de fogo sem agressão atual ou iminente", "base": "Lei 13.060/2014" }
+      ]
+    },
+    {
+      "id": "F5", "nome": "Apreensão, lacre e auto",
+      "acoes": [
+        { "id": "fotografar_local", "texto": "Fotografar cada item onde foi encontrado", "pontos": 3, "base": "CPP arts. 158-A a 158-F" },
+        { "id": "relacionar_itens", "texto": "Relacionar os itens apreendidos (descrição, marca, número de série)", "pontos": 4, "base": "CPP arts. 158-A a 158-F" },
+        { "id": "lacrar", "texto": "Acondicionar e lacrar cada item com numeração", "pontos": 5, "base": "CPP arts. 158-A a 158-F" },
+        { "id": "celular_sem_acesso", "texto": "Desligar ou isolar o celular (modo avião) sem acessar o conteúdo", "pontos": 4, "base": "CF art. 5º, XII", "validar": true },
+        { "id": "lavrar_auto", "texto": "Lavrar o auto circunstanciado com duas testemunhas", "pontos": 8, "base": "CPP art. 245, § 7º" },
+        { "id": "informar_morador", "texto": "Informar o morador do que foi apreendido e entregar cópia", "pontos": 3, "validar": true }
+      ],
+      "erros": [
+        { "id": "apreender_fora_mandado", "texto": "Apreender o que o mandado não autoriza e não é flagrante", "pontos": -6, "base": "CPP arts. 243 e 245, § 6º" },
+        { "id": "sem_lacre", "texto": "Levar itens sem lacre", "pontos": -4, "base": "CPP arts. 158-A a 158-F" }
+      ],
+      "falhas_graves": [
+        { "id": "sem_auto", "texto": "Encerrar sem lavrar o auto circunstanciado", "base": "CPP art. 245, § 7º" }
+      ]
+    }
+  ],
+  "variacoes": {
+    "endereco": ["correto", "correto", "correto", "apto_errado", "bloco_errado"],
+    "horario": ["dia", "dia", "dia", "madrugada"],
+    "validade": ["valido", "valido", "valido", "valido", "vencido"],
+    "morador": ["colabora", "colabora", "recusa", "ausente"],
+    "vulneraveis": ["nenhum", "nenhum", "mulher_criancas", "idoso_acamado"],
+    "objeto": ["a_vista", "escondido", "escondido", "ausente"],
+    "extra": ["nenhum", "nenhum", "arma", "droga", "dinheiro", "documentos_terceiro"],
+    "inquilino": ["nao", "nao", "quarto_trancado"],
+    "dados": ["autoriza", "nao_autoriza"],
+    "conduta": ["nenhuma", "nenhuma", "jogar_janela", "jogar_vaso", "destruir", "suborno", "filma_advogado"],
+    "vizinho": ["nao", "sai_corredor"]
+  },
+  "historia": [
+    { "titulo": "Cumprimento 1 de 5 · Tudo em ordem", "texto": "Mandado correto, de dia, morador que colabora. Confira tudo, siga o rito e encontre o que se procura.",
+      "variacao": { "endereco": "correto", "horario": "dia", "validade": "valido", "morador": "colabora", "vulneraveis": "nenhum", "objeto": "a_vista", "extra": "nenhum", "inquilino": "nao", "dados": "nao_autoriza", "conduta": "nenhuma", "vizinho": "nao" } },
+    { "titulo": "Cumprimento 2 de 5 · O papel não confere", "texto": "Leia o mandado com atenção antes de subir.",
+      "variacao": { "endereco": "apto_errado", "horario": "dia", "validade": "valido", "morador": "colabora", "vulneraveis": "nenhum", "objeto": "escondido", "extra": "nenhum", "inquilino": "nao", "dados": "autoriza", "conduta": "nenhuma", "vizinho": "sai_corredor" } },
+    { "titulo": "Cumprimento 3 de 5 · Antes do amanhecer", "texto": "A equipe está pronta às 4h30. O que fazer?",
+      "variacao": { "endereco": "correto", "horario": "madrugada", "validade": "valido", "morador": "recusa", "vulneraveis": "nenhum", "objeto": "escondido", "extra": "arma", "inquilino": "quarto_trancado", "dados": "nao_autoriza", "conduta": "jogar_janela", "vizinho": "nao" } },
+    { "titulo": "Cumprimento 4 de 5 · Ninguém em casa", "texto": "Ninguém atende. Quem acompanha a busca?",
+      "variacao": { "endereco": "correto", "horario": "dia", "validade": "valido", "morador": "ausente", "vulneraveis": "nenhum", "objeto": "escondido", "extra": "dinheiro", "inquilino": "nao", "dados": "autoriza", "conduta": "nenhuma", "vizinho": "sai_corredor" } },
+    { "titulo": "Cumprimento 5 de 5 · Família em casa", "texto": "Só a mulher e as crianças em casa. O morador oferece dinheiro quando chega.",
+      "variacao": { "endereco": "correto", "horario": "dia", "validade": "valido", "morador": "colabora", "vulneraveis": "mulher_criancas", "objeto": "escondido", "extra": "documentos_terceiro", "inquilino": "nao", "dados": "nao_autoriza", "conduta": "suborno", "vizinho": "nao" } }
+  ]
+}

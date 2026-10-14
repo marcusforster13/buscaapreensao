@@ -1,20 +1,20 @@
 {
- "gerado_em": "2026-10-13 17:09",
+ "gerado_em": "2026-10-14 10:42",
  "qualidade": "alta",
  "lightmaps": {
   "01_Rua_Patio_Estatico": {
    "lm": "lightmaps/LM_01_Rua_Patio.png",
-   "max": 1.89458,
+   "max": 2.03843,
    "ganho": 1.6
   },
   "02_Predio_Estatico": {
    "lm": "lightmaps/LM_02_Predio.png",
-   "max": 2.25419,
+   "max": 2.27837,
    "ganho": 1.6
   },
   "03_Portaria_Estatico": {
    "lm": "lightmaps/LM_03_Portaria.png",
-   "max": 1.3773,
+   "max": 2.74134,
    "ganho": 3.0
   },
   "04_Corredor_Escada_Estatico": {
@@ -24,38 +24,43 @@
   },
   "05_Apto_Estrutura_Estatico": {
    "lm": "lightmaps/LM_05_Apto_Estrutura.png",
-   "max": 2.1109,
+   "max": 2.22911,
    "ganho": 3.0
   },
   "06_Sala_Estatico": {
    "lm": "lightmaps/LM_06_Sala.png",
-   "max": 1.39008,
+   "max": 1.43364,
    "ganho": 3.0
   },
   "07_Cozinha_Servico_Estatico": {
    "lm": "lightmaps/LM_07_Cozinha_Servico.png",
-   "max": 0.44974,
+   "max": 0.69961,
    "ganho": 3.0
   },
   "10_Quartos_Estatico": {
    "lm": "lightmaps/LM_10_Quartos.png",
-   "max": 1.193,
+   "max": 1.23349,
    "ganho": 3.0
   },
   "11_Banheiro_Estatico": {
    "lm": "lightmaps/LM_11_Banheiro.png",
-   "max": 0.53528,
+   "max": 0.69983,
    "ganho": 3.0
   },
   "12_Vizinho_301_Estatico": {
    "lm": "lightmaps/LM_12_Vizinho_301.png",
-   "max": 2.12423,
+   "max": 2.14366,
    "ganho": 3.0
   },
   "17_Entorno_Longe_Estatico": {
    "lm": "lightmaps/LM_17_Entorno_Longe.png",
-   "max": 2.76157,
+   "max": 2.82773,
    "ganho": 1.0
+  },
+  "19_Veiculos_Estatico": {
+   "lm": "lightmaps/LM_19_Veiculos.png",
+   "max": 1.34731,
+   "ganho": 1.6
   }
  },
  "lightmap_ganho": 3.14159,
@@ -195,16 +200,64 @@
     -19.7378
    ]
   },
-  "Camera_Morros_2": {
+  "Camera_Faixa": {
    "pos": [
-    -60.0,
-    30.0,
-    -60.0
+    -2.0,
+    1.7,
+    12.5
    ],
    "alvo": [
-    -63.4874,
-    31.1625,
-    -69.2998
+    7.9431,
+    0.6347,
+    12.5
+   ]
+  },
+  "Camera_Viaturas": {
+   "pos": [
+    -2.5,
+    1.7,
+    7.4
+   ],
+   "alvo": [
+    -11.8131,
+    0.7139,
+    10.9061
+   ]
+  },
+  "Camera_Elevador": {
+   "pos": [
+    -3.6,
+    1.75,
+    0.4
+   ],
+   "alvo": [
+    -13.2015,
+    0.712,
+    -2.195
+   ]
+  },
+  "Camera_Mesa_Q2": {
+   "pos": [
+    3.6,
+    8.15,
+    -7.2
+   ],
+   "alvo": [
+    0.1217,
+    3.181,
+    -15.1505
+   ]
+  },
+  "Camera_Sala_N": {
+   "pos": [
+    5.6,
+    8.05,
+    -2.6
+   ],
+   "alvo": [
+    7.5717,
+    5.7497,
+    -12.13
    ]
   },
   "Camera_Rua_2": {
@@ -221,6 +274,22 @@
   }
  },
  "abre": {
+  "A_Elevador_Terreo_1": {
+   "tipo": "gaveta",
+   "curso": 0.47
+  },
+  "A_Elevador_Terreo_2": {
+   "tipo": "gaveta",
+   "curso": 0.47
+  },
+  "A_Elevador_Andar_3_1": {
+   "tipo": "gaveta",
+   "curso": 0.47
+  },
+  "A_Elevador_Andar_3_2": {
+   "tipo": "gaveta",
+   "curso": 0.47
+  },
   "A_Passagem_Apto_302": {
    "tipo": "porta",
    "ang": 1.5,
@@ -466,6 +535,22 @@
  "luz_externa": 2.4,
  "ceu_intensidade": 1.0,
  "pontos": {
+  "Cabine_Terreo": {
+   "pos": [
+    -7.3,
+    0.15,
+    -0.6
+   ],
+   "rz": 1.5708
+  },
+  "Cabine_Andar_3": {
+   "pos": [
+    -7.3,
+    6.45,
+    -0.6
+   ],
+   "rz": 1.5708
+  },
   "Inicio": {
    "pos": [
     -2.7,

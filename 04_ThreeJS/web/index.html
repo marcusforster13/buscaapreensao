@@ -45,9 +45,9 @@
     <dt>Arrastar</dt><dd>olhar ao redor</dd>
     <dt>W A S D</dt><dd>andar · Shift corre · setas giram</dd>
     <dt>Clique</dt><dd>ler um marcador · abrir ou fechar gaveta, armário e porta · chamar o elevador</dd>
-    <dt>F · H · L</dt><dd>lanterna · marcadores · luz pré-calculada</dd>
+    <dt>V · F · H · L</dt><dd>ler o mandado · lanterna · marcadores · luz pré-calculada</dd>
     <dt>I · C · N · M</dt><dd>inverter o olhar · alternar céu · colisão · som liga/desliga</dd>
-    <dt>VR</dt><dd>aponte para a gaveta ou a porta e segure o gatilho: ela acompanha a sua mão (um toque rápido abre ou fecha de uma vez) · gatilho direito no chão teleporta · grip liga a lanterna · analógicos andam e giram</dd>
+    <dt>VR</dt><dd>aponte para a gaveta ou a porta e segure o gatilho: ela acompanha a sua mão (um toque rápido abre ou fecha de uma vez) · X segura o mandado na mão esquerda · gatilho direito no chão teleporta · grip liga a lanterna · analógicos andam e giram</dd>
   </dl>
   <label>Exposição <input id="exp" type="range" min="0.2" max="3" step="0.05" value="1"></label>
   <label>Luz pré-calculada <input id="lmg" type="range" min="0" max="3" step="0.05" value="1"></label>
@@ -83,7 +83,7 @@ THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 const $ = id => document.getElementById(id);
-const VERSAO = '1013-1709';      // carimbada por carimbar_versao.py a cada envio; entra no endereco dos arquivos para o navegador nao usar copia antiga
+const VERSAO = '1014-1042';      // carimbada por carimbar_versao.py a cada envio; entra no endereco dos arquivos para o navegador nao usar copia antiga
 window.__versao = VERSAO; window.__arq = {};
 // endereco de um arquivo com a marca do conteudo dele: muda so quando o arquivo muda (o resto fica guardado no navegador)
 const H = window.__h = p => p + '?h=' + (window.__arq[p] || VERSAO);
@@ -401,7 +401,7 @@ function vrMove(dt) {
     botoesAntes[k] = yb;
     // botao A (direito) = saca ou guarda a arma; botao X (esquerdo) = lanca granada de efeito moral
     const ax = !!gp.buttons[4]?.pressed, k2 = 'ax_' + src.handedness;
-    if (ax && !botoesAntes[k2]) window.__trein?.botao?.(src.handedness);
+    if (ax && !botoesAntes[k2] && !window.__mandado?.botao(src.handedness)) window.__trein?.botao?.(src.handedness);
     botoesAntes[k2] = ax;
     // apertar o analogico direito = recarregar a arma
     const an = src.handedness === 'right' && !!gp.buttons[3]?.pressed;
@@ -461,6 +461,7 @@ import('./' + H('abrir.js')).then(m => m.iniciarAbrir({
   scene, camera, rig, renderer, cena: gltf.scene, CFG, estaticos: colisores, lmTex, colisao: () => alvosCol
 })).catch(e => console.error('Peças que abrem não carregaram:', e));
 window.__cena = { scene, camera, renderer, rig };
+import('./' + H('mandado.js')).then(m => m.iniciarMandado({ scene, camera, renderer, controles })).catch(e => console.error('Mandado não carregou:', e));
 
 /* ---------- motor do treinamento: entra na proxima etapa (mandado, personagens, variacoes, relatorio) ---------- */
 </script>

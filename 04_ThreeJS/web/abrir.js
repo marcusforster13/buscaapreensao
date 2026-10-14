@@ -118,20 +118,32 @@ export function iniciarAbrir(ctx) {
     }
   }
 
-  /* ---------- elevador: clique na porta leva ao outro andar ---------- */
-  const elev = [];
-  for (const [de, para] of [['Elevador_Terreo', 'Elevador_Andar_3'], ['Elevador_Andar_3', 'Elevador_Terreo']]) {
-    const a = CFG.pontos?.[de], b = CFG.pontos?.[para]; if (!a || !b) continue;
-    const h = new THREE.Mesh(new THREE.BoxGeometry(.5, 2.3, 1.5), invisivel());
-    h.position.set(a.pos[0] - .65, a.pos[1] + 1.15, a.pos[2]); h.userData.elevador = { para: b, nome: para }; scene.add(h); h.updateMatrixWorld(true); elev.push(h);
-  }
+  /* ---------- elevador: o botao de fora abre as portas; o painel de dentro fecha, muda de andar e abre de novo ---------- */
+  const elev = [], ANDARES = ['Terreo', 'Andar_3'];
+  const folhas = k => pecas.filter(p => p.nome.startsWith('A_Elevador_' + k + '_'));
+  const portasElev = (k, f) => { for (const p of folhas(k)) { if (p.alvo !== f) { p.alvo = f; } } if (folhas(k).length) window.__som?.tocar('porta_abrindo'); };
+  ANDARES.forEach((k, i) => {
+    const fora = CFG.pontos?.['Elevador_' + k], dentro = CFG.pontos?.['Cabine_' + k]; if (!fora || !dentro) return;
+    const chamar = new THREE.Mesh(new THREE.BoxGeometry(.3, .5, .4), invisivel());            // botao de chamada, ao lado da porta
+    chamar.position.set(fora.pos[0] - .62, fora.pos[1] + 1.15, fora.pos[2] - .62); chamar.userData.elevador = { tipo: 'chamar', k };
+    const painel = new THREE.Mesh(new THREE.BoxGeometry(.45, .8, .25), invisivel());          // botoeira dentro da cabine
+    painel.position.set(dentro.pos[0] + .52, dentro.pos[1] + 1.2, dentro.pos[2] - .62); painel.userData.elevador = { tipo: 'painel', k, outro: ANDARES[1 - i] };
+    for (const h of [chamar, painel]) { scene.add(h); h.updateMatrixWorld(true); elev.push(h); }
+  });
+  let viajando = false;
   function usarElevador(h) {
-    const b = h.userData.elevador.para;
-    camera.getWorldPosition(V); rig.position.x += b.pos[0] - V.x; rig.position.z += b.pos[2] - V.z; rig.position.y = b.pos[1];
-    window.__som?.tocar('porta_abrindo');
-    aviso('Elevador', h.userData.elevador.nome === 'Elevador_Terreo' ? 'Térreo: portaria.' : '3º andar.');
+    const u = h.userData.elevador;
+    if (u.tipo === 'chamar') { const aberta = folhas(u.k).some(p => p.alvo > .5); portasElev(u.k, aberta ? 0 : 1); if (!aberta) aviso('Elevador', 'Entre e aperte o painel de botões.'); return; }
+    if (viajando) return; viajando = true;
+    const de = CFG.pontos['Cabine_' + u.k], para = CFG.pontos['Cabine_' + u.outro];
+    portasElev(u.k, 0);
+    setTimeout(() => {
+      rig.position.x += para.pos[0] - de.pos[0]; rig.position.z += para.pos[2] - de.pos[2]; rig.position.y += para.pos[1] - de.pos[1];
+      aviso('Elevador', u.outro === 'Terreo' ? 'Térreo: portaria.' : '3º andar.');
+      setTimeout(() => { portasElev(u.outro, 1); viajando = false; }, 900);
+    }, 1300);
   }
-  function elevadorNoRaio(ray) { const far0 = ray.far; ray.far = 4; const h = ray.intersectObjects(elev, false)[0]; ray.far = far0; return h; }
+  function elevadorNoRaio(ray) { const far0 = ray.far; ray.far = 2.5; const h = ray.intersectObjects(elev, false)[0]; ray.far = far0; return h; }
 
   /* ---------- computador: clique ---------- */
   function clique(ray) {
