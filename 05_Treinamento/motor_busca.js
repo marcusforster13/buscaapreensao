@@ -81,7 +81,18 @@
   /* ================= arma de fogo e arma de choque (no coldre; o treinamento observa se e quando o aluno usa) ================= */
   const arma = new THREE.Group(), choque = new THREE.Group(); arma.visible = choque.visible = false;
   gl.loadAsync(HQ('modelos/arma.glb')).then(g => { g.scene.traverse(o => { if (o.isMesh) o.material = ctx.iluminar([].concat(o.material)[0].clone()); }); arma.add(g.scene); }).catch(() => { });
-  { const c = caixa(.04, .1, .16, 0xe5c21a); c.position.set(0, -.03, -.02); choque.add(c); const p = caixa(.035, .035, .05, 0x111111); p.position.set(0, -.01, -.115); choque.add(p); const cb = caixa(.03, .09, .03, 0x222222); cb.position.set(0, -.1, .04); choque.add(cb); }
+  {      // arma de choque (modelo generico, sem marca): corpo amarelo, cartucho preto na frente, cabo emborrachado, guarda-mato e gatilho
+    const am = new THREE.MeshStandardMaterial({ color: 0xe8c215, roughness: .45 }), pr = new THREE.MeshStandardMaterial({ color: 0x18191b, roughness: .7 }), cz = new THREE.MeshStandardMaterial({ color: 0x3a3c40, roughness: .5, metalness: .3 });
+    const peca = (geo, m, x, y, z, rx = 0) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.rotation.x = rx; choque.add(o); return o; };
+    peca(new THREE.BoxGeometry(.036, .052, .15), am, 0, 0, -.02);                       // corpo
+    peca(new THREE.BoxGeometry(.03, .016, .12), pr, 0, .033, -.025);                    // trilho de cima
+    peca(new THREE.BoxGeometry(.04, .058, .045), pr, 0, -.002, -.115);                  // cartucho
+    peca(new THREE.BoxGeometry(.03, .03, .004), cz, 0, .004, -.1385);                   // boca do cartucho
+    peca(new THREE.BoxGeometry(.032, .11, .042), pr, 0, -.075, .035, -.28);             // cabo, inclinado
+    peca(new THREE.BoxGeometry(.006, .03, .045), pr, 0, -.04, -.03);                    // guarda-mato
+    peca(new THREE.BoxGeometry(.008, .022, .008), am, 0, -.034, -.012);                 // gatilho
+    peca(new THREE.BoxGeometry(.012, .006, .012), new THREE.MeshBasicMaterial({ color: 0x40ff60 }), 0, .044, .03);      // led de carga
+  }
   const luzTiro = new THREE.PointLight(0xffc880, 0, 8, 2); scene.add(luzTiro);
   const controleMao = mao => (ctx.controles || []).find(c => c.userData.mao === mao);
   function empunhar(qual) {                                  // qual: null | 'arma' | 'choque'
@@ -95,7 +106,7 @@
     for (const g of ctx.grips || []) if (g.userData.mao === 'right') g.visible = !qual;
     status();
   }
-  function ameacaReal() { return Object.values(npcs).some(n => n.visible && n.userData.agressivo); }
+  function ameacaReal() { return Object.values(npcs).some(n => n.visible && n.userData.armado && !n.userData.caido); }      // so agressor armado justifica arma de fogo (Lei 13.060/2014); destruir prova nao
   function disparar(ray) {
     const fonte = arma.visible ? arma : choque, tiro = fonte === arma;
     const o = new THREE.Vector3(), d = new THREE.Vector3();
@@ -111,7 +122,7 @@
       window.__som?.tocar('radio_chiado');
       if (hn) {
         const n = Object.values(npcs).find(p => p.userData.hit === hn.object);
-        if (!n.userData.agressivo) registrar('choque_sem_motivo'); else registrar('choque_resistencia');
+        if (!n.userData.agressivo) registrar('choque_sem_motivo'); else if (A?.conduta && !A.condutaResolvida) registrar('impedir_destruicao');      // resistencia ativa: arma de choque e forca menos letal
         atordoar(n);
       }
     }
@@ -460,7 +471,7 @@
     if (v.conduta === 'suborno') { diz(n, 'Ô, doutor… vamos resolver isso aqui entre a gente? Tenho cinco mil aqui, ninguém precisa saber.'); return menuConduta(); }
     if (v.conduta === 'filma_advogado') { diz(n, 'Eu vou filmar tudo, tá? E já liguei pro meu advogado, ele tá vindo.'); animar(n, 'falando', 6); return; }
     // tenta se livrar da prova: vai para a janela, para o banheiro ou quebra o notebook
-    const alvo = { jogar_janela: [[6.8, 3.0], [7.75, 3.6]], jogar_vaso: [[2.45, 3.3], [1.2, 3.0], [.5, 2.2]], destruir: [[5.0, 3.3]] }[v.conduta];
+    const alvo = { jogar_janela: [[6.8, 3.0], [7.75, 3.6]], jogar_vaso: [[2.45, 3.3], [1.2, 3.0], [.5, 2.2]], destruir: [[4.4, 2.3], [5.6, 2.3]] }[v.conduta];      // ao lado da mesa de jantar (antes ia para dentro dela)
     u.agressivo = v.conduta === 'destruir'; A.prazoConduta = performance.now() + 7000;
     legenda('Alerta', { jogar_janela: 'O morador pegou alguma coisa e foi para a janela!', jogar_vaso: 'O morador correu para o banheiro com alguma coisa na mão!', destruir: 'O morador está tentando quebrar o notebook!' }[v.conduta], 4);
     rota(n, alvo, 2.0, 'correndo', null, Z3);
@@ -481,7 +492,17 @@
   function resolverConduta(como) {
     const n = npcs.morador, u = n?.userData; if (!A || !n || A.condutaResolvida) return;
     A.condutaResolvida = true; u.rota = null; u.destino = null;
-    if (como === 'deixar') { A.provaPerdida = true; legenda('', 'A prova foi descartada.', 4); if (itens.celular) { itens.celular.o.visible = false; itens.celular.perdido = true; } u.agressivo = false; return; }
+    if (como === 'deixar') {
+      u.agressivo = false; const c = A.conduta;
+      const alvo = (c === 'destruir' ? ['notebook', 'celular'] : ['celular', 'notebook']).map(k => itens[k]).find(it => it && !it.apreendido);
+      if (!alvo) return;
+      if (c === 'jogar_janela') {                 // cai na calcadinha do jardim lateral, embaixo da janela da sala: da para descer e buscar
+        scene.attach(alvo.o); alvo.o.position.copy(B(8.55, 3.3)); alvo.o.position.y = .17; alvo.o.rotation.set(0, Math.random() * 3, 0); alvo.o.visible = true; alvo.jogado = true;
+        legenda('Alerta', 'O morador jogou o ' + NOME_ITEM[alvo.tipo].toLowerCase() + ' pela janela! Caiu no jardim lateral do prédio.', 5);
+        dica('Desça (elevador e portaria), saia pela calçada e entre pelo portão do jardim lateral. Fotografe onde caiu e apreenda.', 9);
+      } else { A.provaPerdida = true; alvo.o.visible = false; alvo.perdido = true; legenda('', c === 'destruir' ? 'O notebook foi destruído.' : 'O celular foi descartado no vaso sanitário.', 4); }
+      return;
+    }
     A.condutaGrave = true; u.agressivo = false; u.base = como === 'algemar' ? 'algemado' : 'nervoso'; if (como === 'algemar') u.algemado = true; animar(n, u.base, 1e6, .3);
     diz(n, 'Tá bom, tá bom! Me solta!');
   }
@@ -565,6 +586,7 @@
       if (A.acompanha || A.testemunhas.size) registrar('morador_acompanha');
       if (!A.danos.length) registrar('sem_dano');
       for (const it of Object.values(itens)) if (DO_MANDADO.has(it.tipo) && !it.apreendido && !it.perdido) A.naoAchados = (A.naoAchados || 0) + 1;
+      if (Object.values(itens).some(it => it.jogado && !it.apreendido)) registrar('prova_arremessada_nao_recuperada');
     }
     A.fase = 'fim'; fecharPaineis(); empunhar(null); MANDADO()?.mostrar(false); status(); setTimeout(concluir, 1500);
   }
@@ -732,12 +754,16 @@
   }
 
   /* ================= quadro ================= */
-  let ultimo = performance.now(), ultimoAndar = 0;
+  let ultimo = performance.now(), ultimoAndar = 0; const rayMira = new THREE.Raycaster();
   function quadro() {
     const agora = performance.now(), dt = Math.min(.1, (agora - ultimo) / 1000); ultimo = agora;
     if (agora > legAte) { leg.visible = false; const hl = document.getElementById('legendaHTML'); if (hl && !hl.hidden) hl.hidden = true; }
     camera.getWorldPosition(V); camera.getWorldDirection(V2);
     acompanharLeitura(dt);
+    if (S.naMao === 'arma' && A && !A.apontou && !ameacaReal()) {      // arma apontada para uma pessoa que nao ameaca ninguem
+      rayMira.set(V, V2); rayMira.far = 8; const h = rayMira.intersectObjects(Object.values(npcs).filter(n => n.visible && !n.userData.caido).map(n => n.userData.hit), false)[0];
+      if (h) { A.apontou = true; registrar('arma_apontada_sem_ameaca'); }
+    }
     const andar = andar3(V) ? 3 : 0;
     if (S.ativo && A && andar !== ultimoAndar) { equipeNoAndar(andar === 3 ? 6.45 : .15); if (andar === 3 && A.fase === 'portaria') { if (!A.leu) registrar('subir_sem_ler'); A.fase = 'corredor'; } if (andar === 3) setTimeout(vizinhaSai, 6000); }
     ultimoAndar = andar;

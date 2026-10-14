@@ -619,8 +619,17 @@ box("Muro_Fundo", (23.3, .2, 2.3), (-.55, 38.1, FZ + 1.15), M["muro"], C_RUA)
 # portao de grade da entrada de carros (aberto) e gradil do jardim leste
 for k in range(14): box("Portao_Barra", (.03, .03, 2.0), (-11.9 + k * .2, -6.2, FZ + 1.05), M["grade"], C_MIU)
 for z in (.1, 2.05): box("Portao_Travessa", (2.8, .04, .05), (-10.55, -6.2, FZ + z), M["grade"], C_MIU)
-for k in range(15): box("Gradil_Barra", (.03, .03, 1.6), (8.2 + k * .2, -6.2, FZ + 1.3), M["grade"], C_MIU)
-box("Gradil_Mureta", (2.9, .2, .5), (9.55, -6.2, FZ + .25), M["muro"], C_RUA); box("Gradil_Travessa", (2.9, .04, .05), (9.55, -6.2, FZ + 2.05), M["grade"], C_MIU)
+# gradil do jardim leste: mureta com grade de 8.1 a 9.85 e um portao de grade (abre) de 9.9 a 10.9, para descer ao jardim
+for k in range(9): box("Gradil_Barra", (.03, .03, 1.6), (8.2 + k * .2, -6.2, FZ + 1.3), M["grade"], C_MIU)
+box("Gradil_Mureta", (1.75, .2, .5), (8.975, -6.2, FZ + .25), M["muro"], C_RUA); box("Gradil_Travessa", (1.75, .04, .05), (8.975, -6.2, FZ + 2.05), M["grade"], C_MIU)
+box("Gradil_Pilar", (.12, .2, 2.1), (9.88, -6.2, FZ + 1.05), M["muro"], C_RUA)
+_pj = vazio("A_Passagem_Portao_Jardim", (10.92, -6.2, FZ), C_INT, PI); _pj["abre"] = "porta"; _pj["ang"] = -1.5; _pj["colide"] = 1; _pj["larg"] = .98
+for z in (.08, 1.0, 1.95): box(_pj.name + "_Travessa", (.98, .04, .04), (.49, 0, z), M["grade"], C_INT, _pj)
+for k in range(6): box(_pj.name + "_Barra", (.025, .025, 1.9), (.06 + k * .17, 0, 1.0), M["grade"], C_INT, _pj)
+box(_pj.name + "_Trinco", (.08, .05, .04), (.9, -.03, 1.0), M["metal"], C_INT, _pj)
+# calcadinha do jardim lateral: da entrada do portao ate a lateral do predio e ao longo dela (onde cai o que e jogado da sala)
+box("Jardim_Calcada_Entrada", (2.9, 1.3, FZ), (9.55, -5.45, FZ / 2), M["calcada"], C_RUA)
+box("Jardim_Calcada_Lateral", (.95, 14.2, FZ), (8.58, 2.3, FZ / 2), M["calcada"], C_RUA)
 # canteiros na calcada, dos dois lados da entrada
 for i, x in enumerate((-5.05, -.35)):
     box("Canteiro_%d" % i, (1.7, .6, .42), (x, -6.5, FZ + .21), M["concreto"], C_RUA); box("Canteiro_Terra_%d" % i, (1.56, .46, .04), (x, -6.5, FZ + .43), M["terra"], C_RUA)

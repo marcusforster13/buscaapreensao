@@ -105,7 +105,8 @@
         { "id": "choque_sem_motivo", "texto": "Usar a arma de choque sem resistência ativa", "pontos": -8, "base": "Lei 13.060/2014", "validar": true },
         { "id": "arrombar_quarto_inquilino", "texto": "Arrombar o quarto do inquilino que não é alvo do mandado", "pontos": -8, "base": "CPP art. 246", "validar": true },
         { "id": "ignorar_flagrante", "texto": "Ignorar arma ou droga encontrada", "pontos": -6, "validar": true },
-        { "id": "filmagem_impedida", "texto": "Tomar o celular do morador para impedir a filmagem", "pontos": -5, "validar": true }
+        { "id": "filmagem_impedida", "texto": "Tomar o celular do morador para impedir a filmagem", "pontos": -5, "validar": true },
+        { "id": "prova_arremessada_nao_recuperada", "texto": "Não descer para recuperar a prova jogada pela janela", "pontos": -6, "base": "CPP art. 240, § 1º, e; art. 245", "validar": true }
       ],
       "falhas_graves": [
         { "id": "acessar_celular", "texto": "Acessar o conteúdo do celular ou do computador sem autorização no mandado", "base": "CF art. 5º, X e XII; STF Tema 977", "condicao": "variacao.dados == 'nao_autoriza'" },
