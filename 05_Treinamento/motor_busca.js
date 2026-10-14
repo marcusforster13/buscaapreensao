@@ -45,7 +45,6 @@
     vista_mesa: [null, ...B3(4.75, 3.05).toArray().map((v, i) => i === 1 ? Z3 + .78 : v)],
     vista_mesa2: [null, ...B3(5.05, 3.4).toArray().map((v, i) => i === 1 ? Z3 + .78 : v)],
     vista_rack: [null, ...B3(6.0, 1.95).toArray().map((v, i) => i === 1 ? Z3 + .56 : v)],
-    comoda_2: ['A_Gav_Comoda_2', 0, .03, -.2], comoda_3: ['A_Gav_Comoda_3', .1, .03, -.2], comoda_4: ['A_Gav_Comoda_4', -.1, .03, -.22],
     criado_b2: ['A_Gav_Criado_B_2', 0, .03, -.16], criado_a1: ['A_Gav_Criado_A_1', 0, .03, -.15],
     gr_gaveta_1: ['A_Gav_Guarda_Roupa_Casal_1', 0, .03, -.24], gr_gaveta_3: ['A_Gav_Guarda_Roupa_Casal_5', 0, .03, -.24],
     rack_gaveta: ['A_Gav_Rack_TV_3', 0, .03, -.15], bancada_gaveta: ['A_Gav_Bancada_4', 0, .03, -.2],
@@ -66,10 +65,10 @@
   function distribuirItens(v) {
     limparItens();
     if (v.objeto === 'a_vista') { porItem('celular', 'vista_mesa'); porItem('notebook', 'vista_mesa2'); porItem('documentos', 'vista_rack'); porItem('cartoes', 'criado_a1'); }
-    else if (v.objeto === 'escondido') { porItem('celular', 'comoda_4'); porItem('notebook', 'gr_gaveta_1'); porItem('documentos', 'criado_b2'); porItem('cartoes', 'rack_gaveta'); }
+    else if (v.objeto === 'escondido') { porItem('celular', 'gr_gaveta_3'); porItem('notebook', 'gr_gaveta_1'); porItem('documentos', 'criado_b2'); porItem('cartoes', 'rack_gaveta'); }
     if (v.extra === 'arma') porItem('arma', 'gr_gaveta_3');
-    else if (v.extra === 'droga') porItem('droga', 'comoda_2');
-    else if (v.extra === 'dinheiro') porItem('dinheiro', 'comoda_3');
+    else if (v.extra === 'droga') porItem('droga', 'criado_a1');
+    else if (v.extra === 'dinheiro') porItem('dinheiro', 'bancada_gaveta');
     else if (v.extra === 'documentos_terceiro') porItem('doc_terceiro', 'bancada_gaveta');
   }
   const lacres = new THREE.Group(); scene.add(lacres);

@@ -221,7 +221,7 @@ def denoise(img, res):
         bpy.ops.render.render(write_still=True)
         for o in escondidos: o.hide_render = False
         r.engine, r.resolution_x, r.resolution_y, r.resolution_percentage, r.filepath, r.image_settings.file_format, cg = guard
-        scene.compositing_node_group = cg; bpy.data.node_groups.remove(ng); bpy.data.images.remove(ni.image)
+        src = ni.image; scene.compositing_node_group = cg; bpy.data.node_groups.remove(ng); bpy.data.images.remove(src)      # guardar a imagem antes: o no some junto com o grupo
         out = bpy.data.images.load(tmp_out, check_existing=False); px = np.empty(res * res * 4, np.float32); out.pixels.foreach_get(px); bpy.data.images.remove(out)
         return px.reshape(res, res, 4)[..., :3]
     except Exception as e:
