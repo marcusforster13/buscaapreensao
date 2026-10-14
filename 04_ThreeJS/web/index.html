@@ -83,7 +83,7 @@ THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 const $ = id => document.getElementById(id);
-const VERSAO = '1014-1128';      // carimbada por carimbar_versao.py a cada envio; entra no endereco dos arquivos para o navegador nao usar copia antiga
+const VERSAO = '1014-1242';      // carimbada por carimbar_versao.py a cada envio; entra no endereco dos arquivos para o navegador nao usar copia antiga
 window.__versao = VERSAO; window.__arq = {};
 // endereco de um arquivo com a marca do conteudo dele: muda so quando o arquivo muda (o resto fica guardado no navegador)
 const H = window.__h = p => p + '?h=' + (window.__arq[p] || VERSAO);
@@ -119,8 +119,7 @@ camera.position.set(0, 1.6, 0);
 const rig = new THREE.Group(); rig.add(camera); scene.add(rig);
 scene.add(new THREE.HemisphereLight(0xdfe9f5, 0x8a8275, 0.25));   // preenchimento para o que nao tem lightmap
 
-/* ceu de dia procedural: nitido em qualquer resolucao.
-   O HDRI fica so para os reflexos (vidros, lataria, asfalto). Tecla C alterna para o HDRI. */
+/* ceu de dia procedural (reserva): fica a vista so se o HDRI nao carregar, ou pela tecla C. */
 const ceu = new THREE.Mesh(new THREE.SphereGeometry(1000, 64, 32), new THREE.ShaderMaterial({
   side: THREE.BackSide, depthWrite: false, fog: false,
   uniforms: { uTempo: { value: 0 } },
@@ -149,7 +148,13 @@ if (CFG.env) {
     // envMapIntensity so vale quando o material tem o proprio envMap (o scene.environment usa so scene.environmentIntensity):
     // os materiais de dentro dos comodos (reflexo fraco, ver conv) recebem o mapa direto
     scene.traverse(o => { if (o.isMesh) for (const m of [].concat(o.material)) if (m.envMapIntensity < .2 && !m.envMap) { m.envMap = scene.environment; m.needsUpdate = true; } });
-    hdriFundo = tex;      // o HDRI fica so para os reflexos; o ceu a vista e o azul liso (tecla C alterna)
+    hdriFundo = tex;
+    // ceu a vista: o mesmo HDRI do bake (ceu limpo do Poly Haven, girado no pipeline para o sol bater com as sombras), na
+    // versao de 2k para ficar nitido. A tecla C volta para o azul liso.
+    new RGBELoader().load(H(CFG.env.replace('_1k', '_2k')), t2 => {
+      t2.mapping = THREE.EquirectangularReflectionMapping; hdriFundo = t2;
+      scene.backgroundIntensity = CFG.ceu_intensidade ?? 1; if (ceu.visible) alternarCeu();
+    }, undefined, () => { if (ceu.visible) alternarCeu(); });
   });
 }
 function alternarCeu() {
@@ -167,7 +172,7 @@ const tl = new THREE.TextureLoader(), lmTex = {};
 await Promise.all([...new Set(Object.values(CFG.lightmaps).map(v => v.lm))].map(f =>
   tl.loadAsync(H(f)).then(t => { t.flipY = false; t.channel = 1; t.colorSpace = THREE.SRGBColorSpace; lmTex[f] = t; })));
 
-const lmMats = [], lentes = [], colisores = [];
+const lmMats = [], lentes = [], colisores = [], espelhos = [];
 // objetos que se movem (carro abordado, equipamentos, personagens) nao tem lightmap: recebem uma luz ambiente
 // uniforme, na intensidade da area iluminada pelas torres (um "lightmap" branco de 1 pixel)
 const lmBranco = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1); lmBranco.needsUpdate = true; lmBranco.channel = 0;
@@ -183,7 +188,7 @@ gltf.scene.traverse(o => {
     if (/Vidro_Guarda/.test(m.name)) { m.transparent = true; m.opacity = .35; m.depthWrite = false; m.roughness = .05; }      // guarda-corpo de vidro das varandas
     if (/Vidro_Fachada/.test(m.name)) { m.roughness = .06; m.metalness = .55; m.userData.reflexo = 1.2; }      // janelas dos predios: refletem o ceu
     if (/Grama_Lamina/.test(m.name)) m.side = THREE.DoubleSide;
-    if (/Espelho/.test(m.name)) { m.metalness = .95; m.roughness = .04; m.color.setScalar(.9); }      // espelheira do banheiro: reflete o ambiente
+    if (/Espelho/.test(m.name)) { m.metalness = .95; m.roughness = .04; m.color.setScalar(.9); espelhos.push({ m, o }); }      // espelhos: refletem o comodo (ver 'espelhos de verdade')
     if (/Modelo_Notebook_Tela|Modelo_Celular|Modelo_Monitor/.test(m.name)) { m.color.setScalar(.12); m.emissiveIntensity = .8; }      // telas: so o brilho proprio, sem estourar
     if (m.emissive) m.userData.emi0 = m.emissiveIntensity;
     if (m.transmission > 0) { m.transmission = 0; m.transparent = true; m.opacity = 0.45; m.roughness = 0.05; }
@@ -193,7 +198,7 @@ gltf.scene.traverse(o => {
     if (dentro && !/Vidro|Espelho/.test(m.name)) { m.envMapIntensity = CFG.env_interior ?? .05; if (scene.environment) m.envMap = scene.environment; }      // o HDRI pode chegar antes ou depois da cena
     for (const k of ['map', 'roughnessMap', 'normalMap']) if (m[k]) m[k].anisotropy = ANISO;      // pisos e calcadas nitidos vistos de lado (em VR o olhar e sempre rasante)
     if (lm && o.geometry.attributes.uv1) {
-      m.lightMap = lmTex[lm.lm]; m.userData.lmBase = lm.max * CFG.lightmap_ganho * (lm.ganho ?? 1);
+      m.lightMap = lmTex[lm.lm]; m.userData.lmBase = lm.max * CFG.lightmap_ganho * (lm.ganho ?? 1) * (dentro ? CFG.interior_site ?? .85 : 1);
       m.lightMapIntensity = m.userData.lmBase; lmMats.push(m);
     } else if (!lm) { iluminar(m); if (/Espelho/.test(m0.name)) m.metalness = .95; if (grama) m.lightMapIntensity = CFG.luz_externa ?? 2.6; }      // pecas sem lightmap: luz uniforme (as que abrem recebem depois a luz do comodo, em abrir.js)
     return m;
@@ -202,6 +207,29 @@ gltf.scene.traverse(o => {
   if (estatico) { o.geometry.computeBoundsTree(); colisores.push(o); }
 });
 scene.add(gltf.scene); scene.updateMatrixWorld(true);
+
+/* ---------- espelhos de verdade: perto de um espelho (cabine do elevador, banheiro), uma foto 360 graus do lugar, tirada da
+   altura dos olhos, vira o reflexo dele. So refaz quando o jogador anda meio metro (6 renders pequenos de cada vez). ---------- */
+const cuboRT = new THREE.WebGLCubeRenderTarget(512), cuboCam = new THREE.CubeCamera(.05, 40, cuboRT); scene.add(cuboCam);
+const pontosEspelho = [];
+for (const { o } of espelhos) {      // a malha junta varios espelhos: um ponto por grupo de vertices (grade de 1 m)
+  const pos = o.geometry.attributes.position, vis = new Set(), P = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    P.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld); const k = [P.x, P.y, P.z].map(v => Math.round(v)).join();
+    if (!vis.has(k)) { vis.add(k); pontosEspelho.push(P.clone()); }
+  }
+}
+let ultimoReflexo = null; const PE = new THREE.Vector3(); window.__espelhos = () => { ultimoReflexo = null; atualizarEspelhos(); return pontosEspelho.length; };      // diagnostico
+function atualizarEspelhos() {
+  if (!espelhos.length) return;
+  viewer().getWorldPosition(PE); let perto = false;
+  for (const p of pontosEspelho) if (p.distanceTo(PE) < 2.6) { perto = true; break; }
+  if (!perto || (ultimoReflexo && ultimoReflexo.distanceTo(PE) < .5)) return;
+  ultimoReflexo = PE.clone(); cuboCam.position.copy(PE);
+  for (const { m } of espelhos) m.visible = false;
+  cuboCam.update(renderer, scene);
+  for (const { m } of espelhos) { m.visible = true; m.envMap = cuboRT.texture; m.envMapIntensity = 1; m.needsUpdate = true; }
+}
 
 /* ---------- colisao: malha simplificada (uma caixa por parede/movel/carro), invisivel ---------- */
 let alvosCol = colisores, colisaoAtiva = true;
@@ -456,6 +484,7 @@ renderer.setAnimationLoop(() => {
   ceu.position.copy(V1); ceu.material.uniforms.uTempo.value = t;
   hotspots.children.forEach((g, i) => { g.lookAt(V1); g.userData.ring.scale.setScalar(1 + .18 * Math.sin(t * 3 + i)); });
   window.__trein?.quadro();
+  if ((t * 4 | 0) !== (window.__tEsp | 0)) { window.__tEsp = t * 4; atualizarEspelhos(); }      // 4 vezes por segundo, no maximo
   window.__abrir?.quadro(renderer.xr.isPresenting ? controles.map((c, i) => ({ controle: c, ray: mirarEm(raiosVR[i], c) })) : null);
   window.__som?.quadro(dt);
   renderer.render(scene, camera);

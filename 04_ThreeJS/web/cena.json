@@ -1,66 +1,66 @@
 {
- "gerado_em": "2026-10-14 11:19",
+ "gerado_em": "2026-10-14 12:39",
  "qualidade": "alta",
  "lightmaps": {
   "01_Rua_Patio_Estatico": {
    "lm": "lightmaps/LM_01_Rua_Patio.png",
-   "max": 2.03843,
-   "ganho": 1.6
+   "max": 1.76929,
+   "ganho": 1.75
   },
   "02_Predio_Estatico": {
    "lm": "lightmaps/LM_02_Predio.png",
-   "max": 2.27837,
-   "ganho": 1.6
+   "max": 2.12143,
+   "ganho": 1.75
   },
   "03_Portaria_Estatico": {
    "lm": "lightmaps/LM_03_Portaria.png",
-   "max": 2.75437,
+   "max": 1.26247,
    "ganho": 3.0
   },
   "04_Corredor_Escada_Estatico": {
    "lm": "lightmaps/LM_04_Corredor_Escada.png",
-   "max": 3.0,
+   "max": 2.18626,
    "ganho": 3.0
   },
   "05_Apto_Estrutura_Estatico": {
    "lm": "lightmaps/LM_05_Apto_Estrutura.png",
-   "max": 2.22911,
+   "max": 2.06936,
    "ganho": 3.0
   },
   "06_Sala_Estatico": {
    "lm": "lightmaps/LM_06_Sala.png",
-   "max": 1.43363,
+   "max": 1.09387,
    "ganho": 3.0
   },
   "07_Cozinha_Servico_Estatico": {
    "lm": "lightmaps/LM_07_Cozinha_Servico.png",
-   "max": 0.69961,
+   "max": 0.64549,
    "ganho": 3.0
   },
   "10_Quartos_Estatico": {
    "lm": "lightmaps/LM_10_Quartos.png",
-   "max": 1.23349,
+   "max": 0.87113,
    "ganho": 3.0
   },
   "11_Banheiro_Estatico": {
    "lm": "lightmaps/LM_11_Banheiro.png",
-   "max": 0.69983,
+   "max": 0.68347,
    "ganho": 3.0
   },
   "12_Vizinho_301_Estatico": {
    "lm": "lightmaps/LM_12_Vizinho_301.png",
-   "max": 2.14366,
+   "max": 1.86156,
    "ganho": 3.0
   },
   "17_Entorno_Longe_Estatico": {
    "lm": "lightmaps/LM_17_Entorno_Longe.png",
-   "max": 2.82773,
-   "ganho": 1.0
+   "max": 2.50746,
+   "ganho": 1.1
   },
   "19_Veiculos_Estatico": {
    "lm": "lightmaps/LM_19_Veiculos.png",
-   "max": 1.31739,
-   "ganho": 1.6
+   "max": 0.93104,
+   "ganho": 1.75
   }
  },
  "lightmap_ganho": 3.14159,

@@ -86,6 +86,16 @@ def tex_ceramica(cor, rejunte="#8d8a84", S=256, n=4):
     a[(xx % cel < 2) | (yy % cel < 2)] = np.array(hx(rejunte))
     return np.clip(a, 0, 1)
 
+def tex_escovado(S=512, cor="#b8bbbe"):
+    """Inox escovado: riscos finos e longos num so sentido (vertical na imagem), sem manchas."""
+    r = np.random.default_rng(21); col = r.standard_normal(S); col = np.convolve(col, np.ones(3) / 3, "same") * .03
+    fino = r.standard_normal((S, S)) * .012; fino = (fino + np.roll(fino, 1, 0) + np.roll(fino, 2, 0) + np.roll(fino, 3, 0)) / 2
+    a = np.ones((S, S, 3)) * np.array(hx(cor)) + (col[None, :] + fino)[..., None]
+    return np.clip(a, 0, 1)
+
+def img_metal(name, img, tile_m, rough, metal):
+    m = img_mat(name, img, tile_m, rough); m.node_tree.nodes.get("Principled BSDF").inputs["Metallic"].default_value = metal; return m
+
 def tex_granito(S=256):
     r = np.random.default_rng(9); a = np.ones((S, S, 3)) * np.array(hx("#2a2a2d"))
     a += r.standard_normal((S, S, 1)) * .035; p = r.random((S, S)) > .985
@@ -110,10 +120,10 @@ M = {
     "mdf_br": mat("MDF_Branco", "#ece9e1", .45), "mdf_int": mat("MDF_Interno", "#d8d2c4", .7),
     "mad": mat("Madeira_Movel", "#9a7650", .55), "mad_esc": mat("Madeira_Escura_Movel", "#5a3d2a", .5),
     "porta_mad": mat("Porta_Madeira", "#7a5638", .55), "porta_br": mat("Porta_Branca", "#e9e6de", .5),
-    "porta_ferro": mat("Porta_Corta_Fogo", "#8f2f28", .5), "aco_elev": mat("Aco_Elevador", "#a9acb0", .35, .4),
-    "metal": mat("Metal_Escovado", "#9a9c9e", .35, .4), "inox": mat("Inox", "#c2c5c8", .3, .45),
+    "porta_ferro": mat("Porta_Corta_Fogo", "#8f2f28", .5), "aco_elev": img_metal("Aco_Elevador", np_image("aco_escovado", tex_escovado()), .6, .3, .45),
+    "metal": mat("Metal_Escovado", "#9a9c9e", .35, .4), "inox": img_metal("Inox", np_image("inox_escovado", tex_escovado(cor="#c4c7ca")), .4, .28, .45),
     "aluminio": mat("Aluminio_Esquadria", "#c9cbcd", .4, .3), "preto": mat("Preto_Fosco", "#17181a", .6),
-    "vidro": mat("Vidro_Janela", "#cfe2ea", .05, alpha=.14), "espelho": mat("Espelho", "#c8d2d6", .08, .5),
+    "vidro": mat("Vidro_Janela", "#cfe2ea", .05, alpha=.14), "espelho": mat("Espelho", "#c8d2d6", .02, .9),
     "branco": mat("Plastico_Branco", "#eceae4", .45), "louca": mat("Louca_Branca", "#f1efe9", .2),
     "geladeira": mat("Geladeira_Branca", "#e9e9e6", .35), "fogao": mat("Fogao_Inox", "#b4b6b8", .4, .35),
     "colchao": mat("Colchao", "#e2ddd0", .9), "lencol": mat("Lencol_Azul", "#6f8fb0", .9), "lencol2": mat("Lencol_Cinza", "#8b8f94", .9),
@@ -311,7 +321,7 @@ def modelo_ph(nome, asset, pos, rz=0.0, col=None, escala=1.0, max_tris=2000, alt
     ob.location = pos; ob.rotation_euler = (0, 0, rz); ob.scale = (k, k, k)
     return ob
 
-def plafon(nome, x, y, watts, z=Z3 + PD, col=C_EST, cor="#ffd9b0", m="lamp"):      # lampada de casa: branco quente (~3000 K)
+def plafon(nome, x, y, watts, z=Z3 + PD, col=C_EST, cor="#ffd9b0", m="lamp"):      # lampada de casa: branco quente (~3000 K); o usuario aprovou este tom
     cyl(nome + "_Plafon", .15, .13, .05, (x, y, z - .025), M[m], col, seg=20)
     luz(nome + "_Luz", "POINT", watts * .45, cor, (x, y, z - .22), C_LUZ, shadow_soft_size=.18)      # o site clareia o interior (ganho dos lightmaps internos)
 
@@ -997,8 +1007,8 @@ for nome, arq, x, y, rz, cor in (("Carro_A", "hatch", 17.0, -10.2, 0, "#8d9096")
     carro_modelo(nome, C_VEIC, arq, (x, y, .12), rz, cor=cor)
 
 # arvores, postes, carros e mobiliario urbano
-for i, (x, y, alt) in enumerate(((-7.5, -8.3, 6.5), (6.5, -8.3, 7.5), (20, -8.3, 6.8), (-22, -8.3, 7.2), (-14, -16.7, 7), (2, -16.7, 6.4), (30, -16.7, 7.4), (-5.5, 17.5, 6.2), (4.0, 15.5, 7.0), (10.4, 5.6, 11.0), (9.6, 20, 6.5))):      # a 9 (amendoeira alta no recuo leste) faz sombra de folhas na janela da sala
-    if i == 10: palmeira("Palmeira_%d" % i, x, y, 0, alt)
+for i, (x, y, alt) in enumerate(((-7.5, -8.3, 6.5), (6.5, -8.3, 7.5), (20, -8.3, 6.8), (-22, -8.3, 7.2), (-14, -16.7, 7), (2, -16.7, 6.4), (30, -16.7, 7.4), (-5.5, 17.5, 6.2), (4.0, 15.5, 7.0), (9.6, 4.0, 5.5), (9.6, 20, 6.5))):
+    if i in (9, 10): palmeira("Palmeira_%d" % i, x, y, 0, alt)
     else: arvore(("Ipe_Amarelo_%d" if i in (1, 5) else "Amendoeira_%d") % i, x, y, FZ, alt, flor=i in (1, 5), larga=i not in (1, 5))
     if y < 0: box("Arvore_Canteiro", (1.1, 1.1, .03), (x, y, FZ + .015), M["terra"], C_RUA)
 for i, (x, y, rz) in enumerate(((-15, -8.6, 0), (12, -8.6, 0), (38, -8.6, 0), (-36, -8.6, 0), (-2, -16.4, PI), (26, -16.4, PI), (-28, -16.4, PI))):
@@ -1095,31 +1105,70 @@ vaso_planta("Portaria_Planta_B", .5, -5.5, FZ, .9, C_PORT, M["louca"])
 plafon("Luz_Portaria_A", -2.7, -3.6, 130, FZ + PDT, C_PORT); plafon("Luz_Portaria_B", -2.7, -.4, 130, FZ + PDT, C_PORT)
 
 def elevador(nome, y0, z0, col, andar):
-    """Elevador na parede oeste (x = -6.4): batente, duas folhas de aco que correm para os lados (A_Elevador_*), botao, indicador
-    e a cabine por tras (paredes de inox, espelho, corrimao, painel de botoes e luz)."""
+    """Elevador na parede oeste (x = -6.4), como os de predio residencial carioca: portal de granito com soleira de aluminio,
+    duas folhas de inox escovado que correm para os lados (A_Elevador_*), botoeira com seta e anel aceso, visor do andar em
+    cima, e a cabine por tras (paineis de inox com juntas, espelho, corrimao com suportes, rodape, teto com spots de LED,
+    botoeira com os andares, alarme e placa de capacidade). Sem marca de fabricante."""
     x = -6.29
-    box(nome + "_Batente_Cima", (.26, 1.14, .1), (-6.4, y0 + .5, z0 + 2.15), M["aluminio"], col)
-    for sy in (-.04, 1.04): box(nome + "_Batente_Lado", (.26, .08, 2.1), (-6.4, y0 + sy, z0 + 1.05), M["aluminio"], col)
+    # portal: granito em volta do vao, um pouco saliente da parede, e a soleira no piso
+    box(nome + "_Portal_Cima", (.05, 1.4, .16), (-6.27, y0 + .5, z0 + 2.2), M["granito"], col)
+    for sy in (-.13, 1.13): box(nome + "_Portal_Lado", (.05, .14, 2.12), (-6.27, y0 + sy, z0 + 1.06), M["granito"], col)
+    for sy in (-.04, 1.04): box(nome + "_Batente_Lado", (.24, .06, 2.12), (-6.42, y0 + sy, z0 + 1.06), M["inox"], col)
+    box(nome + "_Batente_Cima", (.24, 1.14, .06), (-6.42, y0 + .5, z0 + 2.13), M["inox"], col)
+    box(nome + "_Soleira", (.3, 1.1, .012), (-6.4, y0 + .5, z0 + .006), M["aluminio"], col)
+    box(nome + "_Soleira_Ranhura", (.012, 1.06, .004), (-6.43, y0 + .5, z0 + .013), M["preto"], col)
     for k, (yc, rz) in enumerate(((y0 + .25, 0), (y0 + .75, PI))):                 # folha 1 corre para -Y; folha 2 para +Y
         r = vazio("A_%s_%d" % (nome, k + 1), (-6.42, yc, z0), C_INT, rz); r["abre"] = "gaveta"; r["curso"] = .47
         box(r.name + "_Folha", (.03, .5, 2.1), (0, 0, 1.05), M["aco_elev"], C_INT, r)
-    box(nome + "_Painel", (.02, .1, .2), (x + .01, y0 + 1.22, z0 + 1.15), M["inox"], C_MIU)
-    cyl(nome + "_Botao", .018, .018, .012, (x + .025, y0 + 1.22, z0 + 1.15), M["led_verm"], C_MIU, rot=(0, PI / 2, 0), seg=12)
-    box(nome + "_Indicador", (.02, .22, .09), (x + .01, y0 + .5, z0 + 2.3), M["preto"], C_MIU)
-    texto(nome + "_Andar", andar, .06, (x + .022, y0 + .5, z0 + 2.3), "+x", M["led_verm"], C_MIU)
+        box(r.name + "_Borracha", (.034, .008, 2.1), (0, -.246, 1.05), M["preto"], C_INT, r)      # junta escura no meio
+    # botoeira do pavimento: placa de inox, botao redondo com anel aceso e seta (no terreo so sobe)
+    box(nome + "_Painel", (.012, .1, .24), (x + .006, y0 + 1.32, z0 + 1.12), M["inox"], C_MIU)
+    setas = ((1, z0 + 1.17),) if andar == "T" else ((1, z0 + 1.17), (-1, z0 + 1.07))
+    for s, zb in setas:
+        cyl(nome + "_Botao_Anel", .024, .024, .006, (x + .014, y0 + 1.32, zb), M["led_verm"], C_MIU, rot=(0, PI / 2, 0), seg=16)
+        cyl(nome + "_Botao", .019, .019, .01, (x + .017, y0 + 1.32, zb), M["inox"], C_MIU, rot=(0, PI / 2, 0), seg=16)
+        cyl(nome + "_Seta", .008, .008, .004, (x + .023, y0 + 1.32, zb), M["preto"], C_MIU, rot=(0, PI / 2, PI / 2 * s), seg=3)
+    # visor em cima do portal: vidro preto com o andar e a seta em vermelho
+    box(nome + "_Visor", (.015, .3, .1), (x + .01, y0 + .5, z0 + 2.38), M["tela"], C_MIU)
+    texto(nome + "_Andar", andar, .06, (x + .019, y0 + .55, z0 + 2.35), "+x", M["led_verm"], C_MIU)
+    cyl(nome + "_Visor_Seta", .018, .018, .004, (x + .019, y0 + .42, z0 + 2.38), M["led_verm"], C_MIU, rot=(0, PI / 2, -PI / 2), seg=3)
     # cabine: x -8.0 .. -6.5, y y0-0.2 .. y0+1.2
-    xa, xb, ya, yb = -8.0, -6.52, y0 - .2, y0 + 1.2; cab = nome + "_Cabine"
-    box(cab + "_Piso", (xb - xa, yb - ya, .06), ((xa + xb) / 2, (ya + yb) / 2, z0 - .03), M["piso_port"], col)
-    plano(cab + "_Teto", xa, xb, ya, yb, z0 + 2.3, M["teto"], col, True)
-    box(cab + "_Fundo", (.04, yb - ya, 2.3), (xa - .02, (ya + yb) / 2, z0 + 1.15), M["aco_elev"], col)
-    for yl in (ya - .02, yb + .02): box(cab + "_Lado", (xb - xa, .04, 2.3), ((xa + xb) / 2, yl, z0 + 1.15), M["aco_elev"], col)
-    for yl, ll in ((y0 - .12, .16), (y0 + 1.12, .16)): box(cab + "_Frente", (.04, ll, 2.3), (xb + .0, yl, z0 + 1.15), M["aco_elev"], col)
-    box(cab + "_Espelho", (.01, 1.0, 1.1), (xa + .005, (ya + yb) / 2, z0 + 1.55), M["espelho"], C_MIU)
-    barra(cab + "_Corrimao", (xa + .08, ya + .15, z0 + .95), (xa + .08, yb - .15, z0 + .95), .018, M["inox"], C_MIU, seg=8)
-    box(cab + "_Botoeira", (.16, .02, .5), (xb - .25, yb - .01, z0 + 1.2), M["inox"], C_MIU)
-    for k in range(5): cyl(cab + "_Botao", .014, .014, .008, (xb - .25, yb - .024, z0 + 1.02 + k * .08), M["led_verm"] if k == (0 if andar == "T" else 3) else M["branco"], C_MIU, rot=(PI / 2, 0, 0), seg=10)
-    cyl(cab + "_Plafon", .14, .14, .03, ((xa + xb) / 2, (ya + yb) / 2, z0 + 2.285), M["lamp_f"], col, seg=16)
-    luz(cab + "_Luz", "POINT", 9, "#f4f6ff", ((xa + xb) / 2, (ya + yb) / 2, z0 + 2.05), C_LUZ, shadow_soft_size=.15)
+    xa, xb, ya, yb = -8.0, -6.52, y0 - .2, y0 + 1.2; cab = nome + "_Cabine"; xm, ym = (xa + xb) / 2, (ya + yb) / 2
+    box(cab + "_Piso", (xb - xa, yb - ya, .06), (xm, ym, z0 - .03), M["granito"], col)
+    plano(cab + "_Teto", xa, xb, ya, yb, z0 + 2.3, M["inox"], col, True)
+    box(cab + "_Fundo", (.04, yb - ya, 2.3), (xa - .02, ym, z0 + 1.15), M["aco_elev"], col)
+    for yl in (ya - .02, yb + .02): box(cab + "_Lado", (xb - xa, .04, 2.3), (xm, yl, z0 + 1.15), M["aco_elev"], col)
+    for yl, ll in ((y0 - .12, .16), (y0 + 1.12, .16)): box(cab + "_Frente", (.04, ll, 2.3), (xb, yl, z0 + 1.15), M["aco_elev"], col)
+    # juntas entre os paineis de inox (linhas escuras finas) e rodape
+    for yj in (ya + .47, yb - .47): box(cab + "_Junta", (.004, .006, 2.3), (xa + .002, yj, z0 + 1.15), M["preto"], col)
+    for s, yl in ((1, ya), (-1, yb)):
+        box(cab + "_Junta", (.006, .004, 2.3), (xm, yl + s * .002, z0 + 1.15), M["preto"], col)
+        box(cab + "_Rodape", (xb - xa, .012, .1), (xm, yl + s * .006, z0 + .05), M["inox"], col)
+    box(cab + "_Rodape", (.012, yb - ya, .1), (xa + .006, ym, z0 + .05), M["inox"], col)
+    # espelho do fundo (da cintura para cima) e corrimao com suportes no fundo e num dos lados
+    box(cab + "_Espelho", (.008, 1.1, 1.25), (xa + .004, ym, z0 + 1.55), M["espelho"], C_MIU)
+    barra(cab + "_Corrimao", (xa + .07, ya + .12, z0 + .92), (xa + .07, yb - .12, z0 + .92), .018, M["inox"], C_MIU, seg=10)
+    for yc in (ya + .2, yb - .2): barra(cab + "_Corrimao_Suporte", (xa + .005, yc, z0 + .92), (xa + .07, yc, z0 + .92), .01, M["inox"], C_MIU, seg=8)
+    barra(cab + "_Corrimao_Lado", (xa + .15, ya + .07, z0 + .92), (xb - .45, ya + .07, z0 + .92), .018, M["inox"], C_MIU, seg=10)
+    # teto: moldura e quatro spots de LED
+    box(cab + "_Teto_Moldura", (xb - xa - .2, yb - ya - .2, .02), (xm, ym, z0 + 2.285), M["preto"], col)
+    for dx in (-.3, .3):
+        for dy in (-.35, .35): cyl(cab + "_Spot", .04, .04, .012, (xm + dx, ym + dy, z0 + 2.27), M["lamp_f"], col, seg=14)
+    box(cab + "_Ventilacao", (.3, .08, .004), (xm, ym, z0 + 2.272), M["grade"], col)
+    # botoeira da cabine no lado +Y, perto da porta: visor, andares T 1 2 3 4, alarme e placa de capacidade
+    yp = yb - .012; xp = xb - .22
+    box(cab + "_Botoeira", (.18, .012, .7), (xp, yp, z0 + 1.2), M["inox"], C_MIU)
+    box(cab + "_Botoeira_Visor", (.1, .004, .05), (xp, yp - .008, z0 + 1.48), M["tela"], C_MIU)
+    texto(cab + "_Botoeira_Andar", andar, .03, (xp, yp - .011, z0 + 1.47), "-y", M["led_verm"], C_MIU)
+    for k, rot in enumerate(("T", "1", "2", "3", "4")):
+        zb = z0 + 1.0 + k * .075; aceso = (k == 0) if andar == "T" else (k == 3)
+        cyl(cab + "_Botao", .016, .016, .008, (xp + .03, yp - .01, zb), M["led_verm"] if aceso else M["inox"], C_MIU, rot=(PI / 2, 0, 0), seg=14)
+        cyl(cab + "_Botao_Aro", .02, .02, .004, (xp + .03, yp - .007, zb), M["preto"], C_MIU, rot=(PI / 2, 0, 0), seg=14)
+        texto(cab + "_Botao_Num", rot, .026, (xp - .03, yp - .008, zb - .01), "-y", M["texto_pr"], C_MIU)
+    cyl(cab + "_Alarme", .018, .018, .01, (xp + .03, yp - .01, z0 + .9), M.get("amarelo", M["led_verm"]), C_MIU, rot=(PI / 2, 0, 0), seg=14)
+    box(cab + "_Placa", (.14, .004, .05), (xp, yp - .006, z0 + 1.66), M["metal"], C_MIU)
+    texto(cab + "_Placa_Texto", "8 PESSOAS  600 kg", .011, (xp, yp - .009, z0 + 1.655), "-y", M["texto_pr"], C_MIU)
+    luz(cab + "_Luz", "POINT", 24, "#f4f6ff", (xm, ym, z0 + 2.2), C_LUZ, shadow_soft_size=.05)
     ponto(nome.replace("Elevador_", "Cabine_"), -7.3, y0 + .5, (1, 0), z0)
 elevador("Elevador_Terreo", .1, FZ, C_PORT, "T")
 elevador("Elevador_Andar_3", .1, Z3, C_COR, "3")
@@ -1595,19 +1644,36 @@ box("Corredor_Banco", (.9, .32, .05), (1.2, .28, Z3 + .43), M["mad"], C_COR); [b
 # Ceu: HDRI diurno do Poly Haven (CC0), so como luz difusa do ceu (o disco do sol do arquivo e cortado). O sol e uma lampada
 # a parte, para vir do nordeste (manha) e entrar pelas janelas da sala e dos quartos. As forcas funcionam como a exposicao de
 # uma camera regulada para o interior (la fora fica estourado, como numa foto tirada de dentro de casa).
-HDRI = os.path.normpath(os.path.join(AQUI, "..", "04_ThreeJS", "hdri", "kloofendal_48d_partly_cloudy_puresky_2k.hdr"))
-FORCA_CEU = 2.2
+HDRI = os.path.normpath(os.path.join(AQUI, "..", "04_ThreeJS", "hdri", "kloofendal_43d_clear_puresky_2k.hdr"))      # ceu limpo, sol a ~43 graus (Poly Haven, CC0)
+SOL_DIR = (60, 45, 59)                      # de onde vem o sol (nordeste, ~38 graus): a lampada e o ponto mais claro do HDRI ficam alinhados
 world = bpy.data.worlds.get("World") or bpy.data.worlds.new("World"); scene.world = world
 nt = world.node_tree; bg = nt.nodes.get("Background")
+FORCA_CEU = 2.2
 if bg and os.path.exists(HDRI):
-    env = nt.nodes.new("ShaderNodeTexEnvironment"); env.image = bpy.data.images.load(HDRI)
+    import numpy as np
+    def ler(caminho):
+        im = bpy.data.images.load(caminho); w, h = im.size; px = np.empty(w * h * 4, np.float32); im.pixels.foreach_get(px)
+        return im, px.reshape(h, w, 4)[..., :3]
+    img, px = ler(HDRI)
+    lum = px.mean(-1); h, w = lum.shape; r, c = np.unravel_index(int(np.argmax(lum)), lum.shape)
+    phi_img = ((c + .5) / w - .5) * 2 * PI                                       # azimute do sol na foto (convencao do Blender)
+    giro = PI - phi_img - math.atan2(SOL_DIR[1], SOL_DIR[0])
+    # forca do ceu: a mesma luz media do ceu antigo (o sol da foto e cortado em 6; a lampada faz o sol)
+    antigo = os.path.join(os.path.dirname(HDRI), "_antigo", "kloofendal_48d_partly_cloudy_puresky_2k.hdr")
+    if os.path.exists(antigo):
+        im2, px2 = ler(antigo); FORCA_CEU = 2.2 * float(np.minimum(px2, 6).mean()) / max(float(np.minimum(px, 6).mean()), 1e-4); bpy.data.images.remove(im2)
+    env = nt.nodes.new("ShaderNodeTexEnvironment"); env.image = img
+    coord = nt.nodes.new("ShaderNodeTexCoord"); mp = nt.nodes.new("ShaderNodeMapping"); mp.inputs["Rotation"].default_value[2] = giro
+    nt.links.new(coord.outputs["Generated"], mp.inputs["Vector"]); nt.links.new(mp.outputs["Vector"], env.inputs["Vector"])
     corte = nt.nodes.new("ShaderNodeVectorMath"); corte.operation = "MINIMUM"; corte.inputs[1].default_value = (6, 6, 6)
     nt.links.new(env.outputs["Color"], corte.inputs[0]); nt.links.new(corte.outputs["Vector"], bg.inputs["Color"])
+    scene["ceu_hdri"] = HDRI; scene["ceu_giro"] = giro      # o pipeline gira o HDRI do site do mesmo jeito
+    print("[BUSCA] ceu: %s, giro %.0f graus, forca %.2f" % (os.path.basename(HDRI), math.degrees(giro), FORCA_CEU))
 elif bg:
     bg.inputs["Color"].default_value = (*lin(hx("#a9c8ee")), 1)
 if bg: bg.inputs["Strength"].default_value = FORCA_CEU
 # sol de meio da manha, mais baixo (~32 graus) e quente: entra fundo pela janela da sala e pelos quartos e desenha faixas no piso
-luz("Sol", "SUN", 7.5, "#ffe0b5", (60, 45, 47), C_LUZ, alvo=(0, 0, 0), angle=math.radians(1.2))
+luz("Sol", "SUN", 7.5, "#ffe0b5", SOL_DIR, C_LUZ, alvo=(0, 0, 0), angle=math.radians(1.2))
 
 ponto("Inicio", -2.7, -4.3, (0, 1), FZ); ponto("Parceiro", -1.6, -4.0, (-.4, 1), FZ); ponto("Porteiro", -.1, -2.6, (-1, 0), FZ)
 ponto("Elevador_Terreo", -5.7, .6, (1, 0), FZ); ponto("Elevador_Andar_3", -5.7, .6, (1, 0))

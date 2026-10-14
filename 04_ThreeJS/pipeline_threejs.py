@@ -293,9 +293,16 @@ for img in [i for i in bpy.data.images if i.name.startswith("LM_")]:
 hdr_src = next((os.path.join(BASE, "hdri", f) for f in os.listdir(os.path.join(BASE, "hdri"))
                 if f.lower().endswith((".exr", ".hdr"))), None) if os.path.isdir(os.path.join(BASE, "hdri")) else None
 env_arq = None
+if scene.get("ceu_hdri") and os.path.exists(scene["ceu_hdri"]): hdr_src = scene["ceu_hdri"]      # o mesmo ceu do bake
+GIRO = float(scene.get("ceu_giro", 0.0))
 if hdr_src:
     for w in (1024, 2048):
         img = bpy.data.images.load(hdr_src); img.scale(w, w // 2)
+        # mesmo giro do bake: o three.js le o equiretangular meia volta defasado do Blender (u3 = u_blender - 0.5) e o bake
+        # gira o vetor em GIRO; rolando as colunas, o brilho do sol no ceu do site cai do lado de onde vem o sol do lightmap
+        px = np.empty(w * (w // 2) * 4, np.float32); img.pixels.foreach_get(px); px = px.reshape(w // 2, w, 4)
+        k = int(round((.5 - GIRO / (2 * math.pi)) * w)) % w
+        img.pixels.foreach_set(np.roll(px, -k, axis=1).ravel())
         env_arq = "env/dia_%dk.hdr" % (w // 1024)
         img.filepath_raw = os.path.join(WEB, env_arq); img.file_format = "HDR"; img.save()
         bpy.data.images.remove(img)

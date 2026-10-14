@@ -170,10 +170,8 @@ TABELA = {
     "Roupa_Verde":        ("malha", .4, "#476349", neutro, .3),
     "Porta_Corta_Fogo":   ("metal_pintado", 1.0, "#8f2f28", grafite, .15),
     "Grade_Ferro":        ("metal_pintado", 1.0, "#2c2e30", grafite, .15),
-    "Aco_Elevador":       ("metal_inox", .5, "#c8c8c8", None, .08),
-    "Inox":               ("metal_inox", .3, "#ffffff", None, .08),
 }
-METAL = {"Inox": .45, "Aco_Elevador": .4}      # brilho de metal moderado: metal puro fica escuro no site
+METAL = {}      # Inox e Aco_Elevador: escovado gerado em busca.py (a textura metal_inox saia manchada)
 feitos = []
 for nome, (pasta, tile, tint, rec, relevo) in TABELA.items():
     m = bpy.data.materials.get(nome)

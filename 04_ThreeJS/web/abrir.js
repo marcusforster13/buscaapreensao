@@ -37,7 +37,7 @@ export function iniciarAbrir(ctx) {
     const u = uv1.getX(h.face.a) * bar.x + uv1.getX(h.face.b) * bar.y + uv1.getX(h.face.c) * bar.z;
     const v = uv1.getY(h.face.a) * bar.x + uv1.getY(h.face.b) * bar.y + uv1.getY(h.face.c) * bar.z;
     const t = pixels(lmTex[lm.lm]), d = t.g.getImageData(clamp(Math.floor(u * t.w), 0, t.w - 1), clamp(Math.floor(v * t.h), 0, t.h - 1), 1, 1).data;
-    return Math.pow((d[0] + d[1] + d[2]) / 765, 2.2) * lm.max * (lm.ganho ?? 1);
+    return Math.pow((d[0] + d[1] + d[2]) / 765, 2.2) * lm.max * (lm.ganho ?? 1) * (ultimoDentro ? CFG.interior_site ?? .85 : 1);      // mesmo ajuste do interior em index.html
   }
   function luzLocal(centro, frente) {          // media de tres pontos do piso a frente da peca, sem os extremos (mancha de sol, sombra do movel)
     const vs = [];
@@ -73,8 +73,10 @@ export function iniciarAbrir(ctx) {
     // luz do comodo
     const frente = d.tipo === 'gaveta' ? p.dirW : new THREE.Vector3(0, 0, 1).applyQuaternion(qW).setY(0).normalize();
     const centroW = meio.clone().applyMatrix4(o.matrixWorld); centroW.y = pW.y;
-    let L = luzLocal(centroW, frente); const L2 = d.colide ? luzLocal(centroW, frente.clone().negate()) : null;
-    if (L != null && L2 != null) L = (L + L2) / 2; else if (L == null) L = L2;
+    // portas de comodo e folhas do elevador: luz dos dois lados (a folha 2 do elevador esta girada e olharia para dentro da cabine)
+    const ambos = d.colide || /^A_Elevador_/.test(nome);
+    let L = luzLocal(centroW, frente); const L2 = ambos ? luzLocal(centroW, frente.clone().negate()) : null;
+    if (L != null && L2 != null) L = /^A_Elevador_/.test(nome) ? Math.max(L, L2) : (L + L2) / 2; else if (L == null) L = L2;      // no elevador vale o lado do hall
     if (L != null) for (const m of p.ms) for (const mt of [].concat(m.material)) { mt.lightMapIntensity = L * PI * 1.1; mt.userData.luzBase = mt.lightMapIntensity; if (ultimoDentro) semCeu(mt); }
     // portas dos comodos: enquanto fechadas, uma caixa invisivel entra na colisao
     if (d.colide) {
