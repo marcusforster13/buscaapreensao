@@ -426,6 +426,9 @@ def arrumar_materiais(objs):
                     nt.links.new(tex.outputs["Alpha"], rnd.inputs[0]); nt.links.new(rnd.outputs[0], b.inputs["Alpha"])
                     tex.image.alpha_mode = "STRAIGHT"
                 m.use_backface_culling = False
+            else:                                   # corpo e rosto: sempre opacos (o importador liga o alfa da textura,
+                for l in list(b.inputs["Alpha"].links): nt.links.remove(l)      # e uma textura com canal alfa deixava o corpo vazado)
+                b.inputs["Alpha"].default_value = 1.0
             m["ok"] = True
 
 manifesto = {}
