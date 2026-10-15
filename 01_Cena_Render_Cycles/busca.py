@@ -325,16 +325,69 @@ def plafon(nome, x, y, watts, z=Z3 + PD, col=C_EST, cor="#ffd9b0", m="lamp"):   
     cyl(nome + "_Plafon", .15, .13, .05, (x, y, z - .025), M[m], col, seg=20)
     luz(nome + "_Luz", "POINT", watts * .45, cor, (x, y, z - .22), C_LUZ, shadow_soft_size=.18)      # o site clareia o interior (ganho dos lightmaps internos)
 
-def janela(nome, cx, cy, ao_longo_x, larg, zb, zt, col, z0=Z3, folhas=2):
-    """Esquadria de aluminio com vidro no vao de uma parede (o vidro fica fora do bake para o sol entrar)."""
+def janela(nome, cx, cy, ao_longo_x, larg, zb, zt, col, z0=Z3, folhas=2, persiana=False, dentro=1):
+    """Janela de correr de aluminio no vao de uma parede: marco, trilho, folhas sobrepostas (cada uma com vidro e puxador),
+    peitoril de granito com pingadeira e, nos quartos, persiana de enrolar (caixa por dentro, laminas um pouco baixadas).
+    O vidro fica fora do bake (13_Vidros) para o sol entrar. dentro = +1 ou -1: lado do comodo (eixo perpendicular a parede)."""
     alt = zt - zb; zc = z0 + (zb + zt) / 2
-    def pc(suf, tl, th, dl, dz, m=M["aluminio"], c=col, esp=.07):
-        box(nome + suf, (tl, esp, th) if ao_longo_x else (esp, tl, th), (cx + dl, cy, zc + dz) if ao_longo_x else (cx, cy + dl, zc + dz), m, c)
-    pc("_Quadro_Cima", larg, .04, 0, alt / 2 - .02); pc("_Quadro_Baixo", larg, .04, 0, -alt / 2 + .02)
-    for s in (-1, 1): pc("_Quadro_Lado", .04, alt, s * (larg / 2 - .02), 0)
-    for k in range(1, folhas): pc("_Montante", .04, alt, -larg / 2 + k * larg / folhas, 0, esp=.05)
-    pc("_Vidro", larg - .06, alt - .06, 0, 0, M["vidro"], C_VID, .008)
-    pc("_Peitoril", larg + .1, .03, 0, -alt / 2 - .015, M["granito"], col, .26)
+    def pc(suf, tl, th, dl, dz, m=M["aluminio"], c=col, esp=.07, dp=0.0):
+        pos = (cx + dl, cy + dp, zc + dz) if ao_longo_x else (cx + dp, cy + dl, zc + dz)
+        box(nome + suf, (tl, esp, th) if ao_longo_x else (esp, tl, th), pos, m, c)
+    pf = .045                                                            # perfil do marco
+    pc("_Marco_Cima", larg, pf, 0, alt / 2 - pf / 2, esp=.1); pc("_Marco_Baixo", larg, pf, 0, -alt / 2 + pf / 2, esp=.1)
+    for s in (-1, 1): pc("_Marco_Lado", pf, alt, s * (larg / 2 - pf / 2), 0, esp=.1)
+    for k in (-1, 1): pc("_Trilho", larg - 2 * pf, .012, 0, -alt / 2 + pf + .006, m=M["metal"], esp=.006, dp=k * .02)
+    # folhas: cada uma com 4 perfis, vidro e puxador; as vizinhas ficam em trilhos diferentes (uma na frente da outra)
+    lf = (larg - 2 * pf) / folhas + .03; hf = alt - 2 * pf; sp = .028
+    for k in range(folhas):
+        dl = -larg / 2 + pf + lf / 2 + k * (larg - 2 * pf - lf) / max(1, folhas - 1); dp = (.02 if k % 2 == 0 else -.02)
+        pc("_Folha_Cima", lf, sp, dl, hf / 2 - sp / 2, esp=.03, dp=dp); pc("_Folha_Baixo", lf, sp, dl, -hf / 2 + sp / 2, esp=.03, dp=dp)
+        for s in (-1, 1): pc("_Folha_Lado", sp, hf, dl + s * (lf / 2 - sp / 2), 0, esp=.03, dp=dp)
+        pc("_Vidro", lf - 2 * sp, hf - 2 * sp, dl, 0, M["vidro"], C_VID, .006, dp=dp)
+        lado_pux = 1 if k < folhas / 2 else -1                          # puxador na borda que encontra a outra folha
+        pc("_Puxador", .016, .14, dl + lado_pux * (lf / 2 - sp / 2), 0, m=M["metal"], esp=.022, dp=dp + dentro * .022)
+    # peitoril: granito por dentro e, por fora, com pingadeira saliente
+    pc("_Peitoril", larg + .1, .025, 0, -alt / 2 - .0125, M["granito"], col, .14, dp=dentro * .07)
+    pc("_Peitoril_Fora", larg + .1, .03, 0, -alt / 2 - .015, M["granito"], col, .16, dp=-dentro * .1)
+    if persiana:
+        pc("_Persiana_Caixa", larg + .12, .2, 0, alt / 2 + .1, M["aluminio"], col, .16, dp=dentro * .1)
+        pc("_Persiana_Laminas", larg - 2 * pf, alt * .22, 0, alt / 2 - pf - alt * .11, M["persiana"], col, .015, dp=-dentro * .05)
+        for k in range(1, 6): pc("_Persiana_Friso", larg - 2 * pf, .004, 0, alt / 2 - pf - k * alt * .22 / 6, M["preto"], col, .016, dp=-dentro * .05)
+        for s in (-1, 1): pc("_Persiana_Guia", .02, alt, s * (larg / 2 - pf - .01), 0, M["aluminio"], col, .03, dp=-dentro * .05)
+
+M["friso_mad"] = mat("Porta_Madeira_Friso", "#5a3d26", .5)          # molduras das almofadas da porta de entrada
+M["ferragem"] = mat("Ferragem_Inox", "#b9bcbf", .28, .7)             # macanetas, espelhos e dobradicas
+def folha_porta(n, larg, m, col, parent=None, T_=None, rz=0.0, almofadas=False, olho=False, fechadura=True, alt=2.07):
+    """Folha de porta detalhada, em coordenadas da folha (x de 0 = dobradica ate larg; y = espessura; z do piso).
+    Com parent, as pecas sao filhas dele (porta que abre); senao T_ leva as coordenadas para o mundo (porta fixa)."""
+    def b(suf, tam, pos, mm, rot=(0, 0, 0)):
+        if parent: return box(n + suf, tam, pos, mm, C_INT if parent else col, parent, rot=rot)
+        return box(n + suf, tam, T_(pos), mm, col, rot=(rot[0], rot[1], rot[2] + rz))
+    def c(suf, r, h, pos, mm, rot=(0, 0, 0), seg=12):
+        if parent: return cyl(n + suf, r, r, h, pos, mm, C_INT, parent, rot=rot, seg=seg)
+        return cyl(n + suf, r, r, h, T_(pos), mm, col, rot=(rot[0], rot[1], rot[2] + rz), seg=seg)
+    e = .038; z0 = .012                                                  # espessura da folha e folga embaixo (passa luz)
+    b("_Folha", (larg - .004, e, alt), (larg / 2, 0, z0 + alt / 2), m)
+    if almofadas:                                                        # duas almofadas por face, com moldura saliente
+        for s in (-1, 1):
+            for za, zb_ in ((1.12, 1.92), (.22, .98)):
+                x0, x1, yf = .13, larg - .13, s * (e / 2 + .003)
+                b("_Moldura", (x1 - x0, .006, .016), ((x0 + x1) / 2, yf, za), M["friso_mad"]); b("_Moldura", (x1 - x0, .006, .016), ((x0 + x1) / 2, yf, zb_), M["friso_mad"])
+                b("_Moldura", (.016, .006, zb_ - za), (x0, yf, (za + zb_) / 2), M["friso_mad"]); b("_Moldura", (.016, .006, zb_ - za), (x1, yf, (za + zb_) / 2), M["friso_mad"])
+    for zd in (.22, 1.05, 1.88):                                         # dobradicas (no eixo)
+        c("_Dobradica", .008, .1, (0, 0, zd), M["ferragem"], seg=8)
+    if fechadura:
+        xm = larg - .07
+        for s in (-1, 1):                                                # alavanca com espelho dos dois lados
+            yf = s * (e / 2 + .003)
+            b("_Espelho", (.042, .006, .19), (xm, yf, .99), M["ferragem"])
+            c("_Pescoco", .009, .045, (xm, s * (e / 2 + .025), 1.04), M["ferragem"], rot=(PI / 2, 0, 0), seg=10)
+            b("_Alavanca", (.125, .018, .016), (xm - .056, s * (e / 2 + .048), 1.04), M["ferragem"])
+            b("_Chave", (.008, .003, .02), (xm, s * (e / 2 + .0065), .935), M["preto"])
+    if olho:
+        c("_Olho_Magico", .012, e + .012, (larg / 2, 0, 1.5), M["ferragem"], rot=(PI / 2, 0, 0), seg=12)
+        c("_Olho_Lente", .006, e + .016, (larg / 2, 0, 1.5), M["preto"], rot=(PI / 2, 0, 0), seg=10)
+
 
 # ================================================================== 1. rua, patio e vizinhanca
 def ph(nome, asset, x, y, z=None, rz=0.0, col=None, alt=None, tris=2000, escala=1.0):
@@ -1193,10 +1246,9 @@ parede("Corredor_Parede_Sul", (-6.4, 0), (8, 0), M["parede_cor"], C_COR, vaos=[(
 parede("Corredor_Parede_Oeste", (-6.4, 0), (-6.4, 1.6), M["parede_cor"], C_COR, vaos=[(.1, 1.1, 0, 2.1)])       # vao do elevador
 parede("Corredor_Parede_Leste", (8, 0), (8, 1.6), M["parede_cor"], C_COR)
 for nome, x in (("303", -2.95), ("304", 3.95)):                                      # portas dos aptos do lado sul: sempre fechadas
-    box("Corredor_Porta_%s" % nome, (.86, .04, 2.08), (x, .115, Z3 + 1.04), M["porta_mad"], C_COR)
+    folha_porta("Corredor_Porta_%s" % nome, .86, M["porta_mad"], C_COR, T_=lambda q, x=x: (x - .43 + q[0], .115 + q[1], Z3 + q[2]), almofadas=True, olho=True)
     box("Corredor_Porta_%s_Batente" % nome, (1.0, .03, 2.16), (x, .108, Z3 + 1.08), M["rodape"], C_COR)
     texto("Corredor_Numero_%s" % nome, nome, .09, (x, .14, Z3 + 1.72), "+y", M["texto_dour"], C_MIU)
-    cyl("Corredor_Macaneta_%s" % nome, .022, .022, .05, (x + .34, .15, Z3 + 1.02), M["metal"], C_MIU, rot=(PI / 2, 0, 0), seg=10)
     box("Corredor_Capacho_%s" % nome, (.7, .42, .012), (x, .36, Z3 + .006), M["capacho"], C_COR)
 for x in (-2.95, 3.95): box("Corredor_Capacho_N", (.7, .42, .012), (x, 1.26, Z3 + .006), M["capacho"], C_COR)
 for nome, tam, pos in (("Rodape_Cor_N1", (2.9, .015, .08), (-4.9, 1.49, Z3 + .04)), ("Rodape_Cor_N2", (5.9, .015, .08), (.5, 1.49, Z3 + .04)), ("Rodape_Cor_N3", (3.5, .015, .08), (6.2, 1.49, Z3 + .04))):
@@ -1235,8 +1287,8 @@ parede("Apto_Parede_Cozinha_Servico", (-1, 6.8), (1.8, 6.8), M["parede"], C_EST,
 parede("Apto_Parede_Circulacao_L", (3.1, 1.6), (3.1, 5.5), M["parede"], C_EST, t=.12, vaos=[(2.2, 3.9, 0, 2.3)])                  # vao largo para a sala
 parede("Apto_Parede_Quartos_Sul", (1.8, 5.5), (8, 5.5), M["parede"], C_EST, t=.12, vaos=[(.2, 1.1, 0, 2.1), (3.2, 4.1, 0, 2.1)])    # quarto 2; quarto 1
 parede("Apto_Parede_Entre_Quartos", (4.8, 5.5), (4.8, 9), M["parede"], C_EST, t=.12)
-janela("Janela_Servico", .2, 9, True, 1.4, 1.1, 2.1, C_EST); janela("Janela_Quarto_2", 3.3, 9, True, 1.4, 1.0, 2.2, C_EST)
-janela("Janela_Quarto_1", 6.4, 9, True, 1.4, 1.0, 2.2, C_EST); janela("Janela_Sala", 8, 3.6, False, 2.6, .7, 2.25, C_EST, folhas=3)
+janela("Janela_Servico", .2, 9, True, 1.4, 1.1, 2.1, C_EST, dentro=-1); janela("Janela_Quarto_2", 3.3, 9, True, 1.4, 1.0, 2.2, C_EST, persiana=True, dentro=-1)
+janela("Janela_Quarto_1", 6.4, 9, True, 1.4, 1.0, 2.2, C_EST, persiana=True, dentro=-1); janela("Janela_Sala", 8, 3.6, False, 2.6, .7, 2.25, C_EST, folhas=3, dentro=-1)
 # azulejo ate o teto no banheiro e ate 1,5 m na cozinha e na area de servico (placas finas coladas na parede)
 for nome, tam, pos in (("Azulejo_Banheiro_O", (.01, 2.3, PD), (-.895, 2.8, Z3 + PD / 2)), ("Azulejo_Banheiro_S", (2.7, .01, PD), (.4, 1.705, Z3 + PD / 2)),
                        ("Azulejo_Banheiro_N", (2.7, .01, PD), (.4, 3.935, Z3 + PD / 2)), ("Azulejo_Cozinha_S", (2.7, .01, 1.5), (.4, 4.065, Z3 + .75)),
@@ -1382,25 +1434,31 @@ def passagem(nome, dobradica, rz, m, larg=.88, rotulo=None, lado_rotulo=-1, ang=
     r["abre"] = "porta"; r["ang"] = ang; r["colide"] = 1; r["larg"] = larg
     if tranca: r["tranca"] = 1
     n = r.name
-    box(n + "_Folha", (larg, .04, 2.08), (larg / 2, 0, 1.04), m, C_INT, r)
-    for s in (-1, 1):
-        cyl(n + "_Macaneta", .022, .022, .05, (larg - .08, s * .045, 1.02), M["metal"], C_INT, r, rot=(PI / 2, 0, 0), seg=10)
-        box(n + "_Macaneta_Haste", (.11, .016, .016), (larg - .125, s * .07, 1.02), M["metal"], C_INT, r)
+    folha_porta(n, larg, m, C_INT, parent=r, almofadas=(m == M["porta_mad"]), olho=olho, fechadura=(m != M["porta_ferro"]))
+    if m == M["porta_ferro"]:                                            # porta corta-fogo: barra antipanico
+        for s in (-1, 1): box(n + "_Barra", (larg * .6, .03, .04), (larg * .5, s * .045, 1.0), M["ferragem"], C_INT, r)
     if rotulo: texto(n + "_Rotulo", rotulo, .09 if len(rotulo) < 4 else .06, (larg / 2, lado_rotulo * .024, 1.72), "-y" if lado_rotulo < 0 else "+y", M[m_rot], C_INT, r)
-    if olho: cyl(n + "_Olho_Magico", .012, .012, .05, (larg / 2, 0, 1.5), M["preto"], C_INT, r, rot=(PI / 2, 0, 0), seg=10)
     return r
-def batente(nome, x, y, ao_longo_x, larg, col, z0=Z3):
+def batente(nome, x, y, ao_longo_x, larg, col, z0=Z3, prof=.16):
+    """Batente (marco) e guarnicao (alizar) dos dois lados da parede; prof = espessura da parede."""
+    pj = prof + .02
     for s in (-1, 1):
-        box(nome + "_Batente", (.04, .16, 2.1) if ao_longo_x else (.16, .04, 2.1), (x + s * (larg / 2 + .0), y, z0 + 1.05) if ao_longo_x else (x, y + s * larg / 2, z0 + 1.05), M["rodape"], col)
-    box(nome + "_Batente_Cima", (larg, .16, .04) if ao_longo_x else (.16, larg, .04), (x, y, z0 + 2.1), M["rodape"], col)
+        box(nome + "_Batente", (.04, pj, 2.08) if ao_longo_x else (pj, .04, 2.08), (x + s * larg / 2, y, z0 + 1.04) if ao_longo_x else (x, y + s * larg / 2, z0 + 1.04), M["rodape"], col)      # ate a peca de cima, sem sobrepor (canto preto no render)
+    box(nome + "_Batente_Cima", (larg + .04, pj, .04) if ao_longo_x else (pj, larg + .04, .04), (x, y, z0 + 2.1), M["rodape"], col)
+    for f in (-1, 1):                                                    # guarnicao: 7 cm de largura, 1,2 cm saliente
+        d = f * (prof / 2 + .006)
+        for s in (-1, 1):
+            p_ = (x + s * (larg / 2 + .035), y + d, z0 + 1.06) if ao_longo_x else (x + d, y + s * (larg / 2 + .035), z0 + 1.06)
+            box(nome + "_Guarnicao", (.07, .012, 2.12) if ao_longo_x else (.012, .07, 2.12), p_, M["rodape"], col)
+        box(nome + "_Guarnicao_Cima", (larg + .14, .012, .07) if ao_longo_x else (.012, larg + .14, .07), (x, y + d, z0 + 2.155) if ao_longo_x else (x + d, y, z0 + 2.155), M["rodape"], col)
 
 # portas dos comodos (todas abrem para dentro do comodo)
-passagem("Apto_302", (3.5, 1.6), 0, M["porta_mad"], rotulo="302", olho=True); batente("Batente_302", 3.95, 1.6, True, .9, C_EST)
-passagem("Apto_301", (-3.4, 1.6), 0, M["porta_mad"], rotulo="301", olho=True); batente("Batente_301", -2.95, 1.6, True, .9, C_VIZ)
-passagem("Escada", (-6.0, 0), 0, M["porta_ferro"], rotulo="ESCADA", lado_rotulo=1, ang=-1.5, m_rot="texto_br"); batente("Batente_Escada", -5.55, 0, True, .9, C_COR)
-passagem("Banheiro", (1.8, 2.9), PI / 2, M["porta_br"], larg=.68); batente("Batente_Banheiro", 1.8, 3.25, False, .7, C_EST)
-passagem("Quarto_2", (2.0, 5.5), 0, M["porta_br"], tranca=True); batente("Batente_Quarto_2", 2.45, 5.5, True, .9, C_EST)
-passagem("Quarto_1", (5.9, 5.5), PI, M["porta_br"], ang=-1.5); batente("Batente_Quarto_1", 5.45, 5.5, True, .9, C_EST)
+passagem("Apto_302", (3.5, 1.6), 0, M["porta_mad"], rotulo="302", olho=True); batente("Batente_302", 3.95, 1.6, True, .9, C_EST, prof=.2)
+passagem("Apto_301", (-3.4, 1.6), 0, M["porta_mad"], rotulo="301", olho=True); batente("Batente_301", -2.95, 1.6, True, .9, C_VIZ, prof=.2)
+passagem("Escada", (-6.0, 0), 0, M["porta_ferro"], rotulo="ESCADA", lado_rotulo=1, ang=-1.5, m_rot="texto_br"); batente("Batente_Escada", -5.55, 0, True, .9, C_COR, prof=.1)
+passagem("Banheiro", (1.8, 2.9), PI / 2, M["porta_br"], larg=.68); batente("Batente_Banheiro", 1.8, 3.25, False, .7, C_EST, prof=.12)
+passagem("Quarto_2", (2.0, 5.5), 0, M["porta_br"], tranca=True); batente("Batente_Quarto_2", 2.45, 5.5, True, .9, C_EST, prof=.12)
+passagem("Quarto_1", (5.9, 5.5), PI, M["porta_br"], ang=-1.5); batente("Batente_Quarto_1", 5.45, 5.5, True, .9, C_EST, prof=.12)
 
 # para onde olha a frente dos modelos prontos (conferido nas previas): giro que faz a frente olhar para o sul (-Y)
 SOFA_RZ = 0.0; QUADRO_RZ = 0.0; CADEIRA_RZ = PI      # a cadeira de jantar do Poly Haven vem de costas: meia volta para olhar a mesa

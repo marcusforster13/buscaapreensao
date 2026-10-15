@@ -1,0 +1,278 @@
+[
+ {
+  "arquivo": "fala_inspetor_01",
+  "base": "fala_inspetor_01",
+  "quem": "inspetor",
+  "texto": "Tem certeza? Confira de novo o número e o bloco."
+ },
+ {
+  "arquivo": "fala_inspetor_02",
+  "base": "fala_inspetor_02",
+  "quem": "inspetor",
+  "texto": "Ótimo."
+ },
+ {
+  "arquivo": "fala_inspetor_03",
+  "base": "fala_inspetor_03",
+  "quem": "inspetor",
+  "texto": "Bem visto. Com o endereço errado não podemos entrar. Vou comunicar o juízo e pedir a correção do mandado."
+ },
+ {
+  "arquivo": "fala_inspetor_04",
+  "base": "fala_inspetor_04",
+  "quem": "inspetor",
+  "texto": "Confira de novo: o endereço bate, é o Bloco B, apartamento 302."
+ },
+ {
+  "arquivo": "fala_inspetor_05",
+  "base": "fala_inspetor_05",
+  "quem": "inspetor",
+  "texto": "Olhe a data de novo."
+ },
+ {
+  "arquivo": "fala_inspetor_06",
+  "base": "fala_inspetor_06",
+  "quem": "inspetor",
+  "texto": "Certo."
+ },
+ {
+  "arquivo": "fala_inspetor_07",
+  "base": "fala_inspetor_07",
+  "quem": "inspetor",
+  "texto": "É verdade, passou da validade. Não cumprimos; vou pedir um novo mandado."
+ },
+ {
+  "arquivo": "fala_inspetor_08",
+  "base": "fala_inspetor_08",
+  "quem": "inspetor",
+  "texto": "Não, está dentro do prazo."
+ },
+ {
+  "arquivo": "fala_inspetor_09",
+  "base": "fala_inspetor_09",
+  "quem": "inspetor",
+  "texto": "Certo. Vamos esperar dar cinco horas."
+ },
+ {
+  "arquivo": "fala_inspetor_10",
+  "base": "fala_inspetor_10",
+  "quem": "inspetor",
+  "texto": "Vamos de elevador."
+ },
+ {
+  "arquivo": "fala_porteiro_01",
+  "base": "fala_porteiro_01",
+  "quem": "porteiro",
+  "texto": "Pode deixar, doutor. Elevador é ali à esquerda."
+ },
+ {
+  "arquivo": "fala_porteiro_02",
+  "base": "fala_porteiro_02",
+  "quem": "porteiro",
+  "texto": "Tá bom, vou interfonar."
+ },
+ {
+  "arquivo": "fala_porteiro_03",
+  "base": "fala_porteiro_03",
+  "quem": "porteiro",
+  "texto": "É o seu Carlos. Saiu cedo, não voltou ainda."
+ },
+ {
+  "arquivo": "fala_porteiro_04",
+  "base": "fala_porteiro_04",
+  "quem": "porteiro",
+  "texto": "O seu Carlos. Tá em casa, subiu ontem à noite."
+ },
+ {
+  "arquivo": "fala_vizinha_01_f",
+  "base": "fala_vizinha_01",
+  "quem": "vizinha",
+  "texto": "Ué, o que tá acontecendo aqui? É com o vizinho do 302?"
+ },
+ {
+  "arquivo": "fala_vizinha_02_f",
+  "base": "fala_vizinha_02",
+  "quem": "vizinha",
+  "texto": "Tá bom, desculpa."
+ },
+ {
+  "arquivo": "fala_vizinha_03_f",
+  "base": "fala_vizinha_03",
+  "quem": "vizinha",
+  "texto": "Nossa! Eu sabia que tinha alguma coisa errada."
+ },
+ {
+  "arquivo": "fala_morador_01",
+  "base": "fala_morador_01",
+  "quem": "morador",
+  "texto": "Polícia? O que é que vocês querem?"
+ },
+ {
+  "arquivo": "fala_morador_02",
+  "base": "fala_morador_02",
+  "quem": "morador",
+  "texto": "Pois não?"
+ },
+ {
+  "arquivo": "fala_morador_03",
+  "base": "fala_morador_03",
+  "quem": "morador",
+  "texto": "Tá… pode entrar. Mas eu quero ver tudo o que vocês fizerem."
+ },
+ {
+  "arquivo": "fala_morador_04",
+  "base": "fala_morador_04",
+  "quem": "morador",
+  "texto": "Tá bom, eu vou junto."
+ },
+ {
+  "arquivo": "fala_morador_05",
+  "base": "fala_morador_05",
+  "quem": "morador",
+  "texto": "Celular eu não tenho mais, perdi semana passada. Computador nunca tive."
+ },
+ {
+  "arquivo": "fala_morador_06",
+  "base": "fala_morador_06",
+  "quem": "morador",
+  "texto": "Tá tudo aí na sala, ué. Não tenho nada a esconder."
+ },
+ {
+  "arquivo": "fala_morador_07",
+  "base": "fala_morador_07",
+  "quem": "morador",
+  "texto": "Não sei do que o senhor está falando."
+ },
+ {
+  "arquivo": "fala_morador_08",
+  "base": "fala_morador_08",
+  "quem": "morador",
+  "texto": "É do inquilino, o Rafael. Ele aluga o quarto. Tá trabalhando, a chave fica com ele."
+ },
+ {
+  "arquivo": "fala_morador_09",
+  "base": "fala_morador_09",
+  "quem": "morador",
+  "texto": "Que quarto? Tá tudo aberto."
+ },
+ {
+  "arquivo": "fala_morador_10",
+  "base": "fala_morador_10",
+  "quem": "morador",
+  "texto": "Ei! Pra que isso?"
+ },
+ {
+  "arquivo": "fala_morador_11",
+  "base": "fala_morador_11",
+  "quem": "morador",
+  "texto": "Não vou dar senha nenhuma! Quero o meu advogado."
+ },
+ {
+  "arquivo": "fala_mulher_01_f",
+  "base": "fala_mulher_01",
+  "quem": "mulher",
+  "texto": "Pelo amor de Deus, eu não fiz nada!"
+ },
+ {
+  "arquivo": "fala_idoso_01",
+  "base": "fala_idoso_01",
+  "quem": "idoso",
+  "texto": "Obrigado, meu filho. Eu não levanto daqui."
+ },
+ {
+  "arquivo": "fala_mulher_02_f",
+  "base": "fala_mulher_02",
+  "quem": "mulher",
+  "texto": "Tá… tá bom. Eu fico aqui sentada."
+ },
+ {
+  "arquivo": "fala_morador_12",
+  "base": "fala_morador_12",
+  "quem": "morador",
+  "texto": "Ô, doutor… vamos resolver isso aqui entre a gente? Tenho cinco mil aqui, ninguém precisa saber."
+ },
+ {
+  "arquivo": "fala_morador_13",
+  "base": "fala_morador_13",
+  "quem": "morador",
+  "texto": "Eu vou filmar tudo, tá? E já liguei pro meu advogado, ele tá vindo."
+ },
+ {
+  "arquivo": "fala_morador_14",
+  "base": "fala_morador_14",
+  "quem": "morador",
+  "texto": "Calma, era brincadeira…"
+ },
+ {
+  "arquivo": "fala_morador_15",
+  "base": "fala_morador_15",
+  "quem": "morador",
+  "texto": "Valeu, doutor."
+ },
+ {
+  "arquivo": "fala_inspetor_11",
+  "base": "fala_inspetor_11",
+  "quem": "inspetor",
+  "texto": "Ouvi. O senhor vai ser autuado também por corrupção ativa."
+ },
+ {
+  "arquivo": "fala_morador_16",
+  "base": "fala_morador_16",
+  "quem": "morador",
+  "texto": "Tá bom."
+ },
+ {
+  "arquivo": "fala_morador_17",
+  "base": "fala_morador_17",
+  "quem": "morador",
+  "texto": "Ei! Isso é abuso!"
+ },
+ {
+  "arquivo": "fala_morador_18",
+  "base": "fala_morador_18",
+  "quem": "morador",
+  "texto": "Tá bom, tá bom! Me solta!"
+ },
+ {
+  "arquivo": "fala_morador_19",
+  "base": "fala_morador_19",
+  "quem": "morador",
+  "texto": "É do inquilino, o Rafael. Ele aluga o quarto. A chave tá com ele."
+ },
+ {
+  "arquivo": "fala_inspetor_12",
+  "base": "fala_inspetor_12",
+  "quem": "inspetor",
+  "texto": "Bem lembrado. O cômodo dele tem proteção própria. Não entramos; registro no auto e comunico o juízo."
+ },
+ {
+  "arquivo": "fala_inspetor_13",
+  "base": "fala_inspetor_13",
+  "quem": "inspetor",
+  "texto": "Arma sem registro? Flagrante. Vou apreender e conduzir."
+ },
+ {
+  "arquivo": "fala_inspetor_14",
+  "base": "fala_inspetor_14",
+  "quem": "inspetor",
+  "texto": "Isso é droga. Flagrante: apreendo e conduzo."
+ },
+ {
+  "arquivo": "fala_inspetor_15",
+  "base": "fala_inspetor_15",
+  "quem": "inspetor",
+  "texto": "Auto lavrado. Vamos encerrar."
+ },
+ {
+  "arquivo": "fala_inspetor_16",
+  "base": "fala_inspetor_16",
+  "quem": "inspetor",
+  "texto": "Bom dia. Equipe pronta. O mandado está com você: leia antes de subirmos."
+ },
+ {
+  "arquivo": "fala_inspetor_17",
+  "base": "fala_inspetor_17",
+  "quem": "inspetor",
+  "texto": "Bom dia. São quatro e meia, a equipe está pronta. O mandado está com você: leia antes de subirmos."
+ }
+]

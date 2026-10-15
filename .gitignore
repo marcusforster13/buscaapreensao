@@ -31,3 +31,6 @@ desktop.ini
 
 # modelos do Poly Haven: baixaveis de novo por modelos/baixar_polyhaven.py (420 MB)
 01_Cena_Render_Cycles/modelos/polyhaven/
+
+# chave da API do ElevenLabs (nunca vai para o GitHub)
+06_Audio/chave_elevenlabs.txt
