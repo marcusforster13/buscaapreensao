@@ -651,8 +651,7 @@ def tufos(nome, x0, x1, y0, y1, n, z=0.0, alt=(.1, .22)):
             v = [bm.verts.new((px - wx, py - wy, z)), bm.verts.new((px + wx, py + wy, z)), bm.verts.new((px + math.cos(a) * inc * .5, py + math.sin(a) * inc * .5, z + h * .6)), bm.verts.new((px + math.cos(a) * inc, py + math.sin(a) * inc, z + h))]
             bm.faces.new((v[0], v[1], v[2])); bm.faces.new((v[0], v[2], v[3]))
     finish(nome, bm, (0, 0, 0), M["lamina"], C_GRA)
-tufos("Grama_Jardim_Leste", 8.3, 10.85, -5.95, 2.0, 900); tufos("Grama_Jardim_Leste_B", 8.3, 10.85, 2.0, 23.5, 900)
-tufos("Grama_Fundo", -9, 8.1, 36.2, 37.9, 300)
+tufos("Grama_Jardim_Leste", 8.3, 10.85, -5.95, 2.0, 650); tufos("Grama_Jardim_Leste_B", 8.3, 10.85, 2.0, 8.0, 450)      # so onde se anda (o resto e o gramado do chao)
 box("Asfalto", (130, 7, .12), (0, -12.5, .06), M["asfalto"], C_RUA)
 for nome, y, larg in (("Calcada", -7.55, 2.9), ("Calcada_Frente", -17.45, 2.9)):
     box(nome, (130, larg, FZ), (0, y, FZ / 2), M["calcada"], C_RUA)
@@ -728,7 +727,7 @@ def terreo_rua(nome, fcx, fcy, face, comp, r, col, h=3.0):
         else:
             cx_("_T_Garagem", L, .05, 2.3, d, .05, FZ + 1.15, M["grade"]); cx_("_T_Garagem_Fundo", L, .03, 2.3, d, -.02, FZ + 1.15, M["preto"])
 
-def fachada(nome, cx, cy, face, comp, zs, col, r, varandas=(), ar=.3, larg_j=1.5, pe=3.15, frisa=True):
+def fachada(nome, cx, cy, face, comp, zs, col, r, varandas=(), ar=.3, larg_j=1.5, pe=3.15, frisa=True, longe=False):
     """Detalhes de uma face de predio: por andar, friso da laje e uma fileira de janelas de aluminio com peitoril; algumas
     colunas viram varanda com guarda-corpo; algumas janelas tem persiana meio fechada e ar-condicionado embaixo."""
     t, n = FACES[face]; ao_x = t[0] != 0
@@ -750,7 +749,8 @@ def fachada(nome, cx, cy, face, comp, zs, col, r, varandas=(), ar=.3, larg_j=1.5
             zc = zb + 1.6; lj, aj = larg_j, 1.2
             cx_("_Jan_Vidro", lj - .06, .03, aj - .06, d, -.005, zc, vid)
             cx_("_Jan_Cima", lj, .07, .05, d, .02, zc + aj / 2 - .025, M["aluminio"]); cx_("_Jan_Baixo", lj, .07, .05, d, .02, zc - aj / 2 + .025, M["aluminio"])
-            for sd in (-1, 0, 1): cx_("_Jan_Lado", .05, .07, aj, d + sd * (lj / 2 - .025), .02, zc, M["aluminio"])
+            for sd in ((-1, 1) if longe else (-1, 0, 1)): cx_("_Jan_Lado", .05, .07, aj, d + sd * (lj / 2 - .025), .02, zc, M["aluminio"])
+            if longe: continue                                           # predio distante: sem persiana nem ar-condicionado
             cx_("_Jan_Peitoril", lj + .16, .14, .04, d, .05, zc - aj / 2 - .02, M["concreto"], C_FMI)
             if r.random() < .28: cx_("_Jan_Persiana", lj - .08, .035, r.uniform(.3, .8), d, .012, zc + aj / 2 - .05 - .25, M["persiana"])
             if r.random() < ar:
@@ -758,7 +758,7 @@ def fachada(nome, cx, cy, face, comp, zs, col, r, varandas=(), ar=.3, larg_j=1.5
                 cx_("_ArCond", .8, .3, .55, da, .19, zb + .73, M["ar_cond"]); cx_("_ArCond_Grade", .5, .012, .44, da + .1, .345, zb + .73, M["grade"])
                 cx_("_ArCond_Suporte", .86, .36, .03, da, .18, zb + .44, M["grade"])
 
-def predio_real(nome, x0, x1, y0, y1, andares, m, faces, col=C_RUA, seed=0, varandas=(), terreo=3.3, rotulo=None, telhado=False, garagem=None, ar=.3):
+def predio_real(nome, x0, x1, y0, y1, andares, m, faces, col=C_RUA, seed=0, varandas=(), terreo=3.3, rotulo=None, telhado=False, garagem=None, ar=.3, longe=False):
     """Predio vizinho com embasamento, frisos, janelas, varandas, ar-condicionado, platibanda, casa de maquinas e caixa d'agua."""
     r = random.Random(seed); pe = 3.15; h = terreo + andares * pe; cx, cy = (x0 + x1) / 2, (y0 + y1) / 2; w, d = x1 - x0, y1 - y0
     box(nome + "_Corpo", (w, d, h), (cx, cy, FZ + h / 2), m, col)
@@ -778,7 +778,7 @@ def predio_real(nome, x0, x1, y0, y1, andares, m, faces, col=C_RUA, seed=0, vara
     for face in faces:
         t, n = FACES[face]; comp = w if t[0] else d
         fcx, fcy = cx + n[0] * w / 2, cy + n[1] * d / 2
-        fachada(nome, fcx, fcy, face, comp, zs, col, r, varandas, ar=ar)
+        fachada(nome, fcx, fcy, face, comp, zs, col, r, varandas, ar=ar, longe=longe)
         if garagem is not None: terreo_rua(nome, fcx, fcy, face, comp, r, col)
     if rotulo:
         face = faces[0]; t, n = FACES[face]
@@ -786,12 +786,12 @@ def predio_real(nome, x0, x1, y0, y1, andares, m, faces, col=C_RUA, seed=0, vara
 
 predio_real("Bloco_A", -9, 8.1, 24, 36, 4, M["f_pastilha_az"], ("-y",), seed=3, varandas=(1, 4), rotulo="BLOCO A", garagem="-y")
 predio_real("Vizinho_Leste", 13, 25, -6, 16, 2, M["f_creme"], ("-x", "-y"), seed=5, telhado=True, terreo=3.0, garagem="-y", ar=.2)      # sobrado baixo: deixa o ceu a vista da janela da sala
-predio_real("Vizinho_Leste_2", 27, 41, -6, 12, 6, M["f_placas"], ("-x", "-y"), seed=6, varandas=(2,), garagem="-y")
+predio_real("Vizinho_Leste_2", 27, 41, -6, 12, 6, M["f_placas"], ("-x", "-y"), seed=6, varandas=(2,), garagem="-y", longe=True)
 predio_real("Vizinho_Oeste", -27, -14, -6, 12, 3, M["f_salmao"], ("+x", "-y"), seed=7, garagem="-y")
-predio_real("Vizinho_Oeste_2", -44, -29, -6, 14, 7, M["f_branca"], ("+x", "-y"), seed=8, varandas=(1, 3), garagem="-y")
+predio_real("Vizinho_Oeste_2", -44, -29, -6, 14, 7, M["f_branca"], ("+x", "-y"), seed=8, varandas=(1, 3), garagem="-y", longe=True)
 for i, (x0, x1, an, m, var) in enumerate(((-62, -47, 5, "f_verde", (1,)), (-46, -33, 3, "f_amarela", ()), (-32, -19, 8, "f_placas", (0, 3)), (-18, -6, 4, "f_creme", (2,)),
                                           (-5, 9, 6, "f_pastilha", (1, 3)), (10, 22, 3, "f_salmao", ()), (23, 37, 9, "f_branca", (0, 2, 4)), (38, 52, 4, "f_cinza", (1,)), (53, 64, 6, "f_verde", ()))):
-    predio_real("Predio_Frente_%d" % i, x0, x1, -31, -19, an, M[m], ("+y",), seed=20 + i, varandas=var, garagem="+y")
+    predio_real("Predio_Frente_%d" % i, x0, x1, -31, -19, an, M[m], ("+y",), seed=20 + i, varandas=var, garagem="+y", longe=x0 > 20 or x1 < -18)
 for i, (x, y, w, d, h) in enumerate(((-50, -48, 18, 14, 34), (-20, -50, 16, 14, 46), (8, -47, 20, 14, 28), (40, -50, 18, 14, 40), (-34, 62, 18, 14, 30), (22, 66, 22, 14, 38), (62, 30, 16, 20, 26), (-66, 28, 16, 22, 24))):
     box("Predio_Longe_%d" % i, (w, d, h), (x, y, h / 2), M_LONGE[i % 6], C_LON); box("Predio_Longe_Laje", (w + .3, d + .3, .5), (x, y, h + .25), M["concreto"], C_LON)     # predios ao fundo
 def tex_copas(S=512, n=300, seed=4):
@@ -814,7 +814,7 @@ def _ampliar(a, S):
     i0, f = eixo(a.shape[0]); a = a[i0] * (1 - f)[:, None] + a[i0 + 1] * f[:, None]
     i0, f = eixo(a.shape[1]); return a[:, i0] * (1 - f)[None, :] + a[:, i0 + 1] * f[None, :]
 _COPAS = tex_copas(128, 70, 9)
-def morro(nome, cx, cy, rx, ry, alt, seed, pico=1.6, n=58, paredao=.0, domo=False, casas=0):
+def morro(nome, cx, cy, rx, ry, alt, seed, pico=1.6, n=36, paredao=.0, domo=False, casas=0):
     """Morro carioca: cristas e grotas (ruido fractal com dobra); a pintura (mata de copas, paredoes de granito nas faces
     ingremes, com transicao suave) e uma imagem propria de cada morro, vista de cima. domo = morro de pedra arredondado, com
     mata so na base. casas = casas subindo o pe da encosta, do lado do condominio."""
@@ -1065,11 +1065,13 @@ def viatura(nome, x, y, rz, texto_lado, m_faixa, arquivo="perua", cor="#eceded")
         cyl(nome + "_Brasao_Imagem", .09, .09, .004, (1.03, sy_(1.03, .89, lado) + lado * .006, .89), M["brasao"], C_VEIC, V_, rot=(PI / 2, 0, 0), seg=28)
 # (viatura da PM tirada a pedido do usuario)
 viatura("Viatura_PC", -12.6, -10.15, 0, "POLÍCIA CIVIL", M["faixa_pc"], "seda", "#e6e6e4")
-for nome, arq, x, y, rz, cor in (("Carro_A", "hatch", 17.0, -10.2, 0, "#8d9096"), ("Carro_D", "taxi", -5.0, -14.85, PI, None)):      # so dois carros civis: cada um tem uns 7 mil triangulos
-    carro_modelo(nome, C_VEIC, arq, (x, y, .12), rz, cor=cor)
+# (taxi e hatch tirados para economizar triangulos: na rua fica so a viatura da Civil)
 
 # arvores, postes, carros e mobiliario urbano
-for i, (x, y, alt) in enumerate(((-7.5, -8.3, 6.5), (6.5, -8.3, 7.5), (20, -8.3, 6.8), (-22, -8.3, 7.2), (-14, -16.7, 7), (2, -16.7, 6.4), (30, -16.7, 7.4), (-5.5, 17.5, 6.2), (4.0, 15.5, 7.0), (9.6, 4.0, 5.5), (9.6, 20, 6.5))):
+# (as arvores do outro lado da rua e as mais distantes sairam para economizar triangulos)
+for i, e in enumerate(((-7.5, -8.3, 6.5), (6.5, -8.3, 7.5), None, None, None, None, None, (-5.5, 17.5, 6.2), (4.0, 15.5, 7.0), (9.6, 4.0, 5.5), (9.6, 20, 6.5))):
+    if e is None: continue
+    x, y, alt = e
     if i in (9, 10): palmeira("Palmeira_%d" % i, x, y, 0, alt)
     else: arvore(("Ipe_Amarelo_%d" if i in (1, 5) else "Amendoeira_%d") % i, x, y, FZ, alt, flor=i in (1, 5), larga=i not in (1, 5))
     if y < 0: box("Arvore_Canteiro", (1.1, 1.1, .03), (x, y, FZ + .015), M["terra"], C_RUA)
