@@ -178,6 +178,20 @@ def cyl(name, r1, r2, h, pos, m, col, parent=None, rot=(0, 0, 0), seg=20):
     bm = bmesh.new(); bmesh.ops.create_cone(bm, cap_ends=True, segments=seg, radius1=r1, radius2=r2, depth=h)
     return finish(name, bm, pos, m, col, parent, rot, smooth=True)
 
+def tubo(name, pts, r, m, col, parent=None, seg=12):
+    """Tubo liso por uma lista de pontos (mesmo raio), com as pontas fechadas: curvas sem as emendas de varias barras."""
+    pts = [Vector(p) for p in pts]; bm = bmesh.new(); aneis = []
+    tg = [(pts[min(i + 1, len(pts) - 1)] - pts[max(i - 1, 0)]).normalized() for i in range(len(pts))]
+    ref = Vector((1, 0, 0)) if abs(tg[0].x) < .9 else Vector((0, 1, 0))
+    n1 = tg[0].cross(ref).normalized()
+    for i, (p, t) in enumerate(zip(pts, tg)):
+        n1 = (n1 - t * n1.dot(t)).normalized(); n2 = t.cross(n1)
+        aneis.append([bm.verts.new(p + (n1 * math.cos(a) + n2 * math.sin(a)) * r) for a in (2 * PI * k / seg for k in range(seg))])
+    for a0, a1 in zip(aneis, aneis[1:]):
+        for k in range(seg): bm.faces.new((a0[k], a0[(k + 1) % seg], a1[(k + 1) % seg], a1[k]))
+    bm.faces.new(aneis[0][::-1]); bm.faces.new(aneis[-1])
+    return finish(name, bm, (0, 0, 0), m, col, parent, smooth=True)
+
 def barra(name, a, b, r, m, col, parent=None, seg=10):
     """Cilindro fino entre dois pontos."""
     a, b = Vector(a), Vector(b); d = b - a
@@ -553,10 +567,10 @@ def arvore(nome, x, y, z, alt, flor=False, larga=False):
 
 def arbusto(nome, x, y, z, alt, col_miolo=None, col_folhas=None):
     """Arbusto: miolo escuro (da volume) e dezenas de cartoes com raminhos de folhas."""
-    rr = random.Random(zlib.crc32(("%s%.2f%.2f" % (nome, x, y)).encode())); r = Vector((alt * rr.uniform(.5, .65), alt * rr.uniform(.5, .65), alt * .5)); c = Vector((x, y, z + alt * .5))
+    rr = random.Random(zlib.crc32(("%s%.2f%.2f" % (nome, x, y)).encode())); r = Vector((alt * rr.uniform(.5, .65), alt * rr.uniform(.5, .65), alt * .5)); c = Vector((x, y, z + alt * .45))
     bm = bmesh.new(); bmesh.ops.create_icosphere(bm, subdivisions=2, radius=1); sem = Vector((rr.uniform(0, 50), rr.uniform(0, 50), rr.uniform(0, 50)))
     for v in bm.verts:
-        n = v.co.normalized(); k = .82 * (1 + .18 * noise.noise(n * 2.2 + sem)); v.co = Vector((n.x * r.x * k, n.y * r.y * k, n.z * r.z * k)) + c
+        n = v.co.normalized(); k = .55 * (1 + .15 * noise.noise(n * 2.2 + sem)); v.co = Vector((n.x * r.x * k, n.y * r.y * k, max(n.z * r.z * k, -alt * .45))) + c      # base achatada no chao
     finish(nome + "_Miolo", bm, (0, 0, 0), M["miolo"], col_miolo or C_VEG, smooth=True)
     bm = bmesh.new(); uvl = bm.loops.layers.uv.new("UVMap")
     area = 4 * math.pi * ((r.x * r.y) ** 1.6 + (r.x * r.z) ** 1.6 + (r.y * r.z) ** 1.6) ** (1 / 1.6) / 3 ** (1 / 1.6)
@@ -577,11 +591,43 @@ def arbusto(nome, x, y, z, alt, col_miolo=None, col_folhas=None):
         for lp, (uu, vv) in zip(f.loops, ((0, 0), (1, 0), (1, 1), (0, 1))): lp[uvl].uv = (u0 + .005 + uu * .49, v0 + .005 + vv * .49)
         feitos += 1
     finish(nome + "_Folhas", bm, (0, 0, 0), M["folha_arb"], col_folhas or C_GRA)
+def tex_espada(W=64, H=512):
+    """Folha de espada-de-sao-jorge: verde escuro com faixas transversais claras onduladas e borda amarela."""
+    yy, xx = np.mgrid[0:H, 0:W].astype(np.float32); u = xx / (W - 1); r = np.random.default_rng(5)
+    a = np.ones((H, W, 3)) * np.array(hx("#24451f"))
+    faixa = np.sin(yy / H * 70 + np.sin(u * 9 + yy / 40) * 1.4) > .45
+    a[faixa] = np.array(hx("#5d7d4a")) * 1.0; a *= (1 + .07 * r.standard_normal((H, W, 1)))
+    borda = (u < .09) | (u > .91); a[borda] = hx("#c8b45a"); a[(u > .085) & (u < .11) | (u > .89) & (u < .915)] = hx("#7b8a45")
+    return np.clip(a, 0, 1)
+def mat_uv(nome, img, rough=.5):
+    m = bpy.data.materials.new(nome); nt = m.node_tree; b = nt.nodes.get("Principled BSDF")
+    t = nt.nodes.new("ShaderNodeTexImage"); t.image = img; nt.links.new(t.outputs["Color"], b.inputs["Base Color"])
+    b.inputs["Roughness"].default_value = rough; m.diffuse_color = (.2, .35, .15, 1); return m
+M["espada"] = mat_uv("Folha_Espada", np_image("folha_espada", tex_espada()), .75)
 def vaso_planta(nome, x, y, z, alt, col, m_vaso=None):
-    """Planta de vaso para dentro de casa: vaso de ceramica, terra e folhagem de raminhos (como os arbustos)."""
-    hv = min(.34, alt * .35)
-    cyl(nome + "_Vaso", .13, .17, hv, (x, y, z + hv / 2), m_vaso or M["telha"], col, seg=14); cyl(nome + "_Terra", .155, .155, .02, (x, y, z + hv - .005), M["terra"], col, seg=14)
-    arbusto(nome, x, y, z + hv - .08, alt - hv + .08, col, C_MIU)
+    """Planta de vaso para dentro de casa: espada-de-sao-jorge (folhas em pe, largas, com ponta e borda amarela) num vaso
+    de ceramica com terra. Cada folha e uma tira dobrada em V com textura propria (UV)."""
+    hv = min(.34, alt * .35); rr = random.Random(zlib.crc32(nome.encode()))
+    cyl(nome + "_Vaso", .13, .17, hv, (x, y, z + hv / 2), m_vaso or M["telha"], col, seg=20)
+    tubo(nome + "_Vaso_Borda", [(x + math.cos(a) * .168, y + math.sin(a) * .168, z + hv - .006) for a in (2 * PI * k / 24 for k in range(25))], .012, m_vaso or M["telha"], col, seg=8)      # aro (aberto no meio)
+    cyl(nome + "_Terra", .158, .158, .02, (x, y, z + hv - .035), M["terra"], col, seg=20)
+    bm = bmesh.new(); uvl = bm.loops.layers.uv.new("UVMap"); z0 = z + hv - .04; N = 7
+    for k in range(rr.randint(11, 15)):
+        az = rr.uniform(0, 2 * PI); rb = rr.uniform(0, .09); base = Vector((x + math.cos(az) * rb, y + math.sin(az) * rb, z0))
+        L = (alt - hv) * rr.uniform(.55, 1.05); larg = rr.uniform(.06, .09); inc = math.radians(rr.uniform(3, 14) + rb * 90)
+        fora = Vector((math.cos(az), math.sin(az), 0)); lado = Vector((-math.sin(az), math.cos(az), 0)); lado = Matrix.Rotation(rr.uniform(-.8, .8), 3, Vector((0, 0, 1))) @ lado
+        torce = rr.uniform(-.5, .5); linhas = []
+        for i in range(N + 1):
+            t = i / N; cur = inc * (.4 + .9 * t)                       # vai abrindo para fora perto da ponta
+            c = base + fora * (math.sin(cur) * L * t * .9) + Vector((0, 0, L * t))
+            w = larg * (min(1, t * 6 + .45) if t < .2 else (1 - t) ** .6) * .5
+            ld = Matrix.Rotation(torce * t, 3, Vector((0, 0, 1))) @ lado; dob = fora * w * .35
+            linhas.append([bm.verts.new(c - ld * w + dob), bm.verts.new(c), bm.verts.new(c + ld * w + dob)])
+        for i in range(N):
+            for j in range(2):
+                f = bm.faces.new((linhas[i][j], linhas[i][j + 1], linhas[i + 1][j + 1], linhas[i + 1][j]))
+                for lp, (uu, vv) in zip(f.loops, ((j * .5, i / N), ((j + 1) * .5, i / N), ((j + 1) * .5, (i + 1) / N), (j * .5, (i + 1) / N))): lp[uvl].uv = (uu, vv)
+    finish(nome + "_Folhas", bm, (0, 0, 0), M["espada"], C_MIU, smooth=True)
 
 def copa_palmeira(nome, topo, raio_tronco, rnd, m_folha, colecao, pai=None):
     bm = bmesh.new(); uvl = bm.loops.layers.uv.new("UVMap")
@@ -1236,8 +1282,12 @@ def elevador(nome, y0, z0, col, andar):
     ponto(nome.replace("Elevador_", "Cabine_"), -7.3, y0 + .5, (1, 0), z0)
 elevador("Elevador_Terreo", .1, FZ, C_PORT, "T")
 elevador("Elevador_Andar_3", .1, Z3, C_COR, "3")
-box("Portaria_Porta_Escada", (.04, .86, 2.08), (-6.28, -.7, FZ + 1.04), M["porta_ferro"], C_PORT)
-texto("Portaria_Texto_Escada", "ESCADA", .06, (-6.255, -.7, FZ + 1.7), "+x", M["texto_br"], C_MIU)
+# porta corta-fogo da escada (fixa), com batente e barra antipanico; afastada do elevador
+_ye = -1.25
+folha_porta("Portaria_Porta_Escada", .86, M["porta_ferro"], C_PORT, T_=lambda p: (-6.3 + .019 + p[1], _ye + .43 - p[0], FZ + p[2]), rz=PI / 2, fechadura=False, alt=2.06)
+box("Portaria_Porta_Escada_Barra", (.03, .52, .04), (-6.24, _ye, FZ + 1.0), M["ferragem"], C_MIU)
+for y_ in (_ye - .26, _ye + .26): box("Portaria_Porta_Escada_Barra_Apoio", (.05, .03, .06), (-6.255, y_, FZ + 1.0), M["ferragem"], C_MIU)
+texto("Portaria_Texto_Escada", "ESCADA", .06, (-6.255, _ye, FZ + 1.7), "+x", M["texto_br"], C_MIU)
 
 # ================================================================== 4. corredor do 3o andar e escada
 box("Corredor_Piso", (14.4, 1.6, .15), (.8, .8, Z3 - .075), M["piso_cor"], C_COR)
@@ -1454,6 +1504,7 @@ def batente(nome, x, y, ao_longo_x, larg, col, z0=Z3, prof=.16):
             box(nome + "_Guarnicao", (.07, .012, 2.12) if ao_longo_x else (.012, .07, 2.12), p_, M["rodape"], col)
         box(nome + "_Guarnicao_Cima", (larg + .14, .012, .07) if ao_longo_x else (.012, larg + .14, .07), (x, y + d, z0 + 2.155) if ao_longo_x else (x + d, y, z0 + 2.155), M["rodape"], col)
 
+batente("Portaria_Batente_Escada", -6.3, -1.25, False, .88, C_PORT, z0=FZ, prof=.04)      # porta fixa da escada na portaria
 # portas dos comodos (todas abrem para dentro do comodo)
 passagem("Apto_302", (3.5, 1.6), 0, M["porta_mad"], rotulo="302", olho=True); batente("Batente_302", 3.95, 1.6, True, .9, C_EST, prof=.2)
 passagem("Apto_301", (-3.4, 1.6), 0, M["porta_mad"], rotulo="301", olho=True); batente("Batente_301", -2.95, 1.6, True, .9, C_VIZ, prof=.2)
@@ -1557,10 +1608,12 @@ def bancada_cozinha(nome, x, y, rz, col, w=2.2, d=.55, h=.86):
     # torneira gourmet: base, coluna, curva e bica para dentro da cuba, alavanca do lado
     bx, by = xs, yc + cp / 2 + .06
     cyl("Mv_%s_Torneira_Base" % nome, .028, .028, .03, mv.W((bx, by, h + .045)), M["inox"], col, seg=16)
-    pts = [(bx, by, h + .05), (bx, by, h + .3)] + [(bx, by - .08 + .08 * math.cos(t), h + .3 + .08 * math.sin(t)) for t in (.6, 1.2, 1.8, 2.4, PI)] + [(bx, by - .16, h + .22)]
-    for p0, p1 in zip(pts, pts[1:]): barra("Mv_%s_Torneira" % nome, mv.W(p0), mv.W(p1), .013, M["inox"], col, seg=10)
-    cyl("Mv_%s_Torneira_Bico" % nome, .016, .016, .02, mv.W((bx, by - .16, h + .215)), M["inox"], col, seg=12)
-    barra("Mv_%s_Torneira_Alavanca" % nome, mv.W((bx + .03, by, h + .2)), mv.W((bx + .1, by, h + .23)), .007, M["inox"], col, seg=8)
+    pts = [(bx, by, h + .05 + k * .05) for k in range(5)] + [(bx, by - .085 + .085 * math.cos(t), h + .3 + .085 * math.sin(t)) for t in (PI * k / 16 for k in range(17))] + [(bx, by - .17, h + .26), (bx, by - .17, h + .235)]
+    tubo("Mv_%s_Torneira" % nome, [mv.W(p) for p in pts], .012, M["inox"], col, seg=14)
+    cyl("Mv_%s_Torneira_Bico" % nome, .0145, .0145, .022, mv.W((bx, by - .17, h + .232)), M["inox"], col, seg=14)
+    cyl("Mv_%s_Torneira_Arejador" % nome, .011, .011, .004, mv.W((bx, by - .17, h + .22)), M["preto"], col, seg=12)
+    cyl("Mv_%s_Torneira_Corpo" % nome, .02, .02, .07, mv.W((bx, by, h + .16)), M["inox"], col, seg=16)      # corpo do misturador
+    tubo("Mv_%s_Torneira_Alavanca" % nome, [mv.W(p) for p in ((bx + .015, by, h + .18), (bx + .05, by, h + .19), (bx + .09, by, h + .205))], .006, M["inox"], col, seg=10)
     # louca suja dentro da cuba, copo, esponja e detergente ao lado
     for k in range(3): cyl("Mv_%s_Prato_Pia" % nome, .1, .1, .014, mv.W((xs - .13 + k * .012, yc - .04, zf + .012 + k * .014)), M["louca"], col, seg=18)
     cyl("Mv_%s_Copo_Pia" % nome, .035, .03, .1, mv.W((xs + .14, yc - .08, zf + .055)), M["vidro_f2"], col, seg=12)
@@ -1637,15 +1690,94 @@ def fogao(nome, x, y, rz, col, w=.56, d=.58, h=.86):
         for sy in (-.05, -d + .05): mv.cx("Pe", (.04, .04, .08), (sx * (w / 2 - .04), sy, .04), M["preto"])
     mv.colisao(w, h); return mv
 fogao("Fogao", -.88, 5.15, PI / 2, C_COZ)
-def lavadora(nome, x, y, rz, col, w=.6, d=.62, h=.95):
-    mv = Movel(nome, x, y, rz, col, d); m = M["branco"]
-    for sx in (-1, 1): mv.cx("Lado", (.02, d, h), (sx * (w / 2 - .01), -d / 2, h / 2), m)
-    mv.cx("Frente", (w - .04, .02, h), (0, -d + .01, h / 2), m); mv.cx("Tras", (w - .04, .02, h + .12), (0, -.01, h / 2 + .06), m)
-    mv.cx("Fundo", (w - .04, d - .04, .02), (0, -d / 2, .35), m)
-    cyl("Mv_%s_Cesto" % nome, .22, .22, .5, mv.W((0, -d / 2 - .02, .62)), M["inox"], C_MIU, seg=20)
-    mv.cx("Borda", (w - .04, .12, .02), (0, -.08, h - .01), m)
-    mv.tampa((0, -.14, h), (w - .06, d - .16, .02), m, -1.5, deitada=True)
-    mv.colisao(w, h); return mv
+def tex_tambor(S=256):
+    """Inox do tambor: escovado com furinhos em grade."""
+    yy, xx = np.mgrid[0:S, 0:S]; r = np.random.default_rng(4)
+    a = np.ones((S, S, 3)) * .62 * (1 + .05 * r.standard_normal((S, 1, 1)))
+    furo = ((xx % 32 - 16) ** 2 + (yy % 32 - 16) ** 2) < 16; a[furo] = .08
+    return np.clip(a, 0, 1)
+M["esmalte"] = mat("Esmalte_Branco", "#f3f3f1", .22); M["aro_prata"] = mat("Aro_Prata", "#c4c8cc", .28, .55)
+M["vidro_lav"] = mat("Vidro_Lavadora", "#1b2227", .04, alpha=.5); M["visor"] = mat("Visor_Preto", "#0b0d0f", .12)
+M["botao_cinza"] = mat("Botao_Cinza", "#c9cbcd", .35); M["borracha"] = mat("Borracha_Cinza", "#46494c", .75)
+M["tambor"] = img_mat("Tambor_Inox", np_image("tambor_inox", tex_tambor()), .12, .3)
+def lavadora(nome, x, y, rz, col):
+    """Lavadora de abrir na frente (modelo modelos/lavadora.glb do usuario, 85 cm de altura), com materiais da referencia:
+    esmalte branco, aro prata e vidro fume na porta (abre na dobradica esquerda), tambor de inox furado por dentro, visor
+    preto, botoes cinza, tampinha do filtro e pes. Coordenadas do modelo: frente para -Y, base em z = 0."""
+    mv = Movel(nome, x, y, rz, col, .66); s_ = .85 / 1.077; cxm, czm = -.0085, .5705
+    caminho = os.path.join(AQUI, "modelos", "lavadora.glb")
+    T_ = Matrix.Translation(mv.o) @ mv.R.to_4x4() @ Matrix.Scale(s_, 4) @ Matrix.Translation((.007, -.375, 0))
+    def W(p): return T_ @ Vector(p)                                       # coordenadas do modelo -> mundo
+    antes = set(bpy.data.objects); bpy.ops.import_scene.gltf(filepath=caminho)
+    novos = [o for o in bpy.data.objects if o not in antes and o.type == "MESH"]
+    for o in [o for o in bpy.data.objects if o not in antes and o.type != "MESH"]: bpy.data.objects.remove(o)
+    porta = []
+    for o in novos:
+        o.data.transform(o.matrix_world); o.parent = None; o.matrix_world = Matrix.Identity(4)   # malha em coordenadas do modelo
+        for c in list(o.users_collection): c.objects.unlink(o)
+        o.data.materials.clear(); nm = o.name.replace(".", "_")
+        bm = bmesh.new(); bm.from_mesh(o.data); bmesh.ops.recalc_face_normals(bm, faces=bm.faces); bm.to_mesh(o.data); bm.free()      # normais para fora (o tampo vinha virado e saia escuro no bake)
+        me = o.data
+        if nm == "Cube":                                                  # corpo: tira a frente (vai uma com o furo da porta)
+            bm = bmesh.new(); bm.from_mesh(me)
+            bmesh.ops.delete(bm, geom=[f for f in bm.faces if f.normal.y < -.7 and f.calc_center_median().y < -.41 and f.calc_area() > .1], context="FACES")
+            bm.to_mesh(me); bm.free(); me.materials.append(M["esmalte"])
+        elif nm == "Cylinder":                                            # porta: vidro no meio, aro em volta
+            me.materials.append(M["aro_prata"]); me.materials.append(M["vidro_lav"]); me.materials.append(M["borracha"])
+            for f in me.polygons: rs = [math.hypot(me.vertices[v].co.x - cxm, me.vertices[v].co.z - czm) for v in f.vertices]; f.material_index = 1 if max(rs) < .252 else 2 if min(rs) < .272 else 0      # vidro, aro interno escuro, aro prata
+            porta.append(o)
+        elif nm == "Cube_003":                                            # painel: visor preto em cima, teclas cinza embaixo
+            me.materials.append(M["visor"]); me.materials.append(M["botao_cinza"])
+            for f in me.polygons: f.material_index = 0 if f.center.z > .962 else 1
+        elif nm in ("Cube_001", "Cube_002"): me.materials.append(M["botao_cinza"])
+        elif nm == "Cylinder_001": me.materials.append(M["aro_prata"])
+        else: me.materials.append(M["esmalte"])
+        o.name = "Mv_%s_%s" % (nome, nm)
+        if o not in porta: me.transform(T_); col.objects.link(o)
+    # frente do corpo com o furo da porta (aneis do furo e da borda ligados)
+    bm = bmesh.new(); N = 48; x0, x1, z0, z1, yf, rf = -.405, .391, .005, 1.077, -.4215, .235
+    cir, ret = [], []
+    for k in range(N):
+        a = 2 * PI * k / N; dx, dz = math.cos(a), math.sin(a)
+        tx = (x1 - cxm) / dx if dx > 1e-6 else (x0 - cxm) / dx if dx < -1e-6 else 1e9
+        tz = (z1 - czm) / dz if dz > 1e-6 else (z0 - czm) / dz if dz < -1e-6 else 1e9
+        t = min(tx, tz)
+        cir.append(bm.verts.new(W((cxm + dx * rf, yf, czm + dz * rf)))); ret.append(bm.verts.new(W((cxm + dx * t, yf, czm + dz * t))))
+    cantos = [((x1, z1), math.atan2(z1 - czm, x1 - cxm)), ((x0, z1), math.atan2(z1 - czm, x0 - cxm)), ((x0, z0), math.atan2(z0 - czm, x0 - cxm)), ((x1, z0), math.atan2(z0 - czm, x1 - cxm))]
+    for k in range(N):
+        a0, a1 = 2 * PI * k / N, 2 * PI * (k + 1) / N; meio = []
+        for (cx_, cz_), ac in cantos:
+            if a0 < ac % (2 * PI) < a1: meio.append(bm.verts.new(W((cx_, yf, cz_))))
+        bm.faces.new([cir[k], cir[(k + 1) % N], ret[(k + 1) % N]] + meio + [ret[k]])
+    fora = mv.R @ Vector((0, -1, 0))
+    for f in bm.faces:                                                    # normais para fora (frente da maquina)
+        f.normal_update()
+        if fora.dot(f.normal) < 0: f.normal_flip()
+    finish("Mv_%s_Frente" % nome, bm, (0, 0, 0), M["esmalte"], col)
+    # tambor de inox (aberto na frente), fundo e tres pas; borracha em volta da boca
+    bm = bmesh.new(); bmesh.ops.create_cone(bm, cap_ends=False, segments=32, radius1=rf, radius2=rf, depth=.42)
+    for f in bm.faces: f.normal_flip()                                    # visto por dentro
+    ob = finish("Mv_%s_Tambor" % nome, bm, (0, 0, 0), M["tambor"], C_MIU, smooth=True); ob.matrix_world = T_ @ Matrix.Translation((cxm, yf + .21, czm)) @ Matrix.Rotation(PI / 2, 4, "X")
+    fundo = bmesh.new(); bmesh.ops.create_circle(fundo, cap_ends=True, segments=32, radius=rf)
+    ob = finish("Mv_%s_Tambor_Fundo" % nome, fundo, (0, 0, 0), M["tambor"], C_MIU); ob.matrix_world = T_ @ Matrix.Translation((cxm, yf + .41, czm)) @ Matrix.Rotation(PI / 2, 4, "X")
+    for k in range(3):
+        a = PI / 2 + k * 2 * PI / 3; ob = box("Mv_%s_Tambor_Pa" % nome, (.07, .36, .05), (0, 0, 0), M["aro_prata"], C_MIU, bevel=.015)
+        ob.matrix_world = T_ @ Matrix.Translation((cxm + math.cos(a) * (rf - .03), yf + .22, czm + math.sin(a) * (rf - .03))) @ Matrix.Rotation(-a + PI / 2, 4, "Y")
+    tubo("Mv_%s_Borracha" % nome, [W((cxm + math.cos(a) * (rf + .004), yf + .012, czm + math.sin(a) * (rf + .004))) for a in (2 * PI * k / 40 for k in range(41))], .013, M["borracha"], col, seg=8)
+    # marcas em volta do seletor, tampinha do filtro e pes
+    for k in range(9):
+        a = math.radians(210 - k * 30); px, pz = -.009 + math.cos(a) * .068, .981 + math.sin(a) * .068
+        box("Mv_%s_Marca" % nome, (.004, .003, .004), W((px, -.4225, pz)), M["preto"], C_MIU, rot=(0, 0, rz))
+    box("Mv_%s_Filtro" % nome, (.205 * s_, .003, .19 * s_), W((.262, -.423, .14)), M["esmalte"], col, rot=(0, 0, rz))
+    box("Mv_%s_Filtro_Fenda" % nome, (.06 * s_, .004, .006), W((.262, -.4235, .05)), M["preto"], C_MIU, rot=(0, 0, rz))
+    for px, py in ((-.36, -.38), (.35, -.38), (-.36, .33), (.35, .33)): cyl("Mv_%s_Pe" % nome, .022, .025, .02, W((px, py, .005)) - Vector((0, 0, .006)), M["borracha"], C_MIU, seg=12)
+    # porta: abre na dobradica do lado esquerdo (vista de frente), como a da referencia
+    r = mv.raiz("Fol", ((-.3285 + .007) * s_, (-.448 - .375) * s_, czm * s_)); r["abre"] = "porta"; r["ang"] = -1.7
+    bpy.context.view_layer.update(); Ri = r.matrix_world.inverted()
+    for o in porta:
+        o.data.transform(Ri @ T_); o.name = r.name + "_Porta"; C_INT.objects.link(o)
+        o.parent = r; o.matrix_parent_inverse = Matrix.Identity(4); o.matrix_basis = Matrix.Identity(4)
+    mv.colisao(.63, .85); return mv
 lavadora("Lavadora", 1.73, 8.4, -PI / 2, C_COZ)
 box("Tanque_Cuba", (.5, .55, .28), (-.7, 7.6, Z3 + .76), M["louca"], C_COZ, bevel=.02); box("Tanque_Coluna", (.2, .2, .62), (-.75, 7.6, Z3 + .31), M["louca"], C_COZ)
 armario_alto("Armario_Servico", 1.73, 7.45, -PI / 2, C_COZ, w=.7, d=.36, h=1.9, prat=(.5, .95, 1.4))
@@ -1655,7 +1787,9 @@ box("Balde", (.28, .28, .26), (-.6, 8.6, Z3 + .13), M["roupa_a"], C_COZ, bevel=.
 def gabinete_banheiro(nome, x, y, rz, col, w=.8, d=.42):
     mv = Movel(nome, x, y, rz, col, d); m = M["mdf_br"]
     mv.casco(-w / 2, w / 2, .25, .82, m, prat=(.52,)); mv.cx("Tampo", (w + .02, d + .03, .03), (0, -d / 2 - .015, .835), M["louca"])
-    mv.cx("Cuba", (.4, .3, .1), (0, -d / 2, .9), M["louca"], bevel=.02); mv.cx("Torneira", (.03, .03, .16), (0, -.06, .93), M["inox"])
+    mv.cx("Cuba", (.4, .3, .1), (0, -d / 2, .9), M["louca"], bevel=.02); cyl("Mv_%s_Torneira_Base" % nome, .022, .022, .02, mv.W((0, -.06, .86)), M["inox"], col, seg=14)
+    tubo("Mv_%s_Torneira" % nome, [mv.W(p) for p in [(0, -.06, .86 + k * .03) for k in range(4)] + [(0, -.105 + .045 * math.cos(t), .95 + .045 * math.sin(t)) for t in (PI * k / 10 for k in range(11))] + [(0, -.15, .925)]], .009, M["inox"], col, seg=12)
+    tubo("Mv_%s_Torneira_Alavanca" % nome, [mv.W(p) for p in ((0, -.05, .93), (0, -.02, .955), (0, .01, .965))], .005, M["inox"], col, seg=8)
     mv.folha(-w / 2 + .003, .252, w / 2 - .005, .566, m, 1, zp=.46, pux=.1); mv.folha(w / 2 - .003, .252, w / 2 - .005, .566, m, -1, zp=.46, pux=.1)
     mv.colisao(w, .85)
     me = Movel(nome + "_Espelheira", x, y, rz, col, .13)
@@ -1720,7 +1854,7 @@ ph("Despertador", "alarm_clock_01", 7.08, 8.7, Z3 + .55, 0, C_QUA, alt=.13, tris
 ph("Notebook", "classic_laptop", 2.85, 8.62, Z3 + .76, PI, C_QUA, alt=.24, tris=1200)
 box("Caderno", (.21, .29, .018), (2.62, 8.55, Z3 + .769), M["roupa_a"], C_QUA, rot=(0, 0, .3)); box("Folhas_Soltas", (.21, .297, .004), (3.32, 8.5, Z3 + .762), M["papel"], C_QUA, rot=(0, 0, -.4))
 ph("Bola", "football", 4.5, 5.85, None, 0, C_QUA, alt=.22, tris=500)
-ph("Botas", "rubber_boots", 2.1, 6.2, None, 1.2, C_QUA, alt=.32, tris=700); box("Cartaz_Quarto_2", (.7, .012, 1.0), (4.0, 5.57, Z3 + 1.5), M["cartaz"], C_QUA)
+box("Cartaz_Quarto_2", (.7, .012, 1.0), (4.0, 5.57, Z3 + 1.5), M["cartaz"], C_QUA)
 # (a planta do quarto do casal foi tirada a pedido do usuario)
 # cozinha e area de servico
 def microondas(nome, x, y, z, col, w=.48, d=.36, h=.28):
@@ -1743,7 +1877,7 @@ def microondas(nome, x, y, z, col, w=.48, d=.36, h=.28):
     for sx in (-1, 1):
         for sy in (-1, 1): cyl(nome + "_Pe", .012, .012, .01, (x + sx * (w / 2 - .04), y + sy * (d / 2 - .04), z + .005), M["preto"], col, seg=8)
 microondas("Microondas", -.5, 4.3, Z3 + .89, C_COZ)
-ph("Chaleira", "vintage_electric_kettle", 1.2, 4.3, Z3 + .89, 2.5, C_COZ, alt=.22, tris=700); ph("Panela", "pot_enamel_01", -.72, 5.03, Z3 + .9, 0, C_COZ, alt=.14, tris=700)
+ph("Panela", "pot_enamel_01", -.72, 5.03, Z3 + .9, 0, C_COZ, alt=.14, tris=700)
 box("Tabua", (.34, .22, .02), (-.05, 4.42, Z3 + .9), M["mad"], C_COZ, rot=(0, 0, .4), bevel=.004)
 for k in range(5): box("Escorredor_Prato", (.012, .2, .2), (.13 + k * .05, 4.28, Z3 + 1.0), M["louca"], C_COZ, bevel=.004)
 box("Escorredor", (.34, .28, .03), (.23, 4.28, Z3 + .905), M["inox"], C_COZ)
@@ -1757,13 +1891,15 @@ for k, (xr, m_) in enumerate(((-.3, "roupa_c"), (.3, "roupa_a"), (.95, "roupa_b"
 # banheiro
 cyl("Papel_Higienico", .055, .055, .1, (.95, 1.76, Z3 + .7), M["papel"], C_BAN, rot=(0, PI / 2, 0), seg=14)
 for k, m_ in enumerate(("frasco_a", "frasco_b", "frasco_c")): cyl("Frasco_Box", .035, .035, .2, (-.82, 2.5 + k * .12, Z3 + 1.2), M[m_], C_BAN, seg=10)
-box("Prateleira_Box", (.12, .5, .02), (-.82, 2.62, Z3 + 1.09), M["vidro"], C_VID); box("Tapete_Banheiro", (.5, .8, .015), (.85, 3.0, Z3 + .0075), M["lencol"], C_BAN)
+box("Prateleira_Box", (.13, .46, .025), (-.835, 2.62, Z3 + 1.0875), M["granito"], C_BAN)
+for y_ in (2.43, 2.81): box("Prateleira_Box_Suporte", (.1, .015, .05), (-.85, y_, Z3 + 1.05), M["inox"], C_MIU)
+box("Tapete_Banheiro", (.5, .8, .015), (.85, 3.0, Z3 + .0075), M["lencol"], C_BAN)
 for k, m_ in enumerate(("frasco_c", "frasco_a")): cyl("Frasco_Pia", .03, .03, .14, (.58 + k * .1, 3.82, Z3 + .92), M[m_], C_BAN, seg=10)
 # portaria e corredor
 # (placa de piso molhado tirada: o modelo vem escrito em ingles)
 ph("Portaria_Camera", "security_camera_01", .7, 1.3, FZ + 2.7, 2.4, C_PORT, alt=.22, tris=500); box("Portaria_Prancheta", (.23, .32, .008), (-.55, -3.3, FZ + .766), M["mad"], C_PORT, rot=(0, 0, .3)); box("Portaria_Prancheta_Folha", (.21, .29, .003), (-.55, -3.3, FZ + .772), M["papel"], C_MIU, rot=(0, 0, .3))
 ph("Portaria_Quadro", "hanging_picture_frame_03", -3.2, 1.47, FZ + 1.6, QUADRO_RZ, C_PORT, alt=.7, tris=600)
-vaso_planta("Corredor_Planta", 7.5, 1.1, Z3, .9, C_COR, M["louca"]); ph("Corredor_Camera", "security_camera_01", -6.1, 1.35, Z3 + 2.45, -2.2, C_COR, alt=.2, tris=500)
+vaso_planta("Corredor_Planta", 7.5, 1.1, Z3, .9, C_COR, M["louca"]); ph("Corredor_Camera", "security_camera_01", -6.14, 1.33, Z3 + 2.4, -PI / 2, C_COR, alt=.2, tris=500)      # suporte na parede oeste, lente para o corredor
 
 # sapatos, mochila e roupas pelo quarto; objetos nos armarios do banheiro e do corredor
 for nome, x, y, rz, m_ in (("Sapato_A", 5.55, 8.2, .2, "sapato"), ("Sapato_B", 5.68, 8.22, -.1, "sapato"), ("Sapato_C", 3.75, 6.4, 1.3, "sapato_m"), ("Sapato_D", 3.78, 6.55, 1.5, "sapato_m"), ("Chinelo_A", 6.9, 6.75, .3, "roupa_a"), ("Chinelo_B", 7.03, 6.72, .1, "roupa_a")):
