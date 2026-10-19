@@ -1,6 +1,6 @@
 BUSCA E APREENSAO - VERSAO VR OTIMIZADA
 
-DEPOIS: 275591 tris | 83 malhas | 499 slots de material (~draw calls) | 19 luzes
+DEPOIS: 283491 tris | 83 malhas | 509 slots de material (~draw calls) | 20 luzes
 
 Triangulos por colecao:
   15_Vegetacao                          59184
@@ -8,32 +8,32 @@ Triangulos por colecao:
   18_Fachada_Miudos                     30300
   17_Entorno_Longe                      22734
   01_Rua_Patio                          22268
-  06_Sala                               18976
+  06_Sala                               19232
   08_Interativos                        15231
-  07_Cozinha_Servico                    14060
-  14_Miudos                              9559
+  07_Cozinha_Servico                    14108
+  14_Miudos                             13235
   10_Quartos                             8860
   19_Veiculos                            8386
-  03_Portaria                            7129
-  12_Vizinho_301                         5369
+  03_Portaria                            7689
+  12_Vizinho_301                         5649
+  05_Apto_Estrutura                      4870
+  04_Corredor_Escada                     4798
   13_Vidros                              4072
-  04_Corredor_Escada                     3678
-  05_Apto_Estrutura                      2910
   02_Predio                              1981
   11_Banheiro                            1780
 
 Etapas:
   - Grama instanciada removida de 0 gramados; subdivisao=1, remesh 0.16 m, decimate 35% na folhagem.
-  - Modificadores aplicados em 6054 objetos; textos e fios convertidos em malha.
+  - Modificadores aplicados em 6165 objetos; textos e fios convertidos em malha.
   - Bake de 2 materiais procedurais em texturas de imagem.
   - 45 materiais com texturas CC0 convertidos para UV + PNG (cor, rugosidade, normal).
   - UVs em caixa (escala real em metros) aplicadas em todas as malhas.
-  - Colisao: 636 caixas orientadas preparadas.
+  - Colisao: 638 caixas orientadas preparadas.
   - 55 conjuntos interativos unidos (1 malha por conjunto).
-  - 5645 objetos estaticos unidos em 1 malha por colecao (menos draw calls).
+  - 5756 objetos estaticos unidos em 1 malha por colecao (menos draw calls).
   - Exportado: busca_VR.glb
   - Exportado: busca_VR.fbx
-  - Colisao: 636 caixas, 7632 tris -> colisao.glb / colisao.fbx
+  - Colisao: 638 caixas, 7656 tris -> colisao.glb / colisao.fbx
 
 Proximos passos no motor (Unity/Unreal):
   - Iluminacao: marcar a geometria estatica como Static e fazer bake de lightmaps

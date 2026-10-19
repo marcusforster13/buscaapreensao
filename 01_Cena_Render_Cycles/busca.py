@@ -336,7 +336,10 @@ def modelo_ph(nome, asset, pos, rz=0.0, col=None, escala=1.0, max_tris=2000, alt
     return ob
 
 def plafon(nome, x, y, watts, z=Z3 + PD, col=C_EST, cor="#ffd9b0", m="lamp"):      # lampada de casa: branco quente (~3000 K); o usuario aprovou este tom
-    cyl(nome + "_Plafon", .15, .13, .05, (x, y, z - .025), M[m], col, seg=20)
+    cyl(nome + "_Plafon_Canopla", .16, .16, .014, (x, y, z - .007), M["branco"], col, seg=24)
+    bm = bmesh.new(); bmesh.ops.create_uvsphere(bm, u_segments=24, v_segments=12, radius=.15)
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.co.z > .001], context="VERTS"); bmesh.ops.scale(bm, vec=(1, 1, .42), verts=bm.verts)
+    finish(nome + "_Plafon", bm, (x, y, z - .014), M[m], col, smooth=True)      # cupula de vidro leitoso (acesa)
     luz(nome + "_Luz", "POINT", watts * .45, cor, (x, y, z - .22), C_LUZ, shadow_soft_size=.18)      # o site clareia o interior (ganho dos lightmaps internos)
 
 def janela(nome, cx, cy, ao_longo_x, larg, zb, zt, col, z0=Z3, folhas=2, persiana=False, dentro=1):
@@ -1553,6 +1556,13 @@ modelo_ph("Sofa", "Sofa_01", (6.95, 4.93, Z3), SOFA_RZ, C_SAL, max_tris=4000, al
 modelo_ph("Mesa_Centro", "modern_coffee_table_01", (6.8, 3.6, Z3), 0, C_SAL, max_tris=1500, alt=.4) or mesa("Mesa_Centro", 6.7, 3.5, (.8, .5), .42, C_SAL)
 box("Tapete_Sala", (2.3, 1.7, .012), (6.8, 3.6, Z3 + .006), M["tapete_est"], C_SAL)
 mesa("Mesa_Jantar", 4.9, 3.2, (.8, 1.2), .76, C_SAL)
+cyl("Pendente_Canopla", .05, .05, .02, (4.9, 3.2, Z3 + PD - .01), M["preto"], C_SAL, seg=16)
+barra("Pendente_Fio", (4.9, 3.2, Z3 + PD - .02), (4.9, 3.2, Z3 + 1.86), .003, M["preto"], C_MIU, seg=6)
+_bm = bmesh.new(); bmesh.ops.create_cone(_bm, cap_ends=False, segments=28, radius1=.2, radius2=.045, depth=.17)
+finish("Pendente_Cupula", _bm, (4.9, 3.2, Z3 + 1.78), M.setdefault("cupula_pendente", mat("Cupula_Pendente", "#2a2c2f", .45, .6)), C_SAL, smooth=True)
+cyl("Pendente_Bocal", .022, .022, .04, (4.9, 3.2, Z3 + 1.84), M["preto"], C_MIU, seg=12)
+_bm = bmesh.new(); bmesh.ops.create_uvsphere(_bm, u_segments=14, v_segments=8, radius=.045); finish("Pendente_Lampada", _bm, (4.9, 3.2, Z3 + 1.77), M["lamp"], C_MIU, smooth=True)
+luz("Luz_Pendente", "POINT", 12, "#ffd9b0", (4.9, 3.2, Z3 + 1.72), C_LUZ, shadow_soft_size=.05)
 for k, (dx, dy, rz) in enumerate(((-.62, -.28, -PI / 2), (-.62, .28, -PI / 2), (.62, -.28, PI / 2), (.62, .28, PI / 2))):
     if not ph("Cadeira_Jantar_%d" % k, "dining_chair_02", 4.9 + dx * 1.05, 3.2 + dy, Z3, rz + CADEIRA_RZ, C_SAL, alt=.92, tris=1200):
         cadeira("Cadeira_Jantar_%d" % k, 4.9 + dx + (-.21 if dx < 0 else .21), 3.2 + dy, rz + PI, C_SAL)
@@ -1862,12 +1872,29 @@ def cortina(nome, x, y, ao_longo_x, larg, col, lado=1, z0=Z3 + .12, h=2.3, m=Non
         box(nome, (passo * 1.1, .05, h) if ao_longo_x else (.05, passo * 1.1, h), (x + d, y + f, z0 + h / 2) if ao_longo_x else (x + f, y + d, z0 + h / 2), m, col)
     barra(nome + "_Varao", (x - larg / 2 - .2, y, z0 + h + .03) if ao_longo_x else (x, y - larg / 2 - .2, z0 + h + .03), (x + larg / 2 + .2, y, z0 + h + .03) if ao_longo_x else (x, y + larg / 2 + .2, z0 + h + .03), .012, M["metal"], C_MIU, seg=6)
 def tomada(nome, pos, virado, col, interruptor=False):
+    """Placa 4x2 branca. Tomada: encaixe sextavado cinza com tres furos (padrao brasileiro). Interruptor: tecla basculante
+    com o friso do meio. virado = eixo perpendicular a parede; a frente aponta para o lado do comodo (sinal pela posicao)."""
+    x, y, z = pos; interruptor = interruptor or "Interruptor" in nome
     box(nome, {"x": (.012, .075, .115), "y": (.075, .012, .115)}[virado], pos, M["branco"], C_MIU, bevel=.003)
+    # lado da frente: a placa encosta na parede; descobre o lado do comodo pelo centro do apartamento
+    eixos = {"x": (-1, 1.8, 3.1, 4.8, 8.0), "y": (1.55, 1.65, 4.0, 5.5, 9.0)}[virado]; v_ = x if virado == "x" else y
+    sx = 1 if v_ > min(eixos, key=lambda e: abs(e - v_)) else -1      # do lado da parede onde a placa esta
+    def P(f, a, h): return (x + sx * f, y + a, z + h) if virado == "x" else (x + a, y + sx * f, z + h)
+    rot = (0, PI / 2, 0) if virado == "x" else (PI / 2, 0, 0)
+    if interruptor:
+        box(nome + "_Tecla", (.008, .03, .052) if virado == "x" else (.03, .008, .052), P(.008, 0, 0), M["branco"], C_MIU, bevel=.002)
+        box(nome + "_Tecla_Friso", (.002, .026, .002) if virado == "x" else (.026, .002, .002), P(.0125, 0, .006), M["botao_cinza"] if "botao_cinza" in M else M["metal"], C_MIU)
+    else:
+        cyl(nome + "_Encaixe", .022, .022, .004, P(.0045, 0, 0), M.setdefault("encaixe_tomada", mat("Encaixe_Tomada", "#d8d8d4", .5)), C_MIU, rot=rot, seg=6)
+        for a, h in ((-.0095, -.004), (.0095, -.004), (0, .009)): cyl(nome + "_Furo", .0025, .0025, .003, P(.0063, a, h), M["preto"], C_MIU, rot=rot, seg=8)
 cortina("Cortina_Sala", 7.84, 3.6, False, 2.6, C_SAL, -1); cortina("Cortina_Sala_B", 7.84, 3.6, False, 2.6, C_SAL, 1)
 cortina("Cortina_Quarto_1", 6.4, 8.84, True, 1.4, C_QUA, 1, m=M["lencol"]); cortina("Cortina_Quarto_2", 3.3, 8.84, True, 1.4, C_QUA, -1, m=M["lencol2"])
 for nome, pos, v in (("Interruptor_Sala", (4.62, 1.705, Z3 + 1.1), "y"), ("Interruptor_Q1", (5.94, 5.565, Z3 + 1.1), "y"), ("Interruptor_Q2", (3.02, 5.565, Z3 + 1.1), "y"),
                      ("Interruptor_Cozinha", (1.735, 5.5, Z3 + 1.1), "x"), ("Interruptor_Banheiro", (1.735, 2.75, Z3 + 1.1), "x"), ("Tomada_Sala", (6.0, 1.705, Z3 + .3), "y"),
-                     ("Tomada_Q1", (7.895, 6.0, Z3 + .3), "x"), ("Tomada_Q2", (2.4, 8.895, Z3 + .3), "y"), ("Tomada_Cozinha", (.9, 4.07, Z3 + 1.15), "y"), ("Interruptor_Corredor", (3.3, 1.495, Z3 + 1.1), "y")):
+                     ("Tomada_Q1", (7.895, 6.0, Z3 + .3), "x"), ("Tomada_Q2", (2.4, 8.895, Z3 + .3), "y"), ("Tomada_Cozinha", (.9, 4.07, Z3 + 1.15), "y"), ("Interruptor_Corredor", (3.3, 1.495, Z3 + 1.1), "y"),
+                     ("Tomada_TV", (7.45, 1.705, Z3 + 1.2), "y"), ("Tomada_Sala_Janela", (7.895, 2.0, Z3 + .3), "x"),
+                     ("Tomada_Cabeceira_A", (5.0, 8.895, Z3 + .35), "y"), ("Tomada_Cabeceira_B", (7.8, 8.895, Z3 + .35), "y"),
+                     ("Tomada_Lavadora", (1.735, 8.4, Z3 + 1.3), "x"), ("Tomada_Banheiro", (1.25, 3.935, Z3 + 1.2), "y")):
     tomada(nome, pos, v, C_MIU)
 # sala
 # (poltrona da sala tirada a pedido do usuario)
@@ -1909,7 +1936,19 @@ ph("Panela", "pot_enamel_01", -.72, 5.03, Z3 + .9, 0, C_COZ, alt=.14, tris=700)
 box("Tabua", (.34, .22, .02), (-.05, 4.42, Z3 + .9), M["mad"], C_COZ, rot=(0, 0, .4), bevel=.004)
 for k in range(5): box("Escorredor_Prato", (.012, .2, .2), (.13 + k * .05, 4.28, Z3 + 1.0), M["louca"], C_COZ, bevel=.004)
 box("Escorredor", (.34, .28, .03), (.23, 4.28, Z3 + .905), M["inox"], C_COZ)
-cyl("Relogio_Cozinha", .15, .15, .03, (.4, 6.725, Z3 + 2.05), M["louca"], C_COZ, rot=(PI / 2, 0, 0), seg=24); box("Relogio_Ponteiro", (.012, .01, .11), (.4, 6.705, Z3 + 2.09), M["preto"], C_MIU)
+def relogio(nome, x, yp, z, col, r=.15, m_aro=None):
+    """Relogio de parede na parede de face -Y (yp = face da parede): aro, mostrador, 12 marcas, ponteiros marcando 6h10."""
+    yf = yp - .02
+    tubo(nome + "_Aro", [(x + math.cos(a) * r, yf, z + math.sin(a) * r) for a in (2 * PI * k / 36 for k in range(37))], .012, m_aro or M["metal"], C_MIU, seg=8)
+    cyl(nome, r, r, .02, (x, yp - .01, z), M["louca"], col, rot=(PI / 2, 0, 0), seg=36)
+    for k in range(12):
+        a = 2 * PI * k / 12; L_ = .022 if k % 3 == 0 else .012
+        box(nome + "_Marca", (.005 if k % 3 else .008, .002, L_), (x + math.sin(a) * (r - .025), yf - .002, z + math.cos(a) * (r - .025)), M["preto"], C_MIU, rot=(0, a, 0))
+    for suf, ang, L_, lg, m_ in (("_Hora", 2 * PI * (6 + 10 / 60) / 12, r * .5, .008, M["preto"]), ("_Minuto", 2 * PI * 10 / 60, r * .78, .005, M["preto"]), ("_Segundo", 2 * PI * 37 / 60, r * .85, .002, M["giro_verm"])):
+        box(nome + suf, (lg, .002, L_), (x + math.sin(ang) * L_ * .4, yf - .004 - .001 * len(suf), z + math.cos(ang) * L_ * .4), m_, C_MIU, rot=(0, ang, 0))
+    cyl(nome + "_Pino", .006, .006, .008, (x, yf - .008, z), M["preto"], C_MIU, rot=(PI / 2, 0, 0), seg=10)
+relogio("Relogio_Cozinha", -.35, 6.74, Z3 + 1.95, C_COZ)      # parede cheia, ao lado do vao da area de servico
+relogio("Relogio_Sala", 4.0, 5.44, Z3 + 1.85, C_SAL, r=.17, m_aro=M["mad_esc"])
 cyl("Lixeira_Cozinha", .13, .16, .42, (1.5, 6.5, Z3 + .21), M["branco"], C_COZ, seg=16); cyl("Lixeira_Cozinha_Tampa", .17, .17, .03, (1.5, 6.5, Z3 + .435), M["inox"], C_COZ, seg=16)
 ph("Limpador", "all_purpose_cleaner", -.72, 7.35, Z3 + .9, 0, C_COZ, alt=.26, tris=400); ph("Agua_Sanitaria", "bleach_bottle", -.6, 7.2, None, 0, C_COZ, alt=.3, tris=400)
 barra("Vassoura_Cabo", (-.82, 8.82, Z3 + .12), (-.86, 8.9, Z3 + 1.35), .012, M["mad"], C_MIU, seg=6); box("Vassoura_Cerdas", (.3, .06, .14), (-.82, 8.8, Z3 + .07), M["roupa_b"], C_COZ)
