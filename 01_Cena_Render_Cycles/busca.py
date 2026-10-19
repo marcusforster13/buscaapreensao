@@ -610,7 +610,7 @@ def vaso_planta(nome, x, y, z, alt, col, m_vaso=None):
     hv = min(.34, alt * .35); rr = random.Random(zlib.crc32(nome.encode()))
     cyl(nome + "_Vaso", .13, .17, hv, (x, y, z + hv / 2), m_vaso or M["telha"], col, seg=20)
     tubo(nome + "_Vaso_Borda", [(x + math.cos(a) * .168, y + math.sin(a) * .168, z + hv - .006) for a in (2 * PI * k / 24 for k in range(25))], .012, m_vaso or M["telha"], col, seg=8)      # aro (aberto no meio)
-    cyl(nome + "_Terra", .158, .158, .02, (x, y, z + hv - .035), M["terra"], col, seg=20)
+    cyl(nome + "_Terra", .16, .16, .02, (x, y, z + hv - .006), M["terra"], col, seg=20)      # acima da tampa do vaso (senao aparece o branco)
     bm = bmesh.new(); uvl = bm.loops.layers.uv.new("UVMap"); z0 = z + hv - .04; N = 7
     for k in range(rr.randint(11, 15)):
         az = rr.uniform(0, 2 * PI); rb = rr.uniform(0, .09); base = Vector((x + math.cos(az) * rb, y + math.sin(az) * rb, z0))
@@ -1649,46 +1649,74 @@ def geladeira(nome, x, y, rz, col, w=.66, d=.62, h=1.75):
     mv.folha(w / 2 - .003, zf + .004, w - .006, h - zf - .008, m, -1, tf=.05, ang=1.9, zp=.12, pux=.14)
     mv.colisao(w, h); return mv
 geladeira("Geladeira", -.88, 6.1, PI / 2, C_COZ)
-def fogao(nome, x, y, rz, col, w=.56, d=.58, h=.86):
-    """Fogao de 4 bocas de apartamento: mesa de inox, queimadores com espalhador e capa, duas trempes de ferro fundido,
-    painel com quatro botoes, porta do forno com visor de vidro escuro e puxador (abre), pes reguláveis."""
-    mv = Movel(nome, x, y, rz, col, d); m = M["fogao"]
-    ferro = M.setdefault("ferro_fundido", mat("Ferro_Fundido", "#1b1b1c", .55, .2))
+def fogao(nome, x, y, rz, col):
+    """Fogao de 4 bocas (modelo modelos/fogao.glb do usuario: corpo com forno, mesa, queimadores e trempes), com os materiais
+    da referencia: mesa grafite fosca, trempes de ferro fundido, coroa prateada com capa preta, acendedor branco, faixa e
+    laterais de inox; porta do forno de vidro escuro com puxador redondo (abre para a frente) e quatro botoes na faixa.
+    Coordenadas do modelo: frente para -Y (fundo em y = .305), base em z = 0."""
+    mv = Movel(nome, x, y, rz, col, .61)
+    T_ = Matrix.Translation(mv.o) @ mv.R.to_4x4() @ Matrix.Translation((0, -.305, 0))
+    def W(p): return T_ @ Vector(p)
+    ferro = M.setdefault("ferro_fundido", mat("Ferro_Fundido", "#161617", .6, .15))
+    grafite = M.setdefault("grafite_fogao", mat("Mesa_Grafite", "#363b42", .5))
+    coroa = M.setdefault("coroa_fogao", mat("Coroa_Queimador", "#b9b6ae", .35, .8))
     vidro_forno = M.setdefault("vidro_forno", mat("Vidro_Forno", "#121416", .08, .1))
-    mv.casco(-w / 2, w / 2, .08, h - .02, m, prat=(.26, .45), topo=False)
-    mv.cx("Mesa", (w + .01, d + .01, .015), (0, -d / 2, h - .0075), M["inox"])
-    mv.cx("Mesa_Borda", (w + .01, .02, .03), (0, -d - .005, h - .015), M["inox"])
-    mv.cx("Encosto", (w + .01, .02, .05), (0, -.01, h + .025), M["inox"])
-    bocas = ((-.13, -.17, .045), (.13, -.17, .04), (-.13, -.41, .04), (.13, -.41, .05))      # tamanhos diferentes, como no real
-    for k, (dx, dy, r) in enumerate(bocas):
-        cyl("Mv_%s_Boca_Base" % nome, r + .012, r + .012, .006, mv.W((dx, dy, h + .003)), M["preto"], C_MIU, seg=18)
-        cyl("Mv_%s_Boca_Espalhador" % nome, r, r, .016, mv.W((dx, dy, h + .014)), M["metal"], C_MIU, seg=18)
-        cyl("Mv_%s_Boca_Capa" % nome, r * .72, r * .72, .008, mv.W((dx, dy, h + .026)), ferro, C_MIU, seg=16)
-    # duas trempes de ferro (uma para cada par de bocas): moldura, travessas sobre as bocas e pezinhos
-    zt, bt = h + .045, .011
-    for sx in (-1, 1):
-        cxt, lt, pt = sx * w / 4, w / 2 - .03, d - .07
-        for yy in (-.035, -d + .035): mv.cx("Trempe", (lt, bt, bt), (cxt, yy, zt), ferro)
-        for xx in (cxt - lt / 2 + bt / 2, cxt + lt / 2 - bt / 2): mv.cx("Trempe", (bt, pt, bt), (xx, -d / 2, zt), ferro)
-        mv.cx("Trempe", (bt, pt, bt), (cxt, -d / 2, zt), ferro)
-        for yy in (-.17, -.41): mv.cx("Trempe", (lt, bt, bt), (cxt, yy, zt), ferro)
-        for xx in (cxt - lt / 2 + .02, cxt + lt / 2 - .02):
-            for yy in (-.05, -d + .05): mv.cx("Trempe_Pe", (.012, .012, .04), (xx, yy, h + .02), ferro)
-    # painel com os botoes (frente, no alto)
-    mv.cx("Painel", (w, .03, .09), (0, -d - .015, h - .065), m)
+    caminho = os.path.join(AQUI, "modelos", "fogao.glb")
+    antes = set(bpy.data.objects); bpy.ops.import_scene.gltf(filepath=caminho)
+    novos = [o for o in bpy.data.objects if o not in antes and o.type == "MESH"]
+    for o in [o for o in bpy.data.objects if o not in antes and o.type != "MESH"]: bpy.data.objects.remove(o)
+    porta, centros = None, []
+    for o in novos:
+        o.data.transform(o.matrix_world); o.parent = None; o.matrix_world = Matrix.Identity(4)
+        for c in list(o.users_collection): c.objects.unlink(o)
+        me = o.data; velhos = [m.name.split(".")[0] if m else "" for m in me.materials]; nm = o.name.replace(".", "_")
+        bm = bmesh.new(); bm.from_mesh(me); bmesh.ops.recalc_face_normals(bm, faces=bm.faces); bm.to_mesh(me); bm.free()
+        mat_face = [velhos[f.material_index] if f.material_index < len(velhos) else "" for f in me.polygons]      # antes do clear (ele zera os indices)
+        me.materials.clear()
+        if nm == "Corpo":                                                 # inox no corpo; a chapa de cima vira mesa grafite
+            me.materials.append(M["inox"]); me.materials.append(grafite); me.materials.append(M.setdefault("esmalte_forno", mat("Esmalte_Forno", "#2a2b2e", .4)))
+            for f, mn in zip(me.polygons, mat_face):
+                c = f.center; dentro = abs(c.x) < .27 and -.28 < c.y < .3 and .09 < c.z < .85      # forno e gaveta por dentro: esmalte escuro
+                f.material_index = 1 if mn == "Preto_Fosco" else 2 if dentro else 0
+        elif nm == "Tampa_1":                                             # porta: vidro escuro (o puxador chato sai; vai um redondo)
+            bm = bmesh.new(); bm.from_mesh(me); bm.faces.ensure_lookup_table()
+            bmesh.ops.delete(bm, geom=[bm.faces[i] for i, mn in enumerate(mat_face) if mn == "Metal_Escovado"], context="FACES"); bm.to_mesh(me); bm.free()
+            me.materials.append(vidro_forno)
+            for f in me.polygons: f.material_index = 0
+            porta = o
+        elif nm.startswith("Cylinder"):                                   # queimador: capa preta, coroa prateada, bacia escura
+            vs = [v.co for v in me.vertices]; cx = sum(v.x for v in vs) / len(vs); cy = sum(v.y for v in vs) / len(vs); centros.append((cx, cy))
+            me.materials.append(ferro); me.materials.append(coroa); me.materials.append(M["preto"])
+            for f in me.polygons:
+                r = math.hypot(f.center.x - cx, f.center.y - cy); f.material_index = 2 if r < .032 else 1 if r < .05 else 0
+        else: me.materials.append(ferro)                                  # trempes (aros, bracos e dedos) e bacias
+        o.name = "Mv_%s_%s" % (nome, nm)
+        if o is not porta: me.transform(T_); col.objects.link(o)
+    # acendedor de porcelana (ponta de latao) ao lado de cada coroa, como na referencia
+    for cx, cy in centros:
+        a = math.radians(225); px, py = cx + math.cos(a) * .052, cy + math.sin(a) * .052
+        cyl("Mv_%s_Acendedor" % nome, .0045, .0045, .02, W((px, py, .896)), M["louca"], C_MIU, seg=8)
+        cyl("Mv_%s_Acendedor_Ponta" % nome, .002, .002, .006, W((px, py, .909)), M["ferragem"], C_MIU, seg=6)
+    # quatro botoes na faixa de inox da frente (um por boca), com marca branca
     for k in range(4):
-        px = -w / 2 + .1 + k * (w - .2) / 3
-        cyl("Mv_%s_Botao" % nome, .02, .02, .028, mv.W((px, -d - .045, h - .065)), M["preto"], C_MIU, rot=(PI / 2, 0, rz), seg=16)
-        mv.cx("Botao_Marca", (.004, .002, .014), (px, -d - .06, h - .058), M["branco"])
-    # porta do forno: visor de vidro escuro com moldura (vai junto quando abre)
-    pf = mv.tampa((0, -d - .03, .27), (w - .01, h - .38, .03), m, 1.45); hp = h - .38
-    box(pf.name + "_Visor", (w * .66, .004, hp * .42), (0, -.002, hp * .5), vidro_forno, C_INT, pf)
-    box(pf.name + "_Visor_Moldura", (w * .7, .002, hp * .46), (0, -.0005, hp * .5), M["preto"], C_INT, pf)
-    mv.cx("Gaveta_Fundo", (w - .01, .02, .17), (0, -d - .01, .17), m)          # gaveta de baixo (fechada)
-    mv.cx("Gaveta_Fundo_Puxador", (w * .5, .015, .012), (0, -d - .025, .22), M["metal"])
-    for sx in (-1, 1):
-        for sy in (-.05, -d + .05): mv.cx("Pe", (.04, .04, .08), (sx * (w / 2 - .04), sy, .04), M["preto"])
-    mv.colisao(w, h); return mv
+        px = -.2 + k * .133
+        cyl("Mv_%s_Botao" % nome, .019, .021, .024, W((px, -.317, .815)), M["preto"], C_MIU, rot=(PI / 2, 0, rz), seg=18)
+        box("Mv_%s_Botao_Marca" % nome, (.003, .002, .012), W((px, -.3295, .823)), M["branco"], C_MIU, rot=(0, 0, rz))
+    # gaveta de baixo (fechada): frente escura com puxador de inox, fecha o vao embaixo do forno
+    box("Mv_%s_Gaveta" % nome, (.55, .02, .165), W((0, -.295, .178)), vidro_forno, col, rot=(0, 0, rz))
+    tubo("Mv_%s_Gaveta_Puxador" % nome, [W((-.12, -.322, .23)), W((.12, -.322, .23))], .006, M["inox"], C_MIU, seg=10)
+    for sx in (-.1, .1): tubo("Mv_%s_Gaveta_Puxador_Pe" % nome, [W((sx, -.305, .23)), W((sx, -.322, .23))], .005, M["inox"], C_MIU, seg=8)
+    # porta do forno: a raiz fica na borda de baixo, na frente; ela cai para a frente
+    r = mv.raiz("Tam", (0, -.61, .27)); r["abre"] = "porta"; r["eixo"] = "x"; r["ang"] = 1.45
+    bpy.context.view_layer.update(); Ri = r.matrix_world.inverted()
+    if porta:
+        porta.data.transform(Ri @ T_); porta.name = r.name + "_Painel"; C_INT.objects.link(porta)
+        porta.parent = r; porta.matrix_parent_inverse = Matrix.Identity(4); porta.matrix_basis = Matrix.Identity(4)
+    # puxador redondo de inox em dois pes, no alto da porta (coordenadas da raiz: x ao longo, -y para fora, z para cima)
+    zp = .76 - .27 - .06
+    tubo(r.name + "_Puxador", [(-.23, -.042, zp), (.23, -.042, zp)], .0105, M["inox"], C_INT, r, seg=14)
+    for sx in (-.2, .2): tubo(r.name + "_Puxador_Pe", [(sx, -.004, zp), (sx, -.042, zp)], .007, M["inox"], C_INT, r, seg=10)
+    mv.colisao(.56, .88); return mv
 fogao("Fogao", -.88, 5.15, PI / 2, C_COZ)
 def tex_tambor(S=256):
     """Inox do tambor: escovado com furinhos em grade."""

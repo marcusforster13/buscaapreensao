@@ -19,7 +19,7 @@
   /* ================= itens: carregados do site (modelos/*.glb) ou feitos aqui; ficam dentro das gavetas e armarios ================= */
   const gl = new GLTFLoader();
   const MOD = {};
-  for (const n of ['celular', 'notebook', 'arma']) gl.loadAsync(HQ('modelos/' + n + '.glb')).then(g => { MOD[n] = g.scene; g.scene.traverse(o => { if (o.isMesh) o.material = [].concat(o.material).map(m => ctx.iluminar(m.clone()))[0]; }); }).catch(() => { });
+  for (const n of ['celular', 'notebook', 'arma', 'dinheiro']) gl.loadAsync(HQ('modelos/' + n + '.glb')).then(g => { MOD[n] = g.scene; g.scene.traverse(o => { if (o.isMesh) o.material = [].concat(o.material).map(m => ctx.iluminar(m.clone()))[0]; }); }).catch(() => { });
   const matSimples = (cor, r = .7) => ctx.iluminar(new THREE.MeshStandardMaterial({ color: cor, roughness: r }));
   function caixa(l, a, p, cor) { return new THREE.Mesh(new THREE.BoxGeometry(l, a, p), matSimples(cor)); }
   function feitoAqui(tipo) {
@@ -34,19 +34,19 @@
     return g;
   }
   function modeloItem(tipo) {
-    const base = tipo === 'arma' ? MOD.arma : tipo === 'celular' ? MOD.celular : tipo === 'notebook' ? MOD.notebook : null;
+    const base = { arma: MOD.arma, celular: MOD.celular, notebook: MOD.notebook, dinheiro: MOD.dinheiro }[tipo] || null;
     if (!base) return feitoAqui(tipo);
     const m = base.clone(); const bb = new THREE.Box3().setFromObject(m), s = bb.getSize(new THREE.Vector3());
-    const alvo = { celular: .155, notebook: .34, arma: .2 }[tipo]; m.scale.setScalar(alvo / Math.max(s.x, s.z, s.y));
+    const alvo = { celular: .155, notebook: .34, arma: .2, dinheiro: .33 }[tipo]; m.scale.setScalar(alvo / Math.max(s.x, s.z, s.y));
     const g = new THREE.Group(); g.add(m); return g;
   }
   // onde cada coisa pode estar: [peca que abre (ou null: em cima de um movel), posicao local x, y, z] - coordenadas do site
   const LUGARES = {
-    vista_mesa: [null, ...B3(4.75, 3.05).toArray().map((v, i) => i === 1 ? Z3 + .78 : v)],
-    vista_mesa2: [null, ...B3(5.05, 3.4).toArray().map((v, i) => i === 1 ? Z3 + .78 : v)],
+    vista_mesa: [null, ...B3(4.72, 3.52).toArray().map((v, i) => i === 1 ? Z3 + .78 : v)],
+    vista_mesa2: [null, ...B3(4.95, 2.8).toArray().map((v, i) => i === 1 ? Z3 + .78 : v)],
     vista_rack: [null, ...B3(6.0, 1.95).toArray().map((v, i) => i === 1 ? Z3 + .56 : v)],
     criado_b2: ['A_Gav_Criado_B_2', 0, .03, -.16], criado_a1: ['A_Gav_Criado_A_1', 0, .03, -.15],
-    gr_gaveta_1: ['A_Gav_Guarda_Roupa_Casal_1', 0, .03, -.24], gr_gaveta_3: ['A_Gav_Guarda_Roupa_Casal_5', 0, .03, -.24],
+    gr_gaveta_1: ['A_Gav_Guarda_Roupa_Casal_1', 0, .12, -.24], gr_gaveta_3: ['A_Gav_Guarda_Roupa_Casal_5', 0, .12, -.24],      // por cima das roupas dobradas (embaixo delas nao se via)
     rack_gaveta: ['A_Gav_Rack_TV_3', 0, .03, -.15], bancada_gaveta: ['A_Gav_Bancada_4', 0, .03, -.2],
   };
   const itens = {};          // tipo -> { o, tipo, lugar, apreendido, fotografado, lacrado, isolado }
@@ -58,9 +58,10 @@
     if (L[0]) { const raiz = ctx.cena.getObjectByName(L[0]); if (!raiz) return; raiz.add(o); o.position.set(L[1], L[2], L[3]); }
     else { scene.add(o); o.position.set(L[1], L[2], L[3]); }
     const hit = new THREE.Mesh(new THREE.BoxGeometry(.3, .16, .3), invisivel()); hit.userData.item = tipo; o.add(hit); hitsItem.push(hit);
+    if (tipo === 'notebook') o.traverse(n => { if (/Aberta/.test(n.name)) n.visible = !L[0]; if (/Fechada/.test(n.name)) n.visible = !!L[0]; });      // na gaveta, tampa fechada; na mesa, aberto com a planilha
     itens[tipo] = { o, tipo, lugar, dentro: !!L[0], raiz: L[0] };
   }
-  const NOME_ITEM = { celular: 'Celular', notebook: 'Notebook', documentos: 'Pasta de documentos', cartoes: 'Cartões bancários', arma: 'Arma de fogo (revólver)', droga: 'Tabletes de droga', dinheiro: 'Maços de dinheiro', doc_terceiro: 'Documentos de outra pessoa' };
+  const NOME_ITEM = { celular: 'Celular', notebook: 'Notebook', documentos: 'Pasta de documentos', cartoes: 'Cartões bancários', arma: 'Arma de fogo (pistola)', droga: 'Tabletes de droga', dinheiro: 'Maços de dinheiro', doc_terceiro: 'Documentos de outra pessoa' };
   const DO_MANDADO = new Set(['celular', 'notebook', 'documentos', 'cartoes']);
   function distribuirItens(v) {
     limparItens();
@@ -72,10 +73,33 @@
     else if (v.extra === 'documentos_terceiro') porItem('doc_terceiro', 'bancada_gaveta');
   }
   const lacres = new THREE.Group(); scene.add(lacres);
-  function saco(tipo) {                                       // item lacrado: saco plastico com etiqueta, em cima da mesa de jantar
-    const n = lacres.children.length, s = caixa(.24, .06, .32, 0xd8dde2); s.material.transparent = true; s.material.opacity = .85;
-    const et = caixa(.08, .004, .05, 0xc0261e); et.position.set(.06, .032, .1); s.add(et);
-    s.position.copy(B3(4.45 + (n % 3) * .27, 2.75 + Math.floor(n / 3) * .35)); s.position.y = Z3 + .79 + .03; lacres.add(s);
+  function texturaTexto(linhas, w, h, fundo, cor) {           // papel/fita com texto (canvas): etiqueta de apreensao e numero do lacre
+    const c = document.createElement('canvas'); c.width = 512; c.height = Math.round(512 * h / w); const g = c.getContext('2d');
+    g.fillStyle = fundo; g.fillRect(0, 0, c.width, c.height); g.fillStyle = cor; g.textAlign = 'center'; g.textBaseline = 'middle';
+    const lh = c.height / linhas.length;
+    linhas.forEach((t, i) => { g.font = `${i === 0 ? 'bold ' : ''}${Math.round(Math.min(lh * .62, c.width / Math.max(8, t.length) * 1.6))}px Arial`; g.fillText(t, c.width / 2, lh * (i + .5)); });
+    const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; tx.anisotropy = 4; return tx;
+  }
+  // sacos lacrados na mesa de jantar: quatro cantos e as laterais da fruteira; depois empilha
+  const VAGAS_SACO = [[4.68, 2.86], [5.12, 2.86], [4.68, 3.58], [5.12, 3.58], [4.6, 3.22], [5.2, 3.22]];
+  function saco(it, num) {                                     // o proprio item dentro de um saco plastico transparente, fita de lacre numerada e etiqueta
+    const n = lacres.children.length, g = new THREE.Group(), o = it.o;
+    o.removeFromParent(); o.position.set(0, 0, 0); o.rotation.set(0, 0, 0);
+    if (it.tipo === 'notebook') o.traverse(m => { if (/Aberta/.test(m.name)) m.visible = false; if (/Fechada/.test(m.name)) m.visible = true; });      // vai fechado para o saco
+    o.updateMatrixWorld(true);
+    const bb = new THREE.Box3(); o.traverse(m => { if (m.isMesh && m.visible && !m.userData.item) bb.expandByObject(m); });
+    const s = bb.getSize(new THREE.Vector3()), c = bb.getCenter(new THREE.Vector3());
+    const L = Math.max(.2, s.x + .06), P = Math.max(.27, s.z + .12), A = Math.max(.025, s.y + .012);
+    o.position.set(-c.x, -bb.min.y + .003, -c.z + .02); g.add(o);
+    const plastico = ctx.iluminar(new THREE.MeshStandardMaterial({ color: 0xeef4f8, roughness: .12, transparent: true, opacity: .26, depthWrite: false }));
+    const b = new THREE.Mesh(new THREE.BoxGeometry(L, A, P), plastico); b.position.y = A / 2; g.add(b);
+    const solda = new THREE.Mesh(new THREE.BoxGeometry(L + .01, .003, .03), plastico); solda.position.set(0, .0015, -P / 2 - .012); g.add(solda);      // aba do fecho
+    const fita = new THREE.Mesh(new THREE.BoxGeometry(L + .006, .002, .045), ctx.iluminar(new THREE.MeshStandardMaterial({ map: texturaTexto([`LACRE  Nº ${num}`], 1, .09, '#b3121b', '#ffffff'), roughness: .5 })));
+    fita.position.set(0, A + .001, -P / 2 + .04); g.add(fita);
+    const et = new THREE.Mesh(new THREE.BoxGeometry(Math.min(.11, L - .03), .0015, .075), ctx.iluminar(new THREE.MeshStandardMaterial({ map: texturaTexto(['APREENSÃO', NOME_ITEM[it.tipo], `Lacre nº ${num}`, 'Apto 302 - Bloco B'], 1.5, 1, '#f4f1e6', '#1b1b1b'), roughness: .8 })));
+    et.position.set(L / 2 - .065, A + .0012, P / 2 - .05); g.add(et);
+    const v = VAGAS_SACO[n % VAGAS_SACO.length], pilha = lacres.children.filter((_, k) => k % VAGAS_SACO.length === n % VAGAS_SACO.length).reduce((a, x) => a + x.userData.alt, 0);
+    g.position.copy(B3(v[0], v[1])); g.position.y = Z3 + .762 + pilha; g.rotation.y = (n % 2 ? .06 : -.05); g.userData.alt = A + .004; lacres.add(g);
   }
 
   /* ================= arma de fogo e arma de choque (no coldre; o treinamento observa se e quando o aluno usa) ================= */
@@ -545,10 +569,11 @@
     });
   }
   function apreender(it, doMandado = true) {
-    it.apreendido = true; it.o.removeFromParent(); saco(it.tipo); window.__som?.tocar('algemas');
-    A.apreendidos = (A.apreendidos || 0) + 1; registrar('relacionar_itens'); registrar('lacrar');
+    A.apreendidos = (A.apreendidos || 0) + 1; const num = String(48210 + A.apreendidos);
+    it.apreendido = true; it.lacre = num; (A.lacres = A.lacres || []).push(`${NOME_ITEM[it.tipo]} (lacre nº ${num})`); saco(it, num); window.__som?.tocar('algemas');
+    registrar('relacionar_itens'); registrar('lacrar');
     if (doMandado && DO_MANDADO.has(it.tipo)) registrar('achar_objeto');
-    legenda('Apreensão', `${NOME_ITEM[it.tipo]}: embalado e lacrado (lacre nº ${String(48210 + A.apreendidos)}).`, 3);
+    legenda('Apreensão', `${NOME_ITEM[it.tipo]}: embalado e lacrado (lacre nº ${num}). O saco fica na mesa da sala.`, 3);
     status();
   }
   function lavrarAuto() {
@@ -567,7 +592,7 @@
     registrar('lavrar_auto'); A.fase = 'auto';
     painelOpc('Auto circunstanciado', 'Encerramento', [
       { fala: 'Informar o morador do que foi apreendido e entregar a cópia do auto', acao: 'informar_morador', id: 'info' },
-      { fala: 'Encerrar sem informar', id: 'nao' }], () => { diz(civil(), 'Auto lavrado. Vamos encerrar.'); setTimeout(finalizar, 3000); }, `Itens apreendidos: ${A.apreendidos || 0}. Danos: ${A.danos.length ? A.danos.join('; ') : 'nenhum'}.`, false);
+      { fala: 'Encerrar sem informar', id: 'nao' }], () => { diz(civil(), 'Auto lavrado. Vamos encerrar.'); setTimeout(finalizar, 3000); }, `Itens apreendidos: ${A.lacres?.length ? A.lacres.join('; ') : 'nenhum'}. Danos: ${A.danos.length ? A.danos.join('; ') : 'nenhum'}.`, false);
   }
 
   /* ---------- busca: o que o aluno abre conta como lugar procurado ---------- */

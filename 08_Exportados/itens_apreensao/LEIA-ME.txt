@@ -1,0 +1,20 @@
+ITENS DA BUSCA E APREENSAO - para remodelar
+==========================================
+Cada arquivo e um item, no tamanho real (metros) que o treinamento usa hoje.
+Hoje so a arma tem modelo de verdade; o resto e feito de caixas simples.
+
+Arquivo            Item                         Tamanho atual (L x A x P, cm)   Onde aparece
+celular.glb        Celular                      7,5 x 1,1 x 15,5                gaveta do guarda-roupa / mesa da sala
+notebook.glb       Notebook (fechado)           34 x 3,4 x 24                   gaveta do guarda-roupa / mesa da sala
+documentos.glb     Pasta de documentos          25 x 4 x 33                     gaveta do criado-mudo / rack da sala
+cartoes.glb        Cartoes bancarios (4)        8,6 x 0,2 x 5,4 cada            gaveta do rack / criado-mudo
+droga.glb          Tabletes de droga (3)        20 x 5 x 10 cada                gaveta do criado-mudo
+dinheiro.glb       Macos de dinheiro (6)        15 x 2 x 7 cada                 gaveta da bancada da cozinha
+doc_terceiro.glb   Documentos de outra pessoa   24 x 0,6 x 17                   gaveta da bancada da cozinha    
+arma.glb           Arma de fogo (revolver)      ~20 cm de comprimento           gaveta do guarda-roupa
+
+Dicas para o modelo voltar para o treinamento:
+- Mantenha o tamanho real (1 unidade = 1 metro) e a base apoiada em y = 0 (o item fica deitado na gaveta).
+- Ate ~2.000 triangulos por item; texturas de 512 ou 1024 px bastam (o item e pequeno).
+- Salve com o mesmo nome do arquivo (ex.: celular.glb) e mande para o Claude colocar no lugar.
+- Nas gavetas, a altura util e de uns 10 cm (guarda-roupa ~20 cm): os tabletes empilhados sao o item mais alto.
