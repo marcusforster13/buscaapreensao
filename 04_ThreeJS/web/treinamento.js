@@ -430,7 +430,7 @@ export async function iniciar(ctx) {
   /* ================= itens: carregados do site (modelos/*.glb) ou feitos aqui; ficam dentro das gavetas e armarios ================= */
   const gl = new GLTFLoader();
   const MOD = {};
-  for (const n of ['celular', 'notebook', 'arma', 'dinheiro']) gl.loadAsync(HQ('modelos/' + n + '.glb')).then(g => { MOD[n] = g.scene; g.scene.traverse(o => { if (o.isMesh) o.material = [].concat(o.material).map(m => ctx.iluminar(m.clone()))[0]; }); }).catch(() => { });
+  for (const n of ['celular', 'notebook', 'arma', 'dinheiro', 'documentos', 'cartoes', 'droga', 'doc_terceiro']) gl.loadAsync(HQ('modelos/' + n + '.glb')).then(g => { MOD[n] = g.scene; g.scene.traverse(o => { if (o.isMesh) o.material = [].concat(o.material).map(m => ctx.iluminar(m.clone()))[0]; }); }).catch(() => { });
   const matSimples = (cor, r = .7) => ctx.iluminar(new THREE.MeshStandardMaterial({ color: cor, roughness: r }));
   function caixa(l, a, p, cor) { return new THREE.Mesh(new THREE.BoxGeometry(l, a, p), matSimples(cor)); }
   function feitoAqui(tipo) {
@@ -445,10 +445,10 @@ export async function iniciar(ctx) {
     return g;
   }
   function modeloItem(tipo) {
-    const base = { arma: MOD.arma, celular: MOD.celular, notebook: MOD.notebook, dinheiro: MOD.dinheiro }[tipo] || null;
+    const base = MOD[tipo] || null;
     if (!base) return feitoAqui(tipo);
     const m = base.clone(); const bb = new THREE.Box3().setFromObject(m), s = bb.getSize(new THREE.Vector3());
-    const alvo = { celular: .155, notebook: .34, arma: .2, dinheiro: .33 }[tipo]; m.scale.setScalar(alvo / Math.max(s.x, s.z, s.y));
+    const alvo = { celular: .155, notebook: .34, arma: .2, dinheiro: .33, documentos: .33, cartoes: .15, droga: .3, doc_terceiro: .21 }[tipo]; m.scale.setScalar(alvo / Math.max(s.x, s.z, s.y));
     const g = new THREE.Group(); g.add(m); return g;
   }
   // onde cada coisa pode estar: [peca que abre (ou null: em cima de um movel), posicao local x, y, z] - coordenadas do site
