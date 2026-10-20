@@ -1,0 +1,9 @@
+PECAS PARA REMODELAR (2)
+========================
+Tamanho real em metros, base em z = 0, centradas. Mande de volta com o mesmo nome.
+
+louca_pia.glb    40 x 20 x 10 cm      Louca suja dentro da cuba da cozinha: 3 pratos e um copo (a cuba fica em volta)
+tanque.glb       55 x 50 x 90 cm      Tanque de lavar roupa da area de servico (cuba + coluna), frente para -Y
+abajur.glb       25 x 26 x 38 cm      Abajur do criado-mudo do quarto do casal
+
+Louca: fica dentro da cuba da cozinha (a cuba tem 50 x 40 cm e 18 cm de fundo). Tanque: encostado na parede pelo lado +Y.

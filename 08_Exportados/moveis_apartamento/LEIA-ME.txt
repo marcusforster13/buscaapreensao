@@ -1,0 +1,28 @@
+MOVEIS DO APARTAMENTO 302 - para remodelar
+==========================================
+Cada arquivo e um movel feito no script, no tamanho real (metros), com a FRENTE virada para -Y (no Blender: olhando
+de frente pela vista Front, Numpad 1) e a base em z = 0. As pecas que abrem (portas, gavetas, tampas) vem separadas,
+com nomes que comecam por A_ (A_Gav = gaveta, A_Fol = porta, A_Tam = tampa): o ponto de origem delas e a dobradica
+ou a frente da gaveta. Mantenha esses nomes e origens se quiser que continuem abrindo no treinamento.
+As texturas aqui sao aproximadas (no treinamento elas sao projetadas em metros); o que vale e a forma e o tamanho.
+
+Arquivo                  Tamanho L x P x A (cm)  Triang.  Descricao
+cama_casal.glb           150 x 195 x 100              72  Cama de casal com cabeceira, colchao, lencol e travesseiros
+cama_solteiro.glb        100 x 195 x 100              60  Cama de solteiro (quarto do inquilino)
+criado_mudo.glb          45 x 45 x 55                264  Criado-mudo com gavetas (as gavetas abrem: guardam itens da busca) [2 pecas que abrem]
+guarda_roupa_casal.glb   180 x 60 x 220             1032  Guarda-roupa 3 portas com gavetas (portas e gavetas abrem) [6 pecas que abrem]
+guarda_roupa_inquilino.glb 100 x 55 x 210              708  Guarda-roupa 2 portas do inquilino [4 pecas que abrem]
+escrivaninha.glb         110 x 58 x 76               384  Escrivaninha do quarto do inquilino (gavetas abrem) [3 pecas que abrem]
+cadeira_escrivaninha.glb 42 x 42 x 93                 72  Cadeira da escrivaninha
+rack_tv.glb              160 x 47 x 49               504  Rack da TV com gavetas e portas [4 pecas que abrem]
+mesa_jantar.glb          80 x 120 x 76                60  Mesa de jantar 4 lugares
+armario_corredor.glb     106 x 55 x 220              288  Armario alto do corredor interno [2 pecas que abrem]
+armario_servico.glb      70 x 41 x 190               276  Armario alto da area de servico [2 pecas que abrem]
+bancada_cozinha.glb      222 x 60 x 212             3848  Bancada da cozinha com pia, gavetas e portas [10 pecas que abrem]
+geladeira.glb            66 x 70 x 171               636  Geladeira (portas abrem, com comida dentro) [2 pecas que abrem]
+gabinete_banheiro.glb    82 x 48 x 160               836  Gabinete do banheiro com cuba, torneira e espelheira [4 pecas que abrem]
+vaso_sanitario.glb       38 x 65 x 76                 48  Vaso sanitario com caixa acoplada (tampa abre) [1 pecas que abrem]
+microondas.glb           48 x 39 x 29                472  Micro-ondas (porta abre)
+
+Dicas: ate ~3.000 triangulos por movel grande e ~1.000 pelos pequenos; texturas de 1024 px. Mande de volta com o mesmo
+nome do arquivo que eu coloco no lugar (as gavetas que guardam itens da busca continuam funcionando).

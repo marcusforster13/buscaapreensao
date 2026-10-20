@@ -1,0 +1,9 @@
+PECAS PARA REMODELAR (3)
+========================
+Tamanho real em metros, base em z = 0, centradas. Mande de volta com o mesmo nome.
+
+revistas.glb     70 x 35 x 2 cm       Tres revistas na mesa de centro da portaria
+bebedouro.glb    32 x 32 x 139 cm     Bebedouro de galao da portaria (coluna + galao de agua), frente para -Y
+lixeira_portaria.glb 25 x 26 x 50 cm      Lixeira de inox ao lado do elevador da portaria
+
+Louca: fica dentro da cuba da cozinha (a cuba tem 50 x 40 cm e 18 cm de fundo). Tanque: encostado na parede pelo lado +Y.

@@ -1460,15 +1460,44 @@ def guarda_roupa(nome, x, y, rz, col, w=1.8, d=.55, h=2.2, portas=3, m=None, mf=
 def criado(nome, x, y, rz, col, m=None):
     mv = comoda(nome, x, y, rz, col, w=.45, d=.4, h=.55, n=2, m=m, roupas=False); return mv
 
+def partes_modelo(arquivo, nomes, T_, col, mats):
+    """Traz de modelos/moveis/<arquivo> so as pecas novas que o usuario modelou (nomes que comecam por um dos prefixos dados),
+    nas coordenadas do movel exportado (frente -Y, base z = 0) levadas ao mundo por T_; mats troca os materiais pelo nome."""
+    caminho = os.path.join(AQUI, "modelos", "moveis", arquivo)
+    if not os.path.exists(caminho): return []
+    antes = set(bpy.data.objects); bpy.ops.import_scene.gltf(filepath=caminho); novos = [o for o in bpy.data.objects if o not in antes]
+    fica = [o for o in novos if o.type == "MESH" and any(o.name.startswith(n) for n in nomes)]
+    for o in fica:
+        espelhado = o.matrix_world.determinant() < 0                       # escala negativa no arquivo: as faces viram do avesso
+        o.data.transform(o.matrix_world); velhos = [mats(m) for m in o.data.materials] or [mats(None)]
+        if espelhado: o.data.flip_normals()      # mats: material do arquivo -> material da cena
+        por_face = [velhos[f.material_index] if f.material_index < len(velhos) else velhos[0] for f in o.data.polygons]
+        o.data.materials.clear(); usados = []
+        for m in por_face:
+            if m not in usados: usados.append(m)
+        for m in usados: o.data.materials.append(m)
+        for f, m in zip(o.data.polygons, por_face): f.material_index = usados.index(m)
+        o.data.transform(T_)
+    for o in novos:
+        if o not in fica: bpy.data.objects.remove(o)
+    for o in fica:
+        o.parent = None; o.matrix_world = Matrix.Identity(4)
+        for c in list(o.users_collection): c.objects.unlink(o)
+        col.objects.link(o)
+    return fica
+
 def cama(nome, x, y, rz, larg, col, m_lencol):
     """Cama com a cabeceira no fundo (Y = 0 do movel) e os pes na frente."""
     mv = Movel(nome, x, y, rz, col, 1.95)
     mv.cx("Cabeceira", (larg + .1, .05, 1.0), (0, -.025, .5), M["mad_esc"]); mv.cx("Base", (larg, 1.9, .3), (0, -1.0, .15), M["mad_esc"])
     mv.cx("Colchao", (larg - .02, 1.88, .2), (0, -1.0, .4), M["colchao"], bevel=.03)
     mv.cx("Lencol", (larg, 1.25, .21), (0, -1.32, .405), m_lencol, bevel=.03)
-    for k in range(2 if larg > 1.2 else 1):
-        xk = (k - .5) * larg / 2 if larg > 1.2 else 0
-        mv.cx("Travesseiro", (.55, .36, .11), (xk, -.3, .55), M["travesseiro"], bevel=.04)
+    novos = partes_modelo("cama_casal.glb" if larg > 1.2 else "cama_solteiro.glb", ("Plane",), Matrix.Translation(mv.o) @ mv.R.to_4x4(), col, lambda m: M["travesseiro"])
+    for k, o in enumerate(novos): o.name = "Mv_%s_Travesseiro_%d" % (nome, k + 1)      # travesseiros modelados pelo usuario
+    if not novos:
+        for k in range(2 if larg > 1.2 else 1):
+            xk = (k - .5) * larg / 2 if larg > 1.2 else 0
+            mv.cx("Travesseiro", (.55, .36, .11), (xk, -.3, .55), M["travesseiro"], bevel=.04)
     ob = box("Col_" + nome, (larg, 1.95, .5), mv.W((0, -.975, .25)), M["preto"], C_COL, rot=(0, 0, rz)); ob.hide_render = True
     return mv
 
@@ -1523,7 +1552,27 @@ cama("Cama_Casal", 6.4, 8.88, 0, 1.4, C_QUA, M["lencol"])                      #
 criado("Criado_A", 5.42, 8.88, 0, C_QUA); criado("Criado_B", 7.38, 8.88, 0, C_QUA)
 guarda_roupa("Guarda_Roupa_Casal", 7.88, 6.52, -PI / 2, C_QUA, w=1.8, portas=3)
 # (a comoda do quarto do casal foi tirada a pedido do usuario)
-box("Abajur_Base", (.1, .1, .22), (5.42, 8.7, Z3 + .66), M["louca"], C_QUA); cyl("Abajur_Cupula", .09, .13, .16, (5.42, 8.7, Z3 + .85), M["cortina"], C_MIU, seg=14)
+def abajur(nome, x, y, z):
+    """Abajur do usuario (modelos/moveis/abajur.glb): base oval de ceramica verde-oliva, pe e haste de latao acetinado, cupula de
+    linho (textura propria, UV do modelo) e lampada acesa. Vem com ~32 mil triangulos: reduzido (Decimate) para ~3 mil."""
+    def material(m):
+        n = m.name if m else ""
+        if n.startswith("Linho"): m.name = "Modelo_Abajur_Linho"; return m                 # "Modelo_": o pipeline mantem a UV do modelo
+        if n.startswith("Ceramica"): return M.setdefault("ceramica_oliva", mat("Ceramica_Oliva", "#2b3a2b", .3))
+        if n.startswith("Metal"): return M.setdefault("latao_acetinado", mat("Latao_Acetinado", "#8c7a55", .35, .85))
+        if n.startswith("Vidro"): return M["lamp"]
+        return M.setdefault("linho_acabamento", mat("Linho_Acabamento", "#a89c84", .8))
+    pecas = partes_modelo("abajur.glb", ("",), Matrix.Translation((x, y, z)), C_MIU, material)
+    if not pecas:
+        box(nome + "_Base", (.1, .1, .22), (x, y, z + .11), M["louca"], C_QUA); cyl(nome + "_Cupula", .09, .13, .16, (x, y, z + .3), M["cortina"], C_MIU, seg=14); return
+    for o in pecas:
+        n = len(o.data.polygons); nm = o.name
+        alvo = 1200 if "Base" in nm else 220 if ("Vi" in nm and "cupula" in nm) else 300 if "Lampada" in nm else 80 if "Suporte" in nm else 150 if any(k in nm for k in ("Gola", "Haste", "Soquete", "Pe ")) else n
+        if n > alvo * 1.3:
+            d_ = o.modifiers.new("Reduzir", "DECIMATE"); d_.ratio = alvo / n; d_.use_collapse_triangulate = True
+        for p_ in o.data.polygons: p_.use_smooth = True
+        o.name = nome + "_" + nm.split(".")[0].replace(" ", "_").replace("é", "e")
+abajur("Abajur", 5.42, 8.7, Z3 + .55)
 ph("Quadro_Quarto_1", "hanging_picture_frame_03", 4.9, 7.9, Z3 + 1.4, QUADRO_RZ - PI / 2, C_QUA, alt=.6, tris=600)
 box("Tapete_Quarto_1", (1.9, 1.1, .012), (6.4, 6.6, Z3 + .006), M["tapete"], C_QUA)
 
@@ -1625,8 +1674,16 @@ def bancada_cozinha(nome, x, y, rz, col, w=2.2, d=.55, h=.86):
     cyl("Mv_%s_Torneira_Corpo" % nome, .02, .02, .07, mv.W((bx, by, h + .16)), M["inox"], col, seg=16)      # corpo do misturador
     tubo("Mv_%s_Torneira_Alavanca" % nome, [mv.W(p) for p in ((bx + .015, by, h + .18), (bx + .05, by, h + .19), (bx + .09, by, h + .205))], .006, M["inox"], col, seg=10)
     # louca suja dentro da cuba, copo, esponja e detergente ao lado
-    for k in range(3): cyl("Mv_%s_Prato_Pia" % nome, .1, .1, .014, mv.W((xs - .13 + k * .012, yc - .04, zf + .012 + k * .014)), M["louca"], col, seg=18)
-    cyl("Mv_%s_Copo_Pia" % nome, .035, .03, .1, mv.W((xs + .14, yc - .08, zf + .055)), M["vidro_f2"], col, seg=12)
+    vidro_copo = M.setdefault("vidro_copo", mat("Vidro_Copo", "#e4ecee", .04, alpha=.35))
+    louca = partes_modelo("louca_pia.glb", ("Circle", "Cylinder"), Matrix.Translation(mv.W((xs - .0275, yc - .04, zf + .005))), C_MIU,
+                          lambda m: M["louca"])                                   # pratos e copo modelados pelo usuario (centro e fundo da louca antiga)
+    for o in louca:
+        copo = o.name.startswith("Cylinder"); o.name = "Mv_%s_%s" % (nome, "Copo_Pia" if copo else "Prato_Pia")
+        for p_ in o.data.polygons: p_.use_smooth = True
+        if copo: o.data.materials[0] = vidro_copo
+    if not louca:
+        for k in range(3): cyl("Mv_%s_Prato_Pia" % nome, .1, .1, .014, mv.W((xs - .13 + k * .012, yc - .04, zf + .012 + k * .014)), M["louca"], col, seg=18)
+        cyl("Mv_%s_Copo_Pia" % nome, .035, .03, .1, mv.W((xs + .14, yc - .08, zf + .055)), M["vidro_f2"], col, seg=12)
     mv.cx("Esponja", (.1, .065, .03), (xs + cl / 2 + .12, yc + .1, h + .045), M.setdefault("esponja", mat("Esponja", "#e3c13a", .95)))
     mv.cx("Esponja_Verde", (.1, .065, .012), (xs + cl / 2 + .12, yc + .1, h + .066), M.setdefault("esponja_v", mat("Esponja_Verde", "#2f6b3a", .95)))
     cyl("Mv_%s_Detergente" % nome, .028, .028, .2, mv.W((xs + cl / 2 + .1, yc + .2, h + .13)), M.setdefault("detergente", mat("Detergente", "#d7e8a8", .25, alpha=.75)), col, seg=12)
@@ -1825,7 +1882,11 @@ box("Balde", (.28, .28, .26), (-.6, 8.6, Z3 + .13), M["roupa_a"], C_COZ, bevel=.
 def gabinete_banheiro(nome, x, y, rz, col, w=.8, d=.42):
     mv = Movel(nome, x, y, rz, col, d); m = M["mdf_br"]
     mv.casco(-w / 2, w / 2, .25, .82, m, prat=(.52,)); mv.cx("Tampo", (w + .02, d + .03, .03), (0, -d / 2 - .015, .835), M["louca"])
-    mv.cx("Cuba", (.4, .3, .1), (0, -d / 2, .9), M["louca"], bevel=.02); cyl("Mv_%s_Torneira_Base" % nome, .022, .022, .02, mv.W((0, -.06, .86)), M["inox"], col, seg=14)
+    cuba = partes_modelo("gabinete_banheiro.glb", ("Cube",), Matrix.Translation(mv.o) @ mv.R.to_4x4() @ Matrix.Translation((0, 0, .25)), col,
+                         lambda m: M["inox"] if m and m.name.startswith("Inox") else M["preto"] if m and m.node_tree.nodes.get("Principled BSDF") and m.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value[0] < .1 else M["louca"])      # cuba de apoio e ralo modelados pelo usuario
+    for o in cuba: o.name = "Mv_%s_%s" % (nome, "Ralo" if len(o.data.materials) == 1 and o.data.materials[0] == M["inox"] else "Cuba")
+    if not cuba: mv.cx("Cuba", (.4, .3, .1), (0, -d / 2, .9), M["louca"], bevel=.02)
+    cyl("Mv_%s_Torneira_Base" % nome, .022, .022, .02, mv.W((0, -.06, .86)), M["inox"], col, seg=14)
     tubo("Mv_%s_Torneira" % nome, [mv.W(p) for p in [(0, -.06, .86 + k * .03) for k in range(4)] + [(0, -.105 + .045 * math.cos(t), .95 + .045 * math.sin(t)) for t in (PI * k / 10 for k in range(11))] + [(0, -.15, .925)]], .009, M["inox"], col, seg=12)
     tubo("Mv_%s_Torneira_Alavanca" % nome, [mv.W(p) for p in ((0, -.05, .93), (0, -.02, .955), (0, .01, .965))], .005, M["inox"], col, seg=8)
     mv.folha(-w / 2 + .003, .252, w / 2 - .005, .566, m, 1, zp=.46, pux=.1); mv.folha(w / 2 - .003, .252, w / 2 - .005, .566, m, -1, zp=.46, pux=.1)
@@ -1836,10 +1897,33 @@ def gabinete_banheiro(nome, x, y, rz, col, w=.8, d=.42):
     return mv
 gabinete_banheiro("Gabinete_Banheiro", .9, 3.93, 0, C_BAN)
 def vaso(nome, x, y, rz, col):
+    """Vaso sanitario com caixa acoplada (modelos/moveis/vaso_sanitario.glb, do usuario): bacia com interior, assento oval,
+    botao de descarga duplo, dobradicas cromadas e agua. O modelo vem com ~145 mil triangulos: cada peca e reduzida (Decimate)
+    para ~6 mil no total. No arquivo a frente olha para +Y: meia volta para ficar como os moveis (frente -Y). A tampa abre."""
     mv = Movel(nome, x, y, rz, col, .66)
-    mv.cx("Caixa", (.38, .17, .36), (0, -.085, .58), M["louca"], bevel=.015); mv.cx("Bacia", (.36, .46, .4), (0, -.42, .2), M["louca"], bevel=.05)
-    mv.cx("Agua", (.24, .3, .005), (0, -.42, .403), M["tela"], col=C_MIU)
-    mv.tampa((0, -.2, .405), (.36, .44, .025), M["louca"], -1.6, deitada=True)
+    M.setdefault("agua_vaso", mat("Agua_Vaso", "#5d8a92", .04))
+    def material(m):
+        n = m.name if m else ""
+        return M["inox"] if n.startswith("Cromado") else M["agua_vaso"] if n.startswith("Agua") else M["branco"] if n.startswith("Assento") else M["louca"]
+    pecas = partes_modelo("vaso_sanitario.glb", ("",), Matrix.Translation(mv.o) @ mv.R.to_4x4() @ Matrix.Rotation(PI, 4, "Z"), col, material)
+    if not pecas:
+        mv.cx("Caixa", (.38, .17, .36), (0, -.085, .58), M["louca"], bevel=.015); mv.cx("Bacia", (.36, .46, .4), (0, -.42, .2), M["louca"], bevel=.05)
+        mv.tampa((0, -.2, .405), (.36, .44, .025), M["louca"], -1.6, deitada=True); mv.colisao(.4, .42, d=.66); return mv
+    for o in pecas:
+        n = len(o.data.polygons); alvo = 1800 if "Bacia" in o.name else 1200 if "Assento" in o.name else 900 if "Base" in o.name else 700 if "Tampa do vaso" in o.name else 120 if "Agua" in o.name else n
+        if n > alvo * 1.3:
+            d_ = o.modifiers.new("Reduzir", "DECIMATE"); d_.ratio = alvo / n; d_.use_collapse_triangulate = True
+        for p_ in o.data.polygons: p_.use_smooth = True
+        if "Agua" in o.name or "Botao" in o.name or "Dobradi" in o.name or "Divisao" in o.name:
+            for c in list(o.users_collection): c.objects.unlink(o)
+            C_MIU.objects.link(o)
+        o.name = "Mv_%s_%s" % (nome, o.name.split(".")[0].replace(" ", "_").replace("ç", "c"))
+    tampa = next((o for o in pecas if "Tampa_do_vaso" in o.name), None)
+    if tampa:                                                             # tampa do vaso: gira na dobradica (borda de tras) e levanta
+        r = mv.raiz("Tam", (0, -.225, .44)); r["abre"] = "porta"; r["eixo"] = "x"; r["ang"] = -1.6
+        bpy.context.view_layer.update(); tampa.data.transform(r.matrix_world.inverted())
+        for c in list(tampa.users_collection): c.objects.unlink(tampa)
+        C_INT.objects.link(tampa); tampa.parent = r; tampa.name = r.name + "_Painel"
     mv.colisao(.4, .42, d=.66); return mv
 vaso("Vaso", .45, 1.72, PI, C_BAN)
 box("Box_Vidro", (.008, 1.2, 1.9), (-.2, 2.2, Z3 + .97), M["vidro"], C_VID); box("Box_Mureta", (.06, 1.2, .06), (-.2, 2.2, Z3 + .03), M["granito"], C_BAN)
@@ -1898,7 +1982,7 @@ for nome, pos, v in (("Interruptor_Sala", (4.62, 1.705, Z3 + 1.1), "y"), ("Inter
     tomada(nome, pos, v, C_MIU)
 # sala
 # (poltrona da sala tirada a pedido do usuario)
-ph("Vaso_Rack", "ceramic_vase_01", 5.95, 1.9, Z3 + .545, 0, C_SAL, alt=.28, tris=500); ph("Livros_Rack", "book_encyclopedia_set_01", 7.05, 1.9, Z3 + .545, PI, C_SAL, alt=.26, tris=800)
+ph("Vaso_Rack", "ceramic_vase_01", 5.95, 1.9, Z3 + .545, 0, C_SAL, alt=.28, tris=500)      # (livros do rack tirados a pedido do usuario)
 ph("Estante_Sala", "wooden_bookshelf_worn", 5.0, 1.9, None, PI, C_SAL, alt=1.7, tris=2500)
 ph("Porta_Retrato", "standing_picture_frame_01", 6.45, 3.55, Z3 + .4, .5, C_SAL, alt=.2, tris=400)
 box("Controle_TV", (.05, .17, .02), (6.95, 3.7, Z3 + .41), M["preto"], C_SAL); box("Roteador", (.2, .13, .03), (7.15, 1.85, Z3 + .56), M["branco"], C_SAL)
@@ -1981,9 +2065,49 @@ for nome, tam, pos in (("Rodape_Port_N", (7.2, .015, .1), (-2.7, 1.49, FZ + .05)
     box(nome, tam, pos, M["rodape"], C_PORT)
 box("Portaria_Tapete", (2.4, 1.6, .012), (-2.4, -.4, FZ + .006), M["tapete_est"], C_PORT)
 mesa("Portaria_Mesa_Centro", -2.4, -.2, (.9, .5), .4, C_PORT, M["mad_esc"], z=FZ)
-for k, (dx, m_) in enumerate(((-.2, "roupa_b"), (.05, "roupa_a"), (.22, "papel"))): box("Portaria_Revista", (.21, .28, .008), (-2.4 + dx, -.2, FZ + .405 + k * .008), M[m_], C_PORT, rot=(0, 0, k * .4))
+def revistas(nome, x, y, z):
+    """Tres revistas do usuario (modelos/moveis/revistas.glb) com capas impressas. Cada folha do miolo vinha com 588 triangulos
+    (~16 mil no total): o miolo e as contracapas sao reduzidos; as capas (12 triangulos, com a textura) ficam como estao."""
+    def material(m):
+        if m and not m.name.startswith("Modelo_"): m.name = "Modelo_Revista_" + m.name.replace(" ", "_")      # mantem a UV das capas
+        return m or M["papel"]
+    pecas = partes_modelo("revistas.glb", ("",), Matrix.Translation((x, y, z)), C_MIU, material)
+    if not pecas:
+        for k, (dx, m_) in enumerate(((-.2, "roupa_b"), (.05, "roupa_a"), (.22, "papel"))): box(nome, (.21, .28, .008), (x - .045 + dx, y, z + .004 + k * .008), M[m_], C_PORT, rot=(0, 0, k * .4))
+        return
+    for o in pecas:
+        n = len(o.data.polygons)
+        if n > 40:
+            d_ = o.modifiers.new("Reduzir", "DECIMATE"); d_.ratio = 24 / n
+        o.name = nome + "_" + o.name.split(".")[0].replace(" ", "_")
+revistas("Portaria_Revista", -2.3557, -.2, FZ + .401)      # na mesa de centro da portaria
 cyl("Portaria_Relogio", .16, .16, .03, (-2.0, 1.48, FZ + 2.3), M["louca"], C_PORT, rot=(PI / 2, 0, 0), seg=24); box("Portaria_Relogio_Ponteiro", (.012, .01, .12), (-2.0, 1.46, FZ + 2.34), M["preto"], C_MIU)
-box("Portaria_Bebedouro", (.32, .32, 1.0), (.7, .9, FZ + .5), M["branco"], C_PORT, bevel=.02); cyl("Portaria_Bebedouro_Galao", .13, .13, .38, (.7, .9, FZ + 1.2), M["bebedouro"], C_VID, seg=14)
+def bebedouro(nome, x, y, z, rz=0.0):
+    """Bebedouro de galao do usuario (modelos/moveis/bebedouro.glb): gabinete de ABS branco, nicho com bandeja e grelha de aco,
+    torneiras natural e gelada, painel grafite com indicadores e galao de PET azul com nervuras (reduzido de 5.600 para ~1.200)."""
+    def material(m):
+        n = m.name if m else ""
+        if n.startswith("PET"): return M["bebedouro"]
+        if n.startswith("Aco"): return M["inox"]
+        if n.startswith("Painel"): return M.setdefault("grafite_plastico", mat("Plastico_Grafite", "#2b2d30", .45))
+        if n.startswith("Comando"): return M.setdefault("comando_gelada", mat("Comando_Gelada", "#2f6fd6", .4))
+        if n.startswith("Indicador"): return M.setdefault("led_azul", mat("Led_Azul", "#3a7bff", .3, emit="#3a7bff", forca=2))
+        return M["branco"]
+    pecas = partes_modelo("bebedouro.glb", ("",), Matrix.Translation((x, y, z)) @ Matrix.Rotation(rz, 4, "Z"), C_PORT, material)
+    if not pecas:
+        box(nome, (.32, .32, 1.0), (x, y, z + .5), M["branco"], C_PORT, bevel=.02); cyl(nome + "_Galao", .13, .13, .38, (x, y, z + 1.2), M["bebedouro"], C_VID, seg=14); return
+    for o in pecas:
+        nm = o.name; o.name = nome + "_" + nm.split(".")[0].replace(" ", "_")
+        bm = bmesh.new(); bm.from_mesh(o.data); bmesh.ops.recalc_face_normals(bm, faces=bm.faces); bm.to_mesh(o.data); bm.free()      # algumas caixas vinham do avesso
+        if nm.startswith("Galao"):
+            d_ = o.modifiers.new("Reduzir", "DECIMATE"); d_.ratio = 1200 / len(o.data.polygons); d_.use_collapse_triangulate = True
+            for p_ in o.data.polygons: p_.use_smooth = True
+            for c in list(o.users_collection): c.objects.unlink(o)
+            C_VID.objects.link(o)                                                 # galao translucido: fora do bake, como os vidros
+        elif not any(k in nm for k in ("Gabinete", "Cabecote", "Lateral", "Parede", "Rodape", "Fundo", "Reservatorio", "Painel")):
+            for c in list(o.users_collection): c.objects.unlink(o)
+            C_MIU.objects.link(o)                                                 # pecas pequenas: sem lightmap
+bebedouro("Portaria_Bebedouro", .7, .9, FZ, -PI / 2)      # bocal virado para o meio da portaria (oeste)
 cyl("Portaria_Extintor", .07, .07, .45, (-6.2, -5.4, FZ + .9), M["extintor"], C_PORT, seg=14); box("Portaria_Extintor_Placa", (.02, .2, .2), (-6.29, -5.4, FZ + 1.75), M["extintor"], C_MIU)
 box("Portaria_Placa_Saida", (.4, .03, .16), (-2.7, -5.88, FZ + 2.6), M["placa_verde"], C_PORT); texto("Portaria_Texto_Saida", "SAÍDA", .07, (-2.7, -5.86, FZ + 2.6), "+y", M["texto_br"], C_MIU)
 texto("Portaria_Texto_Elevador", "ELEVADOR", .07, (-6.285, .6, FZ + 2.5), "+x", M["texto_pr"], C_MIU)
