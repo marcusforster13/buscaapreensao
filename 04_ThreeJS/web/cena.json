@@ -1,10 +1,10 @@
 {
- "gerado_em": "2026-10-19 17:06",
+ "gerado_em": "2026-10-20 12:15",
  "qualidade": "alta",
  "lightmaps": {
   "01_Rua_Patio_Estatico": {
    "lm": "lightmaps/LM_01_Rua_Patio.png",
-   "max": 1.86746,
+   "max": 1.86747,
    "ganho": 1.75
   },
   "02_Predio_Estatico": {
@@ -14,32 +14,32 @@
   },
   "03_Portaria_Estatico": {
    "lm": "lightmaps/LM_03_Portaria.png",
-   "max": 1.34704,
+   "max": 1.31035,
    "ganho": 3.0
   },
   "04_Corredor_Escada_Estatico": {
    "lm": "lightmaps/LM_04_Corredor_Escada.png",
-   "max": 2.32057,
+   "max": 2.29492,
    "ganho": 3.0
   },
   "05_Apto_Estrutura_Estatico": {
    "lm": "lightmaps/LM_05_Apto_Estrutura.png",
-   "max": 1.97995,
+   "max": 1.98001,
    "ganho": 3.0
   },
   "06_Sala_Estatico": {
    "lm": "lightmaps/LM_06_Sala.png",
-   "max": 1.09001,
+   "max": 1.08997,
    "ganho": 3.0
   },
   "07_Cozinha_Servico_Estatico": {
    "lm": "lightmaps/LM_07_Cozinha_Servico.png",
-   "max": 0.60335,
+   "max": 0.60557,
    "ganho": 3.0
   },
   "10_Quartos_Estatico": {
    "lm": "lightmaps/LM_10_Quartos.png",
-   "max": 0.87799,
+   "max": 0.87793,
    "ganho": 3.0
   },
   "11_Banheiro_Estatico": {
@@ -49,7 +49,7 @@
   },
   "12_Vizinho_301_Estatico": {
    "lm": "lightmaps/LM_12_Vizinho_301.png",
-   "max": 1.61921,
+   "max": 1.6194,
    "ganho": 3.0
   },
   "17_Entorno_Longe_Estatico": {

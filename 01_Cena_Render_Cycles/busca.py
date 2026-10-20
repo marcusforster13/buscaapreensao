@@ -1947,7 +1947,7 @@ def relogio(nome, x, yp, z, col, r=.15, m_aro=None):
     for suf, ang, L_, lg, m_ in (("_Hora", 2 * PI * (6 + 10 / 60) / 12, r * .5, .008, M["preto"]), ("_Minuto", 2 * PI * 10 / 60, r * .78, .005, M["preto"]), ("_Segundo", 2 * PI * 37 / 60, r * .85, .002, M["giro_verm"])):
         box(nome + suf, (lg, .002, L_), (x + math.sin(ang) * L_ * .4, yf - .004 - .001 * len(suf), z + math.cos(ang) * L_ * .4), m_, C_MIU, rot=(0, ang, 0))
     cyl(nome + "_Pino", .006, .006, .008, (x, yf - .008, z), M["preto"], C_MIU, rot=(PI / 2, 0, 0), seg=10)
-relogio("Relogio_Cozinha", -.35, 6.74, Z3 + 1.95, C_COZ)      # parede cheia, ao lado do vao da area de servico
+relogio("Relogio_Cozinha", .75, 6.74, Z3 + 2.42, C_COZ)      # em cima da porta da area de servico (ao lado ficava atras do armario alto)
 relogio("Relogio_Sala", 4.0, 5.44, Z3 + 1.85, C_SAL, r=.17, m_aro=M["mad_esc"])
 cyl("Lixeira_Cozinha", .13, .16, .42, (1.5, 6.5, Z3 + .21), M["branco"], C_COZ, seg=16); cyl("Lixeira_Cozinha_Tampa", .17, .17, .03, (1.5, 6.5, Z3 + .435), M["inox"], C_COZ, seg=16)
 ph("Limpador", "all_purpose_cleaner", -.72, 7.35, Z3 + .9, 0, C_COZ, alt=.26, tris=400); ph("Agua_Sanitaria", "bleach_bottle", -.6, 7.2, None, 0, C_COZ, alt=.3, tris=400)
