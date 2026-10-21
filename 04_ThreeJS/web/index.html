@@ -83,7 +83,7 @@ THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 const $ = id => document.getElementById(id);
-const VERSAO = '1021-1351';      // carimbada por carimbar_versao.py a cada envio; entra no endereco dos arquivos para o navegador nao usar copia antiga
+const VERSAO = '1021-1352';      // carimbada por carimbar_versao.py a cada envio; entra no endereco dos arquivos para o navegador nao usar copia antiga
 window.__versao = VERSAO; window.__arq = {};
 // endereco de um arquivo com a marca do conteudo dele: muda so quando o arquivo muda (o resto fica guardado no navegador)
 const H = window.__h = p => p + '?h=' + (window.__arq[p] || VERSAO);
@@ -199,7 +199,7 @@ gltf.scene.traverse(o => {
     // Ali fica so a luz calculada (lightmap), com um reflexo bem fraco para pisos e moveis encerados.
     if (dentro && !/Vidro|Espelho/.test(m.name)) { m.envMapIntensity = CFG.env_interior ?? .05; if (scene.environment) m.envMap = scene.environment; }      // o HDRI pode chegar antes ou depois da cena
     for (const k of ['map', 'roughnessMap', 'normalMap']) if (m[k]) m[k].anisotropy = ANISO;      // pisos e calcadas nitidos vistos de lado (em VR o olhar e sempre rasante)
-    if (lm && o.geometry.attributes.uv1) {
+    if (lm && o.geometry.attributes.uv1 && m.name !== 'Louca_Prato') {      // pratos: brilho proprio (ver acima)
       m.lightMap = lmTex[lm.lm]; m.userData.lmBase = lm.max * CFG.lightmap_ganho * (lm.ganho ?? 1) * (dentro ? CFG.interior_site ?? .85 : 1);
       m.lightMapIntensity = m.userData.lmBase; lmMats.push(m);
     } else if (!lm) { iluminar(m); if (/Espelho/.test(m0.name)) m.metalness = .95; if (grama) m.lightMapIntensity = CFG.luz_externa ?? 2.6; }      // pecas sem lightmap: luz uniforme (as que abrem recebem depois a luz do comodo, em abrir.js)
