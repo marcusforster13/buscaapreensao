@@ -1,0 +1,7 @@
+PECAS PARA REMODELAR (4)
+========================
+Tamanho real em metros, base em z = 0, centradas. Mande de volta com o mesmo nome.
+
+chuveiro.glb     18 x 27 x 10 cm      Chuveiro do box com o cano (a parede fica do lado -Y; o cano sai dela)
+
+Louca: fica dentro da cuba da cozinha (a cuba tem 50 x 40 cm e 18 cm de fundo). Tanque: encostado na parede pelo lado +Y.

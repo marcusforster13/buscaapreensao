@@ -1557,7 +1557,7 @@ def abajur(nome, x, y, z):
     linho (textura propria, UV do modelo) e lampada acesa. Vem com ~32 mil triangulos: reduzido (Decimate) para ~3 mil."""
     def material(m):
         n = m.name if m else ""
-        if n.startswith("Linho"): m.name = "Modelo_Abajur_Linho"; return m                 # "Modelo_": o pipeline mantem a UV do modelo
+        if n.startswith("Linho"): return M.setdefault("linho_cupula", mat("Linho_Cupula", "#e6dac2", .85))      # cor lisa de linho (a textura saia cinza e manchada)
         if n.startswith("Ceramica"): return M.setdefault("ceramica_oliva", mat("Ceramica_Oliva", "#2b3a2b", .3))
         if n.startswith("Metal"): return M.setdefault("latao_acetinado", mat("Latao_Acetinado", "#8c7a55", .35, .85))
         if n.startswith("Vidro"): return M["lamp"]
@@ -1572,6 +1572,9 @@ def abajur(nome, x, y, z):
             d_ = o.modifiers.new("Reduzir", "DECIMATE"); d_.ratio = alvo / n; d_.use_collapse_triangulate = True
         for p_ in o.data.polygons: p_.use_smooth = True
         o.name = nome + "_" + nm.split(".")[0].replace(" ", "_").replace("é", "e")
+        if "Cupula" in nm or "Base" in nm:                                    # cupula e base com lightmap (a luz por vertice partia a cupula ao meio)
+            for c in list(o.users_collection): c.objects.unlink(o)
+            C_QUA.objects.link(o)
 abajur("Abajur", 5.42, 8.7, Z3 + .55)
 ph("Quadro_Quarto_1", "hanging_picture_frame_03", 4.9, 7.9, Z3 + 1.4, QUADRO_RZ - PI / 2, C_QUA, alt=.6, tris=600)
 box("Tapete_Quarto_1", (1.9, 1.1, .012), (6.4, 6.6, Z3 + .006), M["tapete"], C_QUA)
@@ -1677,10 +1680,15 @@ def bancada_cozinha(nome, x, y, rz, col, w=2.2, d=.55, h=.86):
     vidro_copo = M.setdefault("vidro_copo", mat("Vidro_Copo", "#e4ecee", .04, alpha=.35))
     louca = partes_modelo("louca_pia.glb", ("Circle", "Cylinder"), Matrix.Translation(mv.W((xs - .0275, yc - .04, zf + .005))), C_MIU,
                           lambda m: M["louca"])                                   # pratos e copo modelados pelo usuario (centro e fundo da louca antiga)
+    pratos = [o for o in louca if not o.name.startswith("Cylinder")]
+    for o in pratos[1:]: louca.remove(o); bpy.data.objects.remove(o)        # um prato fica na pia; os outros vao para o escorredor
     for o in louca:
         copo = o.name.startswith("Cylinder"); o.name = "Mv_%s_%s" % (nome, "Copo_Pia" if copo else "Prato_Pia")
         for p_ in o.data.polygons: p_.use_smooth = True
         if copo: o.data.materials[0] = vidro_copo
+        else:                                                                 # prato com lightmap, como os do escorredor (fica branco)
+            for c in list(o.users_collection): c.objects.unlink(o)
+            col.objects.link(o)
     if not louca:
         for k in range(3): cyl("Mv_%s_Prato_Pia" % nome, .1, .1, .014, mv.W((xs - .13 + k * .012, yc - .04, zf + .012 + k * .014)), M["louca"], col, seg=18)
         cyl("Mv_%s_Copo_Pia" % nome, .035, .03, .1, mv.W((xs + .14, yc - .08, zf + .055)), M["vidro_f2"], col, seg=12)
@@ -1874,7 +1882,22 @@ def lavadora(nome, x, y, rz, col):
         o.parent = r; o.matrix_parent_inverse = Matrix.Identity(4); o.matrix_basis = Matrix.Identity(4)
     mv.colisao(.63, .85); return mv
 lavadora("Lavadora", 1.73, 8.4, -PI / 2, C_COZ)
-box("Tanque_Cuba", (.5, .55, .28), (-.7, 7.6, Z3 + .76), M["louca"], C_COZ, bevel=.02); box("Tanque_Coluna", (.2, .2, .62), (-.75, 7.6, Z3 + .31), M["louca"], C_COZ)
+def tanque(nome, x, y, rz):
+    """Tanque de louca do usuario (modelos/moveis/tanque.glb, ja reduzido por ele): cuba funda com borda, plano de esfregar com
+    frisos, valvula de escoamento cromada e coluna. No arquivo a frente olha para -Y e a parede fica do lado +Y."""
+    def material(m):
+        n = m.name if m else ""
+        return M["inox"] if n.startswith("Ralo") else M["preto"] if n.startswith("Interior") else M["louca"]
+    pecas = partes_modelo("tanque.glb", ("",), Matrix.Translation((x, y, Z3)) @ Matrix.Rotation(rz, 4, "Z"), C_MIU, material)
+    if not pecas:
+        box(nome + "_Cuba", (.5, .55, .28), (x, y, Z3 + .76), M["louca"], C_COZ, bevel=.02); box(nome + "_Coluna", (.2, .2, .62), (x - .05, y, Z3 + .31), M["louca"], C_COZ); return
+    for o in pecas:
+        nm = o.name; o.name = nome + "_" + nm.split(".")[0].replace(" ", "_")
+        for p_ in o.data.polygons: p_.use_smooth = True
+        if nm.startswith(("Tanque", "Coluna", "Plano", "Friso")):          # pecas grandes com lightmap
+            for c in list(o.users_collection): c.objects.unlink(o)
+            C_COZ.objects.link(o)
+tanque("Tanque", -.7, 7.6, PI / 2)      # encostado na parede oeste da area de servico, frente para o leste
 armario_alto("Armario_Servico", 1.73, 7.45, -PI / 2, C_COZ, w=.7, d=.36, h=1.9, prat=(.5, .95, 1.4))
 box("Balde", (.28, .28, .26), (-.6, 8.6, Z3 + .13), M["roupa_a"], C_COZ, bevel=.03)
 
@@ -1927,7 +1950,45 @@ def vaso(nome, x, y, rz, col):
     mv.colisao(.4, .42, d=.66); return mv
 vaso("Vaso", .45, 1.72, PI, C_BAN)
 box("Box_Vidro", (.008, 1.2, 1.9), (-.2, 2.2, Z3 + .97), M["vidro"], C_VID); box("Box_Mureta", (.06, 1.2, .06), (-.2, 2.2, Z3 + .03), M["granito"], C_BAN)
-cyl("Chuveiro", .06, .09, .08, (-.6, 1.9, Z3 + 2.05), M["branco"], C_BAN, seg=14); barra("Chuveiro_Cano", (-.6, 1.72, Z3 + 2.1), (-.6, 1.9, Z3 + 2.1), .012, M["inox"], C_MIU)
+def chuveiro(nome, x, y_parede, z_braco):
+    """Chuveiro eletrico do usuario (modelos/moveis/chuveiro.glb): carcaca de ABS, espalhador com 129 orificios e 29 bicos de
+    borracha, braco e canopla cromados, seletor de temperatura. O arquivo tem ~217 mil triangulos: as pecas repetidas (orificios,
+    bicos, parafusos, fendas) sao juntadas por material e reduzidas; a carcaca e o espalhador sao reduzidos com cuidado (lisos)."""
+    def material(m):
+        n = m.name if m else ""
+        if n.startswith("ABS"): return M["branco"]
+        if n.startswith("Cromado"): return M["inox"]
+        if n.startswith("Borracha"): return M.setdefault("borracha_chuveiro", mat("Borracha_Chuveiro", "#4b5257", .7))
+        if n.startswith("Indicacao"): return M.setdefault("azul_chuveiro", mat("Azul_Chuveiro", "#0b3a7a", .4))
+        return M["preto"]
+    T_ = Matrix.Translation((x, y_parede + .135, z_braco - .09))           # canopla encostada na parede (lado -Y do modelo)
+    pecas = partes_modelo("chuveiro.glb", ("",), T_, C_MIU, material)
+    if not pecas:
+        cyl(nome, .06, .09, .08, (x, y_parede + .18, z_braco - .05), M["branco"], C_BAN, seg=14); barra(nome + "_Cano", (x, y_parede, z_braco), (x, y_parede + .18, z_braco), .012, M["inox"], C_MIU); return
+    ALVO = {"Carcaca": 2200, "Jun": 900, "Disco": 400, "Braco": 300, "Canopla": 160, "Colar": 120, "Conector": 160, "Seletor": 160, "Alavanca": 60, "Indicacao": 60, "Marca": 40}
+    grupos = {}
+    for o in pecas:
+        nm = o.name
+        if any(nm.startswith(k) for k in ("Orificio", "Bico", "Parafuso", "Fenda")):
+            grupos.setdefault(nm.split(" ")[0], []).append(o); continue
+        alvo = next((v for k, v in ALVO.items() if nm.startswith(k)), 300); n = len(o.data.polygons)
+        if n > alvo * 1.3:
+            d_ = o.modifiers.new("Reduzir", "DECIMATE"); d_.ratio = alvo / n
+        for p_ in o.data.polygons: p_.use_smooth = True
+        o.name = nome + "_" + nm.split(".")[0].replace(" ", "_").replace("ç", "c").replace("ã", "a")
+        if nm.startswith(("Carcaca", "Disco")):
+            for c in list(o.users_collection): c.objects.unlink(o)
+            C_BAN.objects.link(o)
+    for k, objs in grupos.items():                                        # pecas repetidas viram uma malha so por tipo
+        bm = bmesh.new()
+        for o in objs: bm.from_mesh(o.data)
+        me = bpy.data.meshes.new(nome + "_" + k); bm.to_mesh(me); bm.free(); me.materials.append(objs[0].data.materials[0])
+        for o in objs: bpy.data.objects.remove(o)
+        j = bpy.data.objects.new(nome + "_" + k, me); C_MIU.objects.link(j)
+        por_peca = {"Orificio": 8, "Bico": 16, "Parafuso": 24, "Fenda": 4}[k]; n = len(me.polygons)
+        if n > por_peca * len(objs) * 1.3:
+            d_ = j.modifiers.new("Reduzir", "DECIMATE"); d_.ratio = por_peca * len(objs) / n
+chuveiro("Chuveiro", -.6, 1.72, Z3 + 2.1)
 box("Toalha", (.02, .45, .6), (1.72, 2.2, Z3 + 1.25), M["roupa_c"], C_BAN); box("Lixeira_Banheiro", (.2, .2, .26), (1.0, 1.86, Z3 + .13), M["branco"], C_BAN, bevel=.02)
 
 # ------------------------------------------------------------------ vizinho 301 (so a sala)
@@ -1986,7 +2047,7 @@ ph("Vaso_Rack", "ceramic_vase_01", 5.95, 1.9, Z3 + .545, 0, C_SAL, alt=.28, tris
 ph("Estante_Sala", "wooden_bookshelf_worn", 5.0, 1.9, None, PI, C_SAL, alt=1.7, tris=2500)
 ph("Porta_Retrato", "standing_picture_frame_01", 6.45, 3.55, Z3 + .4, .5, C_SAL, alt=.2, tris=400)
 box("Controle_TV", (.05, .17, .02), (6.95, 3.7, Z3 + .41), M["preto"], C_SAL); box("Roteador", (.2, .13, .03), (7.15, 1.85, Z3 + .56), M["branco"], C_SAL)
-ph("Fruteira", "wooden_bowl_01", 4.9, 3.2, Z3 + .76, 0, C_SAL, alt=.09, tris=500); ph("Bananas", "bananas", 4.92, 3.2, Z3 + .79, 1, C_SAL, alt=.07, tris=500); ph("Maca", "food_apple_01", 4.84, 3.24, Z3 + .79, 0, C_SAL, alt=.07, tris=200)
+# (fruteira, bananas e maca tirados a pedido do usuario: o modelo estava muito simplificado)
 # quartos
 ph("Despertador", "alarm_clock_01", 7.08, 8.7, Z3 + .55, 0, C_QUA, alt=.13, tris=500); ph("Pufe", "Ottoman_01", 6.1, 6.55, None, 0, C_QUA, alt=.42, tris=1200)
 # (vaso e retrato iam em cima da comoda, que saiu)
@@ -2018,7 +2079,18 @@ def microondas(nome, x, y, z, col, w=.48, d=.36, h=.28):
 microondas("Microondas", -.5, 4.3, Z3 + .89, C_COZ)
 ph("Panela", "pot_enamel_01", -.72, 5.03, Z3 + .9, 0, C_COZ, alt=.14, tris=700)
 box("Tabua", (.34, .22, .02), (-.05, 4.42, Z3 + .9), M["mad"], C_COZ, rot=(0, 0, .4), bevel=.004)
-for k in range(5): box("Escorredor_Prato", (.012, .2, .2), (.13 + k * .05, 4.28, Z3 + 1.0), M["louca"], C_COZ, bevel=.004)
+_pr = partes_modelo("louca_pia.glb", ("Circle",), Matrix.Identity(4), C_COZ, lambda m: M["louca"])      # pratos do usuario em pe no escorredor
+if _pr:
+    _m = _pr[0].data; _c = sum((v.co for v in _m.vertices), Vector()) / len(_m.vertices); _m.transform(Matrix.Translation(-_c))
+    _r = max(math.hypot(v.co.x, v.co.y) for v in _m.vertices)
+    for o in _pr[1:]: bpy.data.objects.remove(o)
+    for k in range(5):
+        o = _pr[0] if k == 0 else _pr[0].copy()
+        if k: o.data = _pr[0].data.copy(); C_COZ.objects.link(o)
+        o.name = "Escorredor_Prato"; o.matrix_world = Matrix.Translation((.13 + k * .05, 4.28, Z3 + .925 + _r)) @ Matrix.Rotation(PI / 2 + (k % 2) * .06, 4, "Y")
+        for p_ in o.data.polygons: p_.use_smooth = True
+else:
+    for k in range(5): box("Escorredor_Prato", (.012, .2, .2), (.13 + k * .05, 4.28, Z3 + 1.0), M["louca"], C_COZ, bevel=.004)
 box("Escorredor", (.34, .28, .03), (.23, 4.28, Z3 + .905), M["inox"], C_COZ)
 def relogio(nome, x, yp, z, col, r=.15, m_aro=None):
     """Relogio de parede na parede de face -Y (yp = face da parede): aro, mostrador, 12 marcas, ponteiros marcando 6h10."""
