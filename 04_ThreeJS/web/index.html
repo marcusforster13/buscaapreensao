@@ -83,7 +83,7 @@ THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 const $ = id => document.getElementById(id);
-const VERSAO = '1021-1158';      // carimbada por carimbar_versao.py a cada envio; entra no endereco dos arquivos para o navegador nao usar copia antiga
+const VERSAO = '1021-1351';      // carimbada por carimbar_versao.py a cada envio; entra no endereco dos arquivos para o navegador nao usar copia antiga
 window.__versao = VERSAO; window.__arq = {};
 // endereco de um arquivo com a marca do conteudo dele: muda so quando o arquivo muda (o resto fica guardado no navegador)
 const H = window.__h = p => p + '?h=' + (window.__arq[p] || VERSAO);
@@ -189,6 +189,7 @@ gltf.scene.traverse(o => {
     if (/Vidro_Fachada/.test(m.name)) { m.roughness = .06; m.metalness = .55; m.userData.reflexo = 1.2; }      // janelas dos predios: refletem o ceu
     if (/Grama_Lamina/.test(m.name)) m.side = THREE.DoubleSide;
     if (/WetFloor/i.test(m.name)) m.visible = false;      // placa de piso molhado escrita em ingles: fora (ja tirada de busca.py; some de vez no proximo bake)
+    if (m.name === 'Louca_Prato') { m.lightMap = null; m.emissive.set(0xf6f4ef); m.emissiveIntensity = .62; m.roughness = .45; }      // pratos: finos e curvos, o lightmap saia escuro e manchado; brilho proprio deixa brancos
     if (/Espelho/.test(m.name)) { m.metalness = .95; m.roughness = .04; m.color.setScalar(.9); espelhos.push({ m, o }); }      // espelhos: refletem o comodo (ver 'espelhos de verdade')
     if (/Modelo_Notebook_Tela|Modelo_Celular|Modelo_Monitor/.test(m.name)) { m.color.setScalar(.12); m.emissiveIntensity = .8; }      // telas: so o brilho proprio, sem estourar
     if (m.emissive) m.userData.emi0 = m.emissiveIntensity;

@@ -1678,8 +1678,9 @@ def bancada_cozinha(nome, x, y, rz, col, w=2.2, d=.55, h=.86):
     tubo("Mv_%s_Torneira_Alavanca" % nome, [mv.W(p) for p in ((bx + .015, by, h + .18), (bx + .05, by, h + .19), (bx + .09, by, h + .205))], .006, M["inox"], col, seg=10)
     # louca suja dentro da cuba, copo, esponja e detergente ao lado
     vidro_copo = M.setdefault("vidro_copo", mat("Vidro_Copo", "#e4ecee", .04, alpha=.35))
+    M.setdefault("louca_prato", mat("Louca_Prato", "#f6f4ef", .5))          # prato branco fosco (a louca brilhante refletia e ficava cinza)
     louca = partes_modelo("louca_pia.glb", ("Circle", "Cylinder"), Matrix.Translation(mv.W((xs - .0275, yc - .04, zf + .005))), C_MIU,
-                          lambda m: M["louca"])                                   # pratos e copo modelados pelo usuario (centro e fundo da louca antiga)
+                          lambda m: M["louca_prato"])                                   # pratos e copo modelados pelo usuario (centro e fundo da louca antiga)
     pratos = [o for o in louca if not o.name.startswith("Cylinder")]
     for o in pratos[1:]: louca.remove(o); bpy.data.objects.remove(o)        # um prato fica na pia; os outros vao para o escorredor
     for o in louca:
@@ -2079,7 +2080,7 @@ def microondas(nome, x, y, z, col, w=.48, d=.36, h=.28):
 microondas("Microondas", -.5, 4.3, Z3 + .89, C_COZ)
 ph("Panela", "pot_enamel_01", -.72, 5.03, Z3 + .9, 0, C_COZ, alt=.14, tris=700)
 box("Tabua", (.34, .22, .02), (-.05, 4.42, Z3 + .9), M["mad"], C_COZ, rot=(0, 0, .4), bevel=.004)
-_pr = partes_modelo("louca_pia.glb", ("Circle",), Matrix.Identity(4), C_COZ, lambda m: M["louca"])      # pratos do usuario em pe no escorredor
+_pr = partes_modelo("louca_pia.glb", ("Circle",), Matrix.Identity(4), C_COZ, lambda m: M.setdefault("louca_prato", mat("Louca_Prato", "#f6f4ef", .5)))      # pratos do usuario em pe no escorredor
 if _pr:
     _m = _pr[0].data; _c = sum((v.co for v in _m.vertices), Vector()) / len(_m.vertices); _m.transform(Matrix.Translation(-_c))
     _r = max(math.hypot(v.co.x, v.co.y) for v in _m.vertices)

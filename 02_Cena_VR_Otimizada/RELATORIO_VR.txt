@@ -1,6 +1,6 @@
 BUSCA E APREENSAO - VERSAO VR OTIMIZADA
 
-DEPOIS: 316933 tris | 83 malhas | 521 slots de material (~draw calls) | 20 luzes
+DEPOIS: 316933 tris | 83 malhas | 522 slots de material (~draw calls) | 20 luzes
 
 Triangulos por colecao:
   15_Vegetacao                          59184
