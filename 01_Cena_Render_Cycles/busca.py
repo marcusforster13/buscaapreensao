@@ -1679,7 +1679,7 @@ def bancada_cozinha(nome, x, y, rz, col, w=2.2, d=.55, h=.86):
     # louca suja dentro da cuba, copo, esponja e detergente ao lado
     vidro_copo = M.setdefault("vidro_copo", mat("Vidro_Copo", "#e4ecee", .04, alpha=.35))
     M.setdefault("louca_prato", mat("Louca_Prato", "#f6f4ef", .5))          # prato branco fosco (a louca brilhante refletia e ficava cinza)
-    louca = partes_modelo("louca_pia.glb", ("Circle", "Cylinder"), Matrix.Translation(mv.W((xs - .0275, yc - .04, zf + .005))), C_MIU,
+    louca = partes_modelo("louca_pia.glb", ("Circle", "Cylinder"), Matrix.Translation(mv.W((xs - .0275, yc - .04, zf + .015))), C_MIU,
                           lambda m: M["louca_prato"])                                   # pratos e copo modelados pelo usuario (centro e fundo da louca antiga)
     pratos = [o for o in louca if not o.name.startswith("Cylinder")]
     for o in pratos[1:]: louca.remove(o); bpy.data.objects.remove(o)        # um prato fica na pia; os outros vao para o escorredor
@@ -2078,7 +2078,7 @@ def microondas(nome, x, y, z, col, w=.48, d=.36, h=.28):
     for sx in (-1, 1):
         for sy in (-1, 1): cyl(nome + "_Pe", .012, .012, .01, (x + sx * (w / 2 - .04), y + sy * (d / 2 - .04), z + .005), M["preto"], col, seg=8)
 microondas("Microondas", -.5, 4.3, Z3 + .89, C_COZ)
-ph("Panela", "pot_enamel_01", -.72, 5.03, Z3 + .9, 0, C_COZ, alt=.14, tris=700)
+# (panela do fogao tirada a pedido do usuario)
 box("Tabua", (.34, .22, .02), (-.05, 4.42, Z3 + .9), M["mad"], C_COZ, rot=(0, 0, .4), bevel=.004)
 _pr = partes_modelo("louca_pia.glb", ("Circle",), Matrix.Identity(4), C_COZ, lambda m: M.setdefault("louca_prato", mat("Louca_Prato", "#f6f4ef", .5)))      # pratos do usuario em pe no escorredor
 if _pr:
