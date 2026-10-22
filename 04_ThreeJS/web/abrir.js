@@ -87,6 +87,19 @@ export function iniciarAbrir(ctx) {
     p.som = d.tipo === 'gaveta' ? 'movel_arrastado' : (d.colide ? 'porta_abrindo' : null);
     pecas.push(p);
   }
+  // portas e gavetas do mesmo movel com a mesma luz (a media): cada peca media a luz do piso a sua frente e o guarda-roupa ficava
+  // com uma porta mais clara que a outra
+  const porMovel = new Map();
+  for (const p of pecas) {
+    const m = /^A_(Fol|Gav|Tam)_(.+)_\d+$/.exec(p.nome); if (!m) continue;
+    const ls = p.ms.flatMap(x => [].concat(x.material)).map(mt => mt.userData.luzBase).filter(v => v != null); if (!ls.length) continue;
+    (porMovel.get(m[2]) || porMovel.set(m[2], []).get(m[2])).push([p, ls[0]]);
+  }
+  for (const lista of porMovel.values()) {
+    if (lista.length < 2) continue;
+    const media = lista.reduce((a, [, l]) => a + l, 0) / lista.length;
+    for (const [p] of lista) for (const x of p.ms) for (const mt of [].concat(x.material)) { mt.lightMapIntensity = media; mt.userData.luzBase = media; }
+  }
 
   function aplicar(p) {
     if (p.tipo === 'gaveta') p.o.position.copy(p.pos0).addScaledVector(p.dirL, p.curso * p.f);

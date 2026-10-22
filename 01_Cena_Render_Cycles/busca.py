@@ -2050,9 +2050,9 @@ ph("Porta_Retrato", "standing_picture_frame_01", 6.45, 3.55, Z3 + .4, .5, C_SAL,
 box("Controle_TV", (.05, .17, .02), (6.95, 3.7, Z3 + .41), M["preto"], C_SAL); box("Roteador", (.2, .13, .03), (7.15, 1.85, Z3 + .56), M["branco"], C_SAL)
 # (fruteira, bananas e maca tirados a pedido do usuario: o modelo estava muito simplificado)
 # quartos
-ph("Despertador", "alarm_clock_01", 7.08, 8.7, Z3 + .55, 0, C_QUA, alt=.13, tris=500); ph("Pufe", "Ottoman_01", 6.1, 6.55, None, 0, C_QUA, alt=.42, tris=1200)
+ph("Despertador", "alarm_clock_01", 7.08, 8.7, Z3 + .55, 0, C_QUA, alt=.13, tris=500)      # (pufe tirado a pedido do usuario)
 # (vaso e retrato iam em cima da comoda, que saiu)
-ph("Notebook", "classic_laptop", 2.85, 8.62, Z3 + .76, PI, C_QUA, alt=.24, tris=1200)
+# (notebook antigo da escrivaninha tirado a pedido do usuario)
 box("Caderno", (.21, .29, .018), (2.62, 8.55, Z3 + .769), M["roupa_a"], C_QUA, rot=(0, 0, .3)); box("Folhas_Soltas", (.21, .297, .004), (3.32, 8.5, Z3 + .762), M["papel"], C_QUA, rot=(0, 0, -.4))
 ph("Bola", "football", 4.5, 5.85, None, 0, C_QUA, alt=.22, tris=500)
 box("Cartaz_Quarto_2", (.7, .012, 1.0), (4.0, 5.57, Z3 + 1.5), M["cartaz"], C_QUA)
@@ -2077,7 +2077,39 @@ def microondas(nome, x, y, z, col, w=.48, d=.36, h=.28):
     for k in range(6): box(nome + "_Ventilacao", (.003, .12, .006), (x + w / 2 + .0005, y - .05, zc + .06 - k * .015), M["preto"], col)
     for sx in (-1, 1):
         for sy in (-1, 1): cyl(nome + "_Pe", .012, .012, .01, (x + sx * (w / 2 - .04), y + sy * (d / 2 - .04), z + .005), M["preto"], col, seg=8)
-microondas("Microondas", -.5, 4.3, Z3 + .89, C_COZ)
+def microondas_usuario(nome, x, y, z):
+    """Micro-ondas do usuario (modelos/moveis/microondas.glb, preparado por preparar_microondas.py: ~11 mil triangulos).
+    Frente para +Y (bancada). A porta (pecas PORTA_*) gira na dobradica do lado esquerdo e abre para fora."""
+    def material(m):
+        n = m.name if m else ""
+        if n.startswith("Inox"): return M["inox"]
+        if n.startswith("Aluminio"): return M["metal"]
+        if n.startswith("Borracha"): return M.setdefault("borracha_chuveiro", mat("Borracha_Chuveiro", "#4b5257", .7))
+        if n.startswith("Interior"): return M.setdefault("esmalte_micro", mat("Esmalte_Microondas", "#d9d8d2", .45))
+        if n.startswith("Vidro fumado"): return M.setdefault("vidro_micro", mat("Vidro_Microondas", "#0c0e10", .08, alpha=.75))
+        if n.startswith("Vidro do prato"): return M.setdefault("vidro_prato_micro", mat("Vidro_Prato_Micro", "#dfe8ea", .05, alpha=.4))
+        if n.startswith("Digitos"): return M.setdefault("digitos_verdes", mat("Digitos_Verdes", "#3cff7a", .3, emit="#3cff7a", forca=3))
+        if n.startswith("Serigrafia"): return M["branco"]
+        return M.setdefault("plastico_preto", mat("Plastico_Preto", "#151618", .45))
+    T_ = Matrix.Translation((x, y, z))
+    pecas = partes_modelo("microondas.glb", ("",), T_, C_MIU, material)
+    if not pecas: return microondas(nome, x, y, z, C_COZ)
+    r = vazio("A_Fol_" + nome + "_1", T_ @ Vector((-.231, .187, .15)), C_INT, 0); r["abre"] = "porta"; r["ang"] = 1.6      # dobradica na quina esquerda da porta
+    bpy.context.view_layer.update(); Ri = r.matrix_world.inverted()
+    for o in pecas:
+        nm = o.name.split(".")[0]
+        for p_ in o.data.polygons: p_.use_smooth = False
+        if nm.startswith("PORTA_"):
+            o.data.transform(Ri); o.name = r.name + "_" + nm[6:]
+            for c in list(o.users_collection): c.objects.unlink(o)
+            C_INT.objects.link(o); o.parent = r
+        else:
+            o.name = nome + "_" + nm
+            if nm.startswith(("Parede", "Tampa_externa", "Compartimento", "Painel", "Chassi")):      # caixa externa com lightmap
+                for c in list(o.users_collection): c.objects.unlink(o)
+                C_COZ.objects.link(o)
+    ob = box("Col_" + nome, (.48, .36, .29), (x, y, z + .145), M["preto"], C_COL); ob.hide_render = True
+microondas_usuario("Microondas", -.5, 4.3, Z3 + .89)
 # (panela do fogao tirada a pedido do usuario)
 box("Tabua", (.34, .22, .02), (-.05, 4.42, Z3 + .9), M["mad"], C_COZ, rot=(0, 0, .4), bevel=.004)
 _pr = partes_modelo("louca_pia.glb", ("Circle",), Matrix.Identity(4), C_COZ, lambda m: M.setdefault("louca_prato", mat("Louca_Prato", "#f6f4ef", .5)))      # pratos do usuario em pe no escorredor
@@ -2094,7 +2126,42 @@ else:
     for k in range(5): box("Escorredor_Prato", (.012, .2, .2), (.13 + k * .05, 4.28, Z3 + 1.0), M["louca"], C_COZ, bevel=.004)
 box("Escorredor", (.34, .28, .03), (.23, 4.28, Z3 + .905), M["inox"], C_COZ)
 def relogio(nome, x, yp, z, col, r=.15, m_aro=None):
-    """Relogio de parede na parede de face -Y (yp = face da parede): aro, mostrador, 12 marcas, ponteiros marcando 6h10."""
+    """Relogio de parede na parede de face -Y (yp = face da parede). Usa o modelo do usuario (modelos/moveis/relogio.glb: aro de
+    nogueira, mostrador marfim com numeros, vidro, ponteiros; ~109 mil triangulos reduzidos para ~5 mil); senao, o relogio simples."""
+    def material(m):
+        n = m.name if m else ""
+        if n.startswith("Nogueira"): m.name = "Modelo_Relogio_Nogueira"; return m
+        if n.startswith("Metal"): return M["inox"]
+        if n.startswith("Mostrador"): return M.setdefault("mostrador_marfim", mat("Mostrador_Marfim", "#e4e0d2", .5))
+        if n.startswith("Ponteiro vermelho"): return M["giro_verm"]
+        if n.startswith("Vidro"): return M.setdefault("vidro_relogio", mat("Vidro_Relogio", "#ffffff", .03, alpha=.12))
+        return M["preto"]
+    esc = 2 * r / .364
+    pecas = partes_modelo("relogio.glb", ("",), Matrix.Translation((x, yp - .026 * esc, z - r)) @ Matrix.Scale(esc, 4), C_MIU, material)
+    if pecas:
+        alvo = {"Aro": 1600, "Filete": 240, "Eixo": 40, "Tampa do eixo": 40, "Mostrador": 160, "Tampa traseira": 80, "Vidro": 80}
+        indices = []
+        for o in pecas:
+            nm = o.name
+            if nm.startswith("Indice"): indices.append(o); continue
+            al = next((v for k, v in alvo.items() if nm.startswith(k)), None); n = len(o.data.polygons)
+            if al and n > al * 1.3:
+                d_ = o.modifiers.new("Reduzir", "DECIMATE"); d_.ratio = al / n
+            o.name = nome + "_" + nm.split(".")[0].replace(" ", "_")
+            if nm.startswith("Vidro"):
+                for c in list(o.users_collection): c.objects.unlink(o)
+                C_VID.objects.link(o)
+            elif nm.startswith(("Aro", "Mostrador")):
+                for c in list(o.users_collection): c.objects.unlink(o)
+                col.objects.link(o)
+        if indices:                                                       # 60 marcas: uma malha so, simplificada
+            bm = bmesh.new()
+            for o in indices: bm.from_mesh(o.data)
+            me = bpy.data.meshes.new(nome + "_Indices"); bm.to_mesh(me); bm.free(); me.materials.append(M["preto"])
+            for o in indices: bpy.data.objects.remove(o)
+            j = bpy.data.objects.new(nome + "_Indices", me); C_MIU.objects.link(j)
+            d_ = j.modifiers.new("Reduzir", "DECIMATE"); d_.ratio = min(1, 12 * 60 / max(1, len(me.polygons)))
+        return
     yf = yp - .02
     tubo(nome + "_Aro", [(x + math.cos(a) * r, yf, z + math.sin(a) * r) for a in (2 * PI * k / 36 for k in range(37))], .012, m_aro or M["metal"], C_MIU, seg=8)
     cyl(nome, r, r, .02, (x, yp - .01, z), M["louca"], col, rot=(PI / 2, 0, 0), seg=36)
@@ -2109,16 +2176,107 @@ relogio("Relogio_Sala", 4.0, 5.44, Z3 + 1.85, C_SAL, r=.17, m_aro=M["mad_esc"])
 cyl("Lixeira_Cozinha", .13, .16, .42, (1.5, 6.5, Z3 + .21), M["branco"], C_COZ, seg=16); cyl("Lixeira_Cozinha_Tampa", .17, .17, .03, (1.5, 6.5, Z3 + .435), M["inox"], C_COZ, seg=16)
 ph("Limpador", "all_purpose_cleaner", -.72, 7.35, Z3 + .9, 0, C_COZ, alt=.26, tris=400); ph("Agua_Sanitaria", "bleach_bottle", -.6, 7.2, None, 0, C_COZ, alt=.3, tris=400)
 barra("Vassoura_Cabo", (-.82, 8.82, Z3 + .12), (-.86, 8.9, Z3 + 1.35), .012, M["mad"], C_MIU, seg=6); box("Vassoura_Cerdas", (.3, .06, .14), (-.82, 8.8, Z3 + .07), M["roupa_b"], C_COZ)
-cyl("Cesto_Roupa", .2, .24, .45, (.9, 8.55, Z3 + .225), M["branco"], C_COZ, seg=16); box("Cesto_Roupa_Dentro", (.3, .3, .1), (.9, 8.55, Z3 + .44), M["roupa_a"], C_COZ, bevel=.04)
+# (cesto de roupa tirado a pedido do usuario)
 for k in range(2): barra("Varal", (-.85, 7.2 + k * .3, Z3 + 2.2), (1.7, 7.2 + k * .3, Z3 + 2.2), .006, M["branco"], C_MIU, seg=4)
 for k, (xr, m_) in enumerate(((-.3, "roupa_c"), (.3, "roupa_a"), (.95, "roupa_b"))): box("Varal_Roupa", (.42, .02, .55), (xr, 7.2 + (k % 2) * .3, Z3 + 1.92), M[m_], C_COZ)
 # banheiro
 cyl("Papel_Higienico", .055, .055, .1, (.95, 1.76, Z3 + .7), M["papel"], C_BAN, rot=(0, PI / 2, 0), seg=14)
-for k, m_ in enumerate(("frasco_a", "frasco_b", "frasco_c")): cyl("Frasco_Box", .035, .035, .2, (-.82, 2.5 + k * .12, Z3 + 1.2), M[m_], C_BAN, seg=10)
+def frascos_box():
+    """Shampoo e condicionador do usuario (modelos/moveis/shampoos.glb) com o rotulo da imagem de referencia
+    (rotulo_shampoo.webp: os dois frascos lado a lado) projetado de frente; atras o rotulo se repete espelhado (le certo)."""
+    caminho = os.path.join(AQUI, "modelos", "moveis", "rotulo_shampoo.webp")
+    pecas = partes_modelo("shampoos.glb", ("Cylinder",), Matrix.Identity(4), C_MIU, lambda m: M["branco"])
+    if not pecas or not os.path.exists(caminho): return False
+    img = bpy.data.images.load(caminho); W, H = img.size
+    px = np.array(img.pixels[:], np.float32).reshape(H, W, 4)[::-1]                            # linha 0 = topo
+    fundo = (px[..., 3] > .5) & (px[..., :3].mean(2) < .93)                                     # o frasco: opaco e nao branco (o fundo e transparente)
+    def caixa(x0, x1):
+        cols = np.where(fundo[:, x0:x1].any(0))[0] + x0; rows = np.where(fundo[:, x0:x1].any(1))[0]
+        return cols.min(), cols.max(), rows.min(), rows.max()
+    regioes = [caixa(0, W // 2), caixa(W // 2, W)]                                              # shampoo | condicionador
+    m = M.setdefault("rotulo_frascos", mat("Rotulo_Frascos", "#ffffff", .35))
+    nt = m.node_tree; b = nt.nodes["Principled BSDF"]; t = nt.nodes.new("ShaderNodeTexImage"); t.image = img
+    nt.links.new(t.outputs["Color"], b.inputs["Base Color"])
+    pecas.sort(key=lambda o: min(v.co.x for v in o.data.vertices))                             # da esquerda para a direita (como na imagem)
+    alto = max(max(v.co.z for v in o.data.vertices) - min(v.co.z for v in o.data.vertices) for o in pecas)
+    esc = .19 / alto                                                                            # shampoo de 300 ml: ~19 cm
+    for k, (o, (c0, c1, r0, r1)) in enumerate(zip(pecas, regioes)):
+        me = o.data; vs = me.vertices
+        x0, x1 = min(v.co.x for v in vs), max(v.co.x for v in vs); z0, z1 = min(v.co.z for v in vs), max(v.co.z for v in vs)
+        uv = me.uv_layers.get("UVMap") or me.uv_layers.new(name="UVMap")
+        ccx, ccy = (x0 + x1) / 2, (min(v.co.y for v in vs) + max(v.co.y for v in vs)) / 2
+        m_ = .07 * (c1 - c0); c0_, c1_ = c0 + m_, c1 - m_                                          # longe do contorno escuro da imagem
+        for f in me.polygons:
+            fc = f.center; af = math.atan2(fc.x - ccx, -(fc.y - ccy))                            # 0 = frente (-Y); +-pi = costas
+            for li in f.loop_indices:
+                co = vs[me.loops[li].vertex_index].co; a_ = math.atan2(co.x - ccx, -(co.y - ccy))
+                if abs(a_ - af) > PI: a_ += 2 * PI if a_ < af else -2 * PI                       # mesma volta da face (sem costura)
+                if abs(af) > PI / 2: a_ = math.copysign(PI, a_) - a_                              # costas: rotulo espelhado (le certo)
+                fx = min(1, max(0, .5 + a_ / PI)); fz = (co.z - z0) / (z1 - z0)
+                uv.data[li].uv = ((c0_ + fx * (c1_ - c0_)) / W, 1 - (r1 - fz * (r1 - r0)) / H)
+        me.materials.clear(); me.materials.append(m); me.materials.append(M.setdefault("tampa_verde", mat("Tampa_Verde", "#5e7a3e", .35))); me.materials.append(M.setdefault("frasco_creme", mat("Frasco_Creme", "#ebe6d8", .35)))
+        def raio(zz0, zz1):
+            r_ = [math.hypot(v.co.x - ccx, v.co.y - ccy) for v in vs if zz0 <= v.co.z <= zz1]
+            return sum(r_) / len(r_) if r_ else 0
+        h_ = z1 - z0; tampa_em_cima = raio(z1 - .08 * h_, z1) < raio(z0, z0 + .08 * h_)          # a tampa e a ponta mais fina
+        r_corpo = raio(z0 + .4 * h_, z0 + .6 * h_)
+        for f in me.polygons:                                                                       # tampa: plastico verde liso
+            t = (f.center.z - z0) / h_; perto = t > .8 if tampa_em_cima else t < .2
+            if perto and math.hypot(f.center.x - ccx, f.center.y - ccy) < r_corpo * .78: f.material_index = 1
+            elif abs(f.normal.z) > .75: f.material_index = 2                                       # topo e fundo do frasco: creme liso (sem mancha da imagem)
+        cx, cy = (x0 + x1) / 2, (min(v.co.y for v in vs) + max(v.co.y for v in vs)) / 2
+        me.transform(Matrix.Translation((-.82, 2.56 + k * .15, Z3 + 1.1)) @ Matrix.Rotation(PI / 2, 4, "Z") @ Matrix.Scale(esc, 4) @ Matrix.Translation((-cx, -cy, -z0)))
+        for p_ in me.polygons: p_.use_smooth = True
+        o.name = ("Frasco_Shampoo", "Frasco_Condicionador")[k]
+    return True
+if not frascos_box():
+    for k, m_ in enumerate(("frasco_a", "frasco_b", "frasco_c")): cyl("Frasco_Box", .035, .035, .2, (-.82, 2.5 + k * .12, Z3 + 1.2), M[m_], C_BAN, seg=10)
 box("Prateleira_Box", (.13, .46, .025), (-.835, 2.62, Z3 + 1.0875), M["granito"], C_BAN)
 for y_ in (2.43, 2.81): box("Prateleira_Box_Suporte", (.1, .015, .05), (-.85, y_, Z3 + 1.05), M["inox"], C_MIU)
 box("Tapete_Banheiro", (.5, .8, .015), (.85, 3.0, Z3 + .0075), M["lencol"], C_BAN)
 for k, m_ in enumerate(("frasco_c", "frasco_a")): cyl("Frasco_Pia", .03, .03, .14, (.58 + k * .1, 3.82, Z3 + .92), M[m_], C_BAN, seg=10)
+def escova_no_copo(x, y, z):
+    """Copo de vidro (o mesmo da louca do usuario) com a escova de dente do usuario (modelos/moveis/escova_dente.glb), inclinada.
+    A escova vem sem material: cabeca e pescoco brancos, empunhadura e laterais de baixo azuis, cerdas azuis (como a referencia)."""
+    copo = partes_modelo("louca_pia.glb", ("Cylinder",), Matrix.Identity(4), C_MIU, lambda m: M.setdefault("vidro_copo", mat("Vidro_Copo", "#e4ecee", .04, alpha=.35)))
+    esc = partes_modelo("escova_dente.glb", ("Plane", "Cylinder"), Matrix.Identity(4), C_MIU, lambda m: M["branco"])
+    if not copo or not esc: return
+    c = copo[0]; vs = c.data.vertices
+    cx, cy, cz = (min(v.co.x for v in vs) + max(v.co.x for v in vs)) / 2, (min(v.co.y for v in vs) + max(v.co.y for v in vs)) / 2, min(v.co.z for v in vs)
+    c.data.transform(Matrix.Translation((x - cx, y - cy, z - cz))); c.name = "Banheiro_Copo"
+    azul = M.setdefault("azul_escova", mat("Azul_Escova", "#2f6fd1", .45))
+    cabo = next(o for o in esc if o.name.startswith("Plane")); cerdas = [o for o in esc if o is not cabo]
+    vs = cabo.data.vertices; z0, z1 = min(v.co.z for v in vs), max(v.co.z for v in vs); L = z1 - z0
+    bx, by = (min(v.co.x for v in vs) + max(v.co.x for v in vs)) / 2, (min(v.co.y for v in vs) + max(v.co.y for v in vs)) / 2
+    cabo.data.materials.append(azul)
+    for f in cabo.data.polygons:                                         # 0 = branco, 1 = azul
+        t = (f.center.z - z0) / L; lado = abs(f.normal.x) < .55
+        f.material_index = 1 if (t < .42 and lado) or (t < .14) or (.42 < t < .62 and f.normal.x > .6) else 0
+    for o in cerdas: o.data.materials.clear(); o.data.materials.append(azul)
+    s_ = .19 / L                                                          # escova de ~19 cm
+    T_ = Matrix.Translation((x + .012, y, z + .012)) @ Matrix.Rotation(-.22, 4, "Y") @ Matrix.Scale(s_, 4) @ Matrix.Translation((-bx, -by, -z0))
+    for o in esc:
+        o.data.transform(T_); o.name = "Banheiro_Escova_" + ("Cabo" if o is cabo else "Cerdas")
+        for p_ in o.data.polygons: p_.use_smooth = True
+escova_no_copo(1.22, 3.83, Z3 + .85)      # na bancada do gabinete, ao lado da cuba
+def pasta_de_dente(x, y, z):
+    """Creme dental do usuario (modelos/moveis/pasta_dente.glb), em pe sobre a tampa ao lado do copo. Sem material no arquivo:
+    faixas como na referencia (azul em cima, branco no meio, verde embaixo) e tampa branca."""
+    pecas = partes_modelo("pasta_dente.glb", ("Cylinder",), Matrix.Identity(4), C_MIU, lambda m: M["branco"])
+    if not pecas: return
+    azul = M.setdefault("azul_escova", mat("Azul_Escova", "#2f6fd1", .45)); verde = M.setdefault("verde_menta", mat("Verde_Menta", "#2fae6e", .45))
+    ps = [v.co for o in pecas for v in o.data.vertices]; z0 = min(p.z for p in ps); z1 = max(p.z for p in ps)
+    cx, cy = (min(p.x for p in ps) + max(p.x for p in ps)) / 2, (min(p.y for p in ps) + max(p.y for p in ps)) / 2
+    tubo_ = max(pecas, key=lambda o: max(v.co.z for v in o.data.vertices))
+    vs = tubo_.data.vertices; t0, t1 = min(v.co.z for v in vs), max(v.co.z for v in vs)
+    tubo_.data.materials.append(azul); tubo_.data.materials.append(verde)
+    for f in tubo_.data.polygons:
+        t = (f.center.z - t0) / (t1 - t0); f.material_index = 1 if .66 < t < .95 else 2 if .06 < t < .3 else 0
+    T_ = Matrix.Translation((x, y, z)) @ Matrix.Rotation(PI / 2, 4, "Z") @ Matrix.Scale(.17 / (z1 - z0), 4) @ Matrix.Translation((-cx, -cy, -z0))
+    for o in pecas:
+        o.data.transform(T_); o.name = "Banheiro_Creme_Dental_" + ("Tubo" if o is tubo_ else "Tampa")
+        for p_ in o.data.polygons: p_.use_smooth = True
+pasta_de_dente(1.12, 3.87, Z3 + .85)
 # portaria e corredor
 # (placa de piso molhado tirada: o modelo vem escrito em ingles)
 ph("Portaria_Camera", "security_camera_01", .7, 1.3, FZ + 2.7, 2.4, C_PORT, alt=.22, tris=500); box("Portaria_Prancheta", (.23, .32, .008), (-.55, -3.3, FZ + .766), M["mad"], C_PORT, rot=(0, 0, .3)); box("Portaria_Prancheta_Folha", (.21, .29, .003), (-.55, -3.3, FZ + .772), M["papel"], C_MIU, rot=(0, 0, .3))
@@ -2193,7 +2351,7 @@ for nome, tam, pos in (("Rodape_Cor_S1", (1.8, .015, .08), (-4.3, .11, Z3 + .04)
     box(nome, tam, pos, M["rodape"], C_COR)
 for x, y in ((-2.3, 1.49), (4.6, 1.49), (-2.3, .11), (4.6, .11)):                 # campainhas ao lado das quatro portas
     box("Corredor_Campainha", (.07, .012, .1), (x, y, Z3 + 1.25), M["branco"], C_MIU); cyl("Corredor_Campainha_Botao", .012, .012, .006, (x, y + (.008 if y < 1 else -.008), Z3 + 1.25), M["preto"], C_MIU, rot=(PI / 2, 0, 0), seg=10)
-texto("Corredor_Texto_Andar", "3º ANDAR", .09, (-6.285, 1.42, Z3 + 2.35), "+x", M["texto_pr"], C_MIU)
+texto("Corredor_Texto_Andar", "3º ANDAR", .09, (-5.45, 1.497, Z3 + 1.75), "-y", M["texto_pr"], C_MIU)      # na parede do corredor ao lado do elevador (antes ficava cortado no canto)
 box("Corredor_Placa_Saida", (.4, .03, .16), (-5.55, .12, Z3 + 2.32), M["placa_verde"], C_COR); texto("Corredor_Texto_Saida", "SAÍDA", .07, (-5.55, .14, Z3 + 2.32), "+y", M["texto_br"], C_MIU)
 for x in (-.9, 6.0): box("Corredor_Quadro_%d" % x, (.6, .02, .45), (x, 1.49, Z3 + 1.55), M[("roupa_e", "roupa_a")[x > 0]], C_COR); box("Corredor_Quadro_Moldura_%d" % x, (.68, .015, .53), (x, 1.495, Z3 + 1.55), M["mad_esc"], C_COR)
 cyl("Corredor_Lixeira", .12, .1, .45, (7.75, 1.35, Z3 + .225), M["inox"], C_COR, seg=14)

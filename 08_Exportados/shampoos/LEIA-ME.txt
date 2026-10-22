@@ -1,0 +1,7 @@
+PECAS PARA REMODELAR (5)
+========================
+Tamanho real em metros, base em z = 0, centradas. Mande de volta com o mesmo nome.
+
+shampoos.glb     46 x 13 x 28 cm      Tres frascos de shampoo na prateleira de pedra do box, com os suportes (a parede fica do lado +Y)
+
+Louca: fica dentro da cuba da cozinha (a cuba tem 50 x 40 cm e 18 cm de fundo). Tanque: encostado na parede pelo lado +Y.

@@ -1,0 +1,7 @@
+PECAS PARA REMODELAR (6)
+========================
+Tamanho real em metros, base em z = 0, centradas. Mande de volta com o mesmo nome.
+
+relogio_sala.glb 36 x 3 x 36 cm       Relogio de parede da sala (aro de madeira, mostrador, marcas e ponteiros); a parede fica do lado +Y
+
+Louca: fica dentro da cuba da cozinha (a cuba tem 50 x 40 cm e 18 cm de fundo). Tanque: encostado na parede pelo lado +Y.
