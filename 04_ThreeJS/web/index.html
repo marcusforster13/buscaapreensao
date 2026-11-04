@@ -9,8 +9,16 @@
         --sans:"Segoe UI",system-ui,sans-serif;--mono:Consolas,"DM Mono",ui-monospace,monospace}
   html,body{margin:0;height:100%;background:#10151c;color:var(--ink);font-family:var(--sans);overflow:hidden}
   canvas{display:block;touch-action:none;cursor:grab}
-  #loading{position:fixed;inset:0;display:grid;place-items:center;background:#05070d;z-index:10;font:500 14px/1.5 var(--mono);color:var(--mute);text-align:center}
-  #loading b{color:var(--amber);font-weight:500}
+  /* tela de carregamento com o logo da XPTO (imagem original) e o progresso real do download */
+  #loading{position:fixed;inset:0;display:grid;place-items:center;background:#f5f7fa;z-index:1000;transition:opacity .6s;font-family:var(--sans)}
+  #loading.fim{opacity:0;pointer-events:none}
+  #loading .ld{width:min(440px,calc(100% - 32px));text-align:center}
+  #loading img{width:100%;height:auto;display:block;margin:0 auto 26px}
+  #loading .ldt{color:#0b1453;font:600 15px/1.4 var(--sans);letter-spacing:.02em;margin-bottom:18px}
+  #loading .ldbar{height:8px;border-radius:4px;background:#dde5ec;overflow:hidden}
+  #loading .ldbar i{display:block;height:100%;width:0;background:#00d3e4;border-radius:4px;transition:width .25s}
+  #loading .ldinfo{display:flex;justify-content:space-between;gap:12px;margin-top:10px;color:#4a5568;font:500 13px/1.4 var(--mono)}
+  #loading .ldinfo b{color:#0b1453;font-weight:600}
   #hud{position:fixed;left:16px;top:16px;width:min(340px,calc(100% - 32px));background:var(--panel);backdrop-filter:blur(8px);
        border:1px solid var(--line);border-radius:4px;padding:14px 16px;display:grid;gap:10px;font-size:13px;z-index:5}
   .eyebrow{margin:0;font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
@@ -36,7 +44,10 @@
 </style>
 </head>
 <body>
-<div id="loading"><div>Busca e Apreensão<br>Carregando cena… <b id="pct">0%</b></div></div>
+<div id="loading"><div class="ld"><img src="img/logo_xpto.png" alt="XPTO inc." width="788" height="208">
+  <div class="ldt">Busca e Apreensão · Treinamento em realidade virtual</div>
+  <div class="ldbar"><i id="ldfill"></i></div>
+  <div class="ldinfo"><span id="ldmsg">Preparando…</span><b id="pct">0%</b></div></div></div>
 
 <aside id="hud">
   <p class="eyebrow">Treinamento VR · mandado de busca domiciliar · <span id="versao"></span></p>
@@ -83,7 +94,7 @@ THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 const $ = id => document.getElementById(id);
-const VERSAO = '1022-1654';      // carimbada por carimbar_versao.py a cada envio; entra no endereco dos arquivos para o navegador nao usar copia antiga
+const VERSAO = '1104-1539';      // carimbada por carimbar_versao.py a cada envio; entra no endereco dos arquivos para o navegador nao usar copia antiga
 window.__versao = VERSAO; window.__arq = {};
 // endereco de um arquivo com a marca do conteudo dele: muda so quando o arquivo muda (o resto fica guardado no navegador)
 const H = window.__h = p => p + '?h=' + (window.__arq[p] || VERSAO);
@@ -164,13 +175,26 @@ function alternarCeu() {
 
 /* ---------- carregar cena e lightmaps ---------- */
 const draco = new DRACOLoader().setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/libs/draco/gltf/');
+// progresso real: o cenario (cena.glb) pesa ~80% do download e os mapas de luz ~18%; o resto e montar a cena
+// o Vercel manda o arquivo comprimido e sem o tamanho total: o tamanho vem gravado no cena.json pelo pipeline
+const progresso = { glb: 0, lm: 0 }, mb = b => (b / 1048576).toFixed(1).replace('.', ','), totalGlb = CFG.glb_bytes || 0;
+function mostrarProgresso(msg) {
+  const p = Math.min(99, Math.round((progresso.glb * .8 + progresso.lm * .18) * 100));
+  $('pct').textContent = p + '%'; $('ldfill').style.width = p + '%'; if (msg) $('ldmsg').textContent = msg;
+}
 const gltf = await new GLTFLoader().setDRACOLoader(draco).loadAsync(H('cena.glb'), e => {
-  if (e.total) $('pct').textContent = Math.round(e.loaded / e.total * 100) + '%';
+  const total = e.total || totalGlb;
+  if (total) { progresso.glb = Math.min(1, e.loaded / total); mostrarProgresso(`Baixando o cenário · ${mb(Math.min(e.loaded, total))} de ${mb(total)} MB`); }
+  else mostrarProgresso(`Baixando o cenário · ${mb(e.loaded)} MB`);
 });
+progresso.glb = 1;
 const ANISO = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-const tl = new THREE.TextureLoader(), lmTex = {};
-await Promise.all([...new Set(Object.values(CFG.lightmaps).map(v => v.lm))].map(f =>
-  tl.loadAsync(H(f)).then(t => { t.flipY = false; t.channel = 1; t.colorSpace = THREE.SRGBColorSpace; lmTex[f] = t; })));
+const tl = new THREE.TextureLoader(), lmTex = {}, lmLista = [...new Set(Object.values(CFG.lightmaps).map(v => v.lm))];
+let lmProntos = 0; mostrarProgresso(`Carregando a iluminação · 0 de ${lmLista.length}`);
+await Promise.all(lmLista.map(f =>
+  tl.loadAsync(H(f)).then(t => { t.flipY = false; t.channel = 1; t.colorSpace = THREE.SRGBColorSpace; lmTex[f] = t;
+    progresso.lm = ++lmProntos / lmLista.length; mostrarProgresso(`Carregando a iluminação · ${lmProntos} de ${lmLista.length}`); })));
+mostrarProgresso('Montando a cena…');
 
 const lmMats = [], lentes = [], colisores = [], espelhos = [];
 // objetos que se movem (carro abordado, equipamentos, personagens) nao tem lightmap: recebem uma luz ambiente
@@ -273,7 +297,8 @@ function seguirChao() {
   if (r && r.point.y - rig.position.y < 0.45) rig.position.y += (r.point.y - rig.position.y) * 0.35;   // degraus ate 45 cm
 }
 window.__casa = { rig, camera, mover, ver(x, z, y, p = 0) { rig.position.set(x, 0, z); yaw = y; pitch = p; }, get colisao() { return colisaoAtiva; }, get alvos() { return alvosCol.length; } };   // diagnostico
-$('loading').remove();
+$('pct').textContent = '100%'; $('ldfill').style.width = '100%'; $('ldmsg').textContent = 'Pronto';
+setTimeout(() => { $('loading').classList.add('fim'); setTimeout(() => $('loading').remove(), 700); }, 250);
 
 /* ---------- luz dinamica: lanterna ---------- */
 const lanterna = new THREE.SpotLight(0xfff2dd, 0, 28, 0.32, 0.5, 2);
