@@ -1254,6 +1254,9 @@ export async function iniciar(ctx) {
   renderer.xr.addEventListener('sessionstart', () => setTimeout(() => { if (!S.ativo) aviso(); }, 1500));
 
   window.__trein = {
+    _mon: { legenda, personagem, animar, menu, dialogo, relatorio, rig, camera, estado: S, ocorrencia: () => (typeof A !== 'undefined' ? A : null),
+      ...(typeof sacar === 'function' ? { sacar } : {}), ...(typeof portas === 'object' ? { portas } : {}),
+      ...(typeof carregarPapeis === 'function' ? { carregarPapeis } : {}), ...(typeof iniciarCrise === 'function' ? { iniciarCrise } : {}) },   // so para o monitor.js (monitoramento do instrutor)
     clique: ray => usar(ray), gatilho: (ray, c) => usar(ray, c), botao, soltar: () => false,
     apontar, painelAberto: () => paineis.some(p => p.mesh.visible),
     menu: abrirMenu, quadro, estado: S, relatorio,

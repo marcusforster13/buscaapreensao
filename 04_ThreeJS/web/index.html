@@ -536,6 +536,15 @@ import('./' + H('treinamento.js')).then(m => m.iniciar({
   setYaw: y => { yaw = y; pitch = 0; },
   ambiente: modo => { renderer.toneMappingExposure = modo === 'madrugada' ? .22 : (CFG.exposicao ?? 1); }      // antes do amanhecer: tudo escuro
 })).catch(e => console.error('Treinamento não carregou:', e));
+/* ---------- monitoramento pelo instrutor (portal XPTO VR) ----------
+   So carrega com ?monitor=1 (aluno transmite) ou ?espectador=1 (tela do instrutor). Sem isso, nada muda. */
+{
+  const q = new URLSearchParams(location.search);
+  if (q.has('monitor') || q.has('espectador'))
+    import('./' + H('monitor.js')).then(m => m.iniciar({ scene, camera, rig, renderer, modo: q.has('espectador') ? 'espectador' : 'aluno',
+      fase: 'busca', cenarios: ["treinamento/cenario_ba_01.json"], modos: [["historia", "História (5 cumprimentos guiados)"], ["treino", "Treino (com dicas)"], ["avaliacao", "Avaliação (sem dicas)"]] }))
+      .catch(e => console.warn('Monitoramento não carregou:', e));
+}
 </script>
 </body>
 </html>
